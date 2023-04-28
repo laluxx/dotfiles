@@ -1,0 +1,68 @@
+This keybind configuration file contains global
+keybinds that can be used throughout the XOS ecosystem,
+making it easier and more efficient to navigate and operate beetween Desktops.
+
+
+
+alt + e; {e,s,d,b,v}
+    {emacs,emacsclient -c -a 'emacs' --eval '(eshell)',emacsclient -c -a 'emacs' --eval '(dired nil)',emacsclient -c -a 'emacs' --eval '(ibuffer)',emacsclient -c -a 'emacs' --eval '(+vterm/here nil)'}
+
+alt + p; {p,h,k,m,o,q,s,w}
+    {dmenu_run,dm-hub,dm-kill,dm-man,dm-bookman,dm-logout,dm-websearch,dn-wifi}
+
+alt + r; {r,e,s}
+    {bash /home/l/.config/rofi/launchers/type-3/launcher.sh,bash /home/l/.config/rofi/applets/bin/appasroot.sh,bash /home/l/.config/rofi/applets/bin/screenshot.sh}
+
+
+alt + w
+    firefox
+
+
+alt + b
+     blender
+
+alt + s
+    steam
+
+
+
+
+
+
+
+
+# TERMINALS
+
+# Alt + T, followed by K, opens Kitty
+alt + t; k
+    kitty --config ~/Desktop/xos/modules/term/kitty/trasparent/kitty.conf &
+
+# Alt + T, followed by W, opens Wexterm
+alt + t; w
+    wexterm &
+
+# Alt + T, followed by S, opens St
+alt + t; s
+    st &
+
+# Alt + T, followed by T, opens Alacritty
+alt + t; a
+    alacritty &
+
+# Alt + t, followed by m, opens kitty-overlay
+alt + t; m
+    kitty --config ~/Desktop/xos/modules/term/kitty/overlay/kitty.conf &
+
+alt + g; {p,}
+    {gpick -p}
+
+alt + Escape
+    pkill sxhkd && sxhkd &
+
+
+alt + f; p
+    kitty --config ~/Desktop/xos/modules/term/kitty/overlay/kitty.conf -e btop &
+
+# APPS
+alt +a; {d,}
+    {ded}

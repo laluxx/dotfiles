@@ -1,0 +1,122 @@
+#!/bin/sh
+
+# Use neovim for vim if present.
+#[ -x "$(command -v nvim)" ] && alias vim="nvim" vimdiff="nvim -d"
+
+# Verbosity and settings that you pretty much just always are going to want.
+alias \
+	cp="cp -iv" \
+	mv="mv -iv" \
+	rm="rm -vI" \
+	mkd="mkdir -pv" \
+	ffmpeg="ffmpeg -hide_banner"
+
+# Colorize commands when possible.
+#ls="ls -hN --color=auto --group-directories-first" \
+alias \
+	lt="colorls --tree" \
+	grep="grep --color=auto" \
+	diff="diff --color=auto" \
+	ccat="highlight --out-format=ansi"
+
+alias \
+	ka="killall" \
+	g="git" \
+	f="$FILE" \
+	e="$EDITOR" \
+	v="$EDITOR" \
+	xcp="xclip -selection clipboard" \
+
+# vim and emacs
+alias em="/usr/bin/emacs -nw"
+alias emacs="emacsclient -c -a 'emacs'"
+alias doomsync="~/.emacs.d/bin/doom sync"
+alias doomdoctor="~/.emacs.d/bin/doom doctor"
+alias doomupgrade="~/.emacs.d/bin/doom upgrade"
+alias doompurge="~/.emacs.d/bin/doom purge"
+
+# xos-git (Display git branches in the terminal)
+alias xgit="bash ~/Desktop/projects/gum/git-branc-manager.sh"
+alias xg="bash ~/Desktop/projects/gum/git-branc-manager.sh"
+
+
+# Neofetch
+alias nf="neofetch"
+alias rf="ramfetch"
+
+
+# Chat gpt-3 python wrapper 
+alias wefeega="chatgpt"
+alias testina="chatgpt"
+alias we="chatgpt"
+alias schiavo="chatgpt"
+alias baabbano="chatgpt"
+alias dimmi="chatgpt"
+
+
+
+
+# cargo
+alias cr="cargo run"
+alias ca="cargo add"
+#alias cl="cargo run -- --list"
+
+
+
+alias pipbat="pip list --format=columns | bat"
+alias pacbat="pacman -q | bat"
+
+
+alias d="kitty +kitten diff"
+alias meteo="curl wttr.in"
+
+
+alias ptest="python3"
+
+
+
+
+
+
+alias xconfetty="ssh -p 2222 ssh.caarlos0.dev"
+alias xfireworks="ssh -p 2223 ssh.caarlos0.dev"
+
+
+
+
+# Changing "ls" to "exa"
+alias ls='exa -al --color=always --group-directories-first' # my preferred listing
+alias l='lsd' # my preferred listing
+alias la='exa -a --color=always --group-directories-first'  # all files and dirs
+alias ll='exa -l --color=always --group-directories-first'  # long format
+alias lt='exa -aT --color=always --group-directories-first' # tree listing
+alias l.='exa -a | egrep "^\."'
+
+# System
+alias get='sudo pacman -S'
+alias up='sudo pacman -Syyu'
+alias y='yay -Sua'
+alias pacbat='pacman -Qe | bat'
+
+alias \
+	weath="less -S ${XDG_DATA_HOME:-$HOME/.local/share}/weatherreport" \
+    vm="/usr/bin/vim" \
+	wp="whatsapp-for-linux &>/dev/null & disown" \
+	dc="discord &>/dev/null & disown" \
+	tg="telegram-desktop &>/dev/null & disown"
+
+alias \
+	t="st &>/dev/null & disown" \
+    neofetch="neofetch --ascii_distro manjaro"
+    start="tbsm --quiet --theme riddler"
+
+# Bare git dot config
+alias \
+	dots='/usr/bin/git --git-dir=$HOME/.cfg/ --work-tree=$HOME' \
+	glfsforcerefs="git push origin --force 'refs/heads/*'"
+
+#if [[ -f "$HOME/.local/bin/scripts/lfrun" ]]; then
+#    alias lf="$HOME/.local/bin/scripts/lfrun"
+#else
+#    alias lf="/usr/bin/lfrun"
+#fi

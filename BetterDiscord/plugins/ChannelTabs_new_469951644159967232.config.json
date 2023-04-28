@@ -1,0 +1,43 @@
+{
+    "settings": {
+        "tabs": [
+            {
+                "name": "@WolfSanchez, ficus nudu",
+                "url": "/channels/@me/1080215905704890498",
+                "selected": true,
+                "currentStatus": "none",
+                "iconUrl": "https://cdn.discordapp.com/embed/avatars/1.png",
+                "channelId": "1080215905704890498"
+            }
+        ],
+        "favs": [],
+        "favGroups": [],
+        "showTabBar": true,
+        "showFavBar": true,
+        "reopenLastChannel": false,
+        "showFavUnreadBadges": true,
+        "showFavMentionBadges": true,
+        "showFavTypingBadge": true,
+        "showEmptyFavBadges": false,
+        "showTabUnreadBadges": true,
+        "showTabMentionBadges": true,
+        "showTabTypingBadge": true,
+        "showEmptyTabBadges": false,
+        "showActiveTabUnreadBadges": false,
+        "showActiveTabMentionBadges": false,
+        "showActiveTabTypingBadge": false,
+        "showEmptyActiveTabBadges": false,
+        "compactStyle": false,
+        "privacyMode": false,
+        "radialStatusMode": false,
+        "tabWidthMin": 100,
+        "showFavGroupUnreadBadges": true,
+        "showFavGroupMentionBadges": true,
+        "showFavGroupTypingBadge": true,
+        "showEmptyFavGroupBadges": false,
+        "showQuickSettings": true,
+        "showNavButtons": true,
+        "alwaysFocusNewTabs": false,
+        "useStandardNav": true
+    }
+}
