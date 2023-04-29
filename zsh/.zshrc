@@ -2115,6 +2115,59 @@ function addbg {
 }
 
 
+#0.0.0
+# function iso-build {
+#   local releng_dir="$PWD/releng"
+#   local output_dir="$PWD/output"
+
+#   # Check if the releng_dir exists
+#   if [[ ! -d $releng_dir ]]; then
+#     echo -e "\033[31mError: $releng_dir is not a directory\033[0m"
+#     return 1
+#   fi
+
+#   # Determine the root directory for building the ISO image
+#   local root_dir="$(dirname "$(dirname "$releng_dir")")"
+
+#   # Create the output directory if it doesn't exist
+#   mkdir -p "$root_dir/output"
+
+#   # Build the ISO image
+#   sudo mkarchiso -v -w "$root_dir/iso" -o "$root_dir/output/" "$releng_dir/"
+
+#   # Display a success message in green
+#   echo -e "\033[32mSuccess! ISO image has been built in $root_dir/output/\033[0m"
+# }
+
+
+
+function iso-build {
+  local script_dir="$(dirname "$0")"
+  local releng_dir="$(realpath "$script_dir/releng")"
+  local output_dir="$PWD/output"
+
+  # Check if the releng_dir exists
+  if [[ ! -d $releng_dir ]]; then
+    echo -e "\033[31mError: $releng_dir is not a directory\033[0m"
+    return 1
+  fi
+
+  # Create the output directory if it doesn't exist
+  mkdir -p "$output_dir"
+
+  # Build the ISO image
+  sudo mkarchiso -v -w "$PWD/iso" -o "$output_dir" "$releng_dir"
+
+  # Display a success message in green
+  echo -e "\033[32mSuccess! ISO image has been built in $output_dir/\033[0m"
+}
+
+
+
+
+
+
+
 
 
 
