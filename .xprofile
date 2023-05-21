@@ -1,0 +1,9 @@
+#!/bin/sh
+
+[[ -f "$HOME/.xsync" ]] && $HOME/.xsync || xrandr --auto
+
+xrdb ~/.config/Xresources
+# pOS-setbg &			# set the background, use this script to set your own background
+# Below sources configuration file to fetch picom
+[[ -f /usr/lib/polkit-gnome/polkit-gnome-authentication-agent-1 ]] && /usr/lib/polkit-gnome/polkit-gnome-authentication-agent-1 &
+# eval $(ssh-agent) # Uncomment this if using ssh

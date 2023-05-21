@@ -1,0 +1,97 @@
+;; Date
+(defpoll date :interval "1s" "date '+%A, %B %d'")
+
+;; Weather
+(defpoll weather-icon :interval "20m" "scripts/weather icon")
+(defpoll weather-temp :interval "20m" "scripts/weather current_temp")
+(defpoll weather-desc :interval "20m" "scripts/weather weather_desc")
+(deflisten weather-color :initial "#9EC3C4" "scripts/weather hex")
+
+;; System
+(defpoll cpu :interval "5s" "scripts/system --cpu")
+(defpoll memory :interval "5s" "scripts/system --mem")
+(defpoll profile-pkgs :interval "1h" "scripts/details --pkgs")
+(defpoll profile-kernel :interval "1h" "scripts/details --kernel")
+(defpoll profile-wm :interval "24h" "scripts/details --wm")
+
+(defwidget dashboard []
+	(box :class "dashboard-box" :space-evenly false 
+		(box :space-evenly false :orientation "v" :halign "start" :spacing 20
+			(box :class "first-row" :space-evenly false :spacing 20
+				(box :class "calendar-box" :space-evenly false :orientation "v" 
+					(box :class "clock-box" :space-evenly false :spacing 10 :halign "center"
+						(label :class "time" :text hour)
+						(box :class "timeboxes" :valign "center" :spacing 5 :space-evenly false :orientation "v"
+							(box :class "timebox magenta" "󰝤")
+							(box :class "timebox green" "󰝤")
+							(box :class "timebox yellow" "󰝤")
+						)
+						(label :class "time" :text minute)
+					)
+					(box :class "date-box" :space-evenly false :halign "center"
+						(label :class "date" :text date)
+					)
+				)
+				(box :class "weather-box" :space-evenly false  :orientation "v"
+					(label :class "weather-desc" :halign "start" :text weather-desc)
+					(label :class "weather-temp" :halign "start" :text "${weather-temp}°C")
+					(label :class "weather-icon" :halign "end" :valign "end" :text weather-icon :style "color: ${weather-color}")
+				)
+			)
+			(box :class "second-row" :space-evenly false
+				(box :class "stats-box" :space-evenly false :orientation "v" :spacing 15 :hexpand true
+					(box :class "volume-stats" :space-evenly false
+						(button :class "volume-icon" :onclick "scripts/volume toggle" :hexpand true 
+							(label :class "volume-icon" :tooltip "${volume-percent}%" :text volume-icon)
+						)
+						(scale :class "volume-scale" :min 0 :max 101 :value {volume-value == "" ? 0 : volume-value} :onchange "amixer set Master {}%" :width 290)
+					)
+					(box :class "cpu-stats" :space-evenly false :spacing 5
+						(label :class "cpu-icon" :tooltip "${cpu}%" :text "")
+						(scale :class "cpu-scale" :min 0 :max 101 :active false :value {cpu == "" ? 0 : cpu} :width 290)
+					)
+					(box :class "memory-stats" :space-evenly false :spacing 3
+						(label :class "memory-icon" :tooltip "${memory}%" :text "")
+						(scale :class "memory-scale" :min 0 :max 101 :active false :value {memory == "" ? 0 : memory} :width 290)
+					)
+				)
+			)
+			(box :class "third-row" :space-evenly false :spacing 10
+				(box :class "music-art-box" :space-evenly false :orientation "v" :style "background-image: url(\"${music-art}\");"
+					(box :class "music-stuff-box" :space-evenly false :orientation "v"
+						(label :class "music-title" :text music-title :halign "start" :limit-width 25 :tooltip music-title)
+						(label :class "music-artist" :text music-artist :halign "start" :limit-width 25 :tooltip music-artist)
+						(label :class "music-length" :text "${music-position} / ${music-length}" :halign "start" :valign "end" :hexpand true :vexpand true)
+					)
+				)
+				(box :class "music-controls-box" :space-evenly true :orientation "v"
+					(button :class "music-previous" :halign "center" :onclick "scripts/mediacontrol --previous" "")
+					(button :class "music-pp" :halign "center" :onclick "scripts/mediacontrol --toggle" "${music-toggle}")
+					(button :class "music-next" :halign "center" :onclick "scripts/mediacontrol --next" "")
+				)
+			)  
+			(box :class "profile-stuff-box" :space-evenly false :height 140 :spacing 20
+				(box :class "profile-img" :space-evenly false :orientation "v" :style "background-image: url('${profile-image}');")
+				(box :class "profile-stuff" :orientation "v" :space-evenly false :spacing 6
+					(label :class "profile-name" :text profile-name :halign "start")
+					(label :class "profile-wm" :text profile-wm :halign "start")
+					(label :class "profile-kernel" :text profile-kernel :halign "start")
+					(label :class "profile-packages" :text "${profile-pkgs} packages" :halign "start")
+				)
+			)
+		)  
+	)
+)
+
+;  Window
+(defwindow dashboard 
+	:stacking "fg"
+	:wm-ignore false
+	:windowtype "dock"
+	:geometry (geometry :x "-10%" 
+						:y "8%"
+						:width 0 
+						:height 0 
+						:anchor "top right")
+	(dashboard)
+)

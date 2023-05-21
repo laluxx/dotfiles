@@ -1,0 +1,26 @@
+$bg: #0f0f0f;
+$bg-alt: #191919;
+$fg: #f0f0f0;
+$fg-alt: #cacaca;
+$black: #262626;
+$gray: #4c4c4c;
+$red: #dd6777;
+$green: #9ec49f;
+$yellow: #ceb188;
+$blue: #a39ec4;
+$magenta: #c49ec4;
+$cyan: #9ec3c4;
+$white: $fg;
+
+tooltip {
+	background-color: $bg;
+	font-family: "SF Mono";
+	font-weight: 500;
+	font-size: 14px;
+}
+
+@import "./bar/eww.scss";
+@import "./calendar/eww.scss";
+@import "./dashboard/eww.scss";
+@import "./player/eww.scss";
+@import "./powermenu/eww.scss";

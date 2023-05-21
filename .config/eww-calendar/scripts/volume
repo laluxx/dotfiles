@@ -1,0 +1,58 @@
+#!/usr/bin/env bash
+
+# @requires: pactl
+
+get_percentage() {
+	local muted=$(pamixer --get-volume-human)
+	if [[ $muted == 'muted' ]]; then
+		echo "0"
+	else
+		per=$(pamixer --get-volume)
+		echo "${per}"
+	fi
+}
+
+get_icon() {
+	local vol=$(get_percentage)
+	if [[ $vol -ge 80 ]]; then
+		echo ""
+	elif [[ $vol -ge 40 ]]; then
+		echo ""
+	elif [[ $vol -ge 10 ]]; then
+		echo ""
+	else
+		echo ""
+	fi
+}
+
+get_vol() {
+	local percent=$(get_percentage)
+	echo "$percent" | tr -d '%'
+}
+
+get_color() {
+	local muted=$(pamixer --get-volume-human)
+	if [[ $muted == 'muted' ]]; then
+		echo "#dd6777"
+	else
+		echo "#9ec49f"
+	fi
+}
+
+case "$1" in
+color)
+	get_color
+	;;
+icon)
+	get_icon
+	;;
+percentage)
+	get_percentage
+	;;
+vol)
+	get_vol
+	;;
+toggle)
+	pamixer -t
+	;;
+esac

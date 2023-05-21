@@ -1,0 +1,25 @@
+; Calendar
+(defpoll calendar-day :interval "10h" "date '+%d'")
+(defpoll calendar-month :interval "10h" "date '+%m'")
+(defpoll calendar-year :interval "10h" "date '+%Y'")
+
+;; Calendar Widget
+(defwidget cal []
+	(box :class "calendarbox" :orientation "v"
+	    (box :class "calendar-inner-box"
+	        (calendar :class "calendar" :day calendar-day :month calendar-month :year calendar-year)
+        )
+    )
+)
+;; Calendar Window
+(defwindow calendar
+	:stacking "fg"
+	:wm-ignore false
+	:windowtype "dock"
+	:geometry (geometry :x "-10%" 
+						:y "8%" 
+						:width 0 
+						:height 0
+						:anchor "top right")
+	(cal)
+)

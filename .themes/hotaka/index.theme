@@ -1,0 +1,13 @@
+[Desktop Entry]
+Type=X-GNOME-Metatheme
+Name=hotaka
+Comment=A Material Design theme
+Encoding=UTF-8
+
+[X-GNOME-Metatheme]
+GtkTheme=hotaka
+MetacityTheme=hotaka
+IconTheme=hotaka
+CursorTheme=WhiteSur-cursors
+CursorSize=26
+ButtonLayout=menu

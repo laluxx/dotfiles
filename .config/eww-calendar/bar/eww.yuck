@@ -1,0 +1,168 @@
+;; Workspaces
+(deflisten workspace "./scripts/workspaces")
+
+;; Clock
+(defpoll datebar :interval "1s" "date '+%d/%m'")
+(defvar date-rev false)
+
+;; Pacman
+(defpoll updates :interval "2h" "./scripts/updates get")
+(defvar pacman-rev false)
+
+;; Network
+(defpoll network-icon :interval "10s" "./scripts/network icon")
+(defpoll network-color :interval "10s" "./scripts/network color")
+(defpoll network-status :interval "10s" "./scripts/network stat")
+(defvar network-rev false)
+
+(defpoll title :interval "0s" "./scripts/windowtitle class")
+(defvar music-rev false)
+
+;;  Music
+(defwidget music [] 
+	(eventbox :onhover "eww update music-rev=true" :onhoverlost "eww update music-rev=false"
+		(box :space-evenly false :spacing 10
+			(button :class "musicbar-art" :onclick "eww open-many --toggle background-closer player" :style "background-image: url('${music-art}');")
+			(label :class "musicbar-title" :limit-width 40 :text music-title)
+			(revealer :transition "slideright" :reveal music-rev :duration "500ms"
+				(box :spacing 10
+					(button :class "musicbar-previous-icon" :onclick "./scripts/mediacontrol --previous" "")
+					(button :class "musicbar-toggle-icon" :onclick "./scripts/mediacontrol --toggle" music-toggle)
+					(button :class "musicbar-next-icon" :onclick "./scripts/mediacontrol --next" "")
+				)
+			)
+		)
+	)
+)
+
+;; Powermenu
+(defwidget power []
+  	(button :class "power-icon" :valign "center" :onclick "eww open-many --toggle background-closer powermenu" "")
+)
+
+;; Workspaces
+(defwidget workspaces []
+	(literal :content workspace)
+)
+
+;; Window title
+(defwidget windowtitle []
+	(box :space-evenly false
+		(label :class "windowtitle" :text title :limit-width 15)
+	)
+)
+
+;; Dashboard icon
+(defwidget menu []
+	(button :class "menu-icon" :onclick "eww open-many --toggle background-closer dashboard" "")
+)
+
+;; Pacman
+(defwidget pacman []
+	(eventbox :onhover "eww update pacman-rev=true" :onhoverlost "eww update pacman-rev=false" 
+		(box :space-evenly false
+			(button :onclick "./scripts/popup updates" :class "pacman-icon" "")			
+			(revealer :transition "slideright" :reveal pacman-rev :duration "500ms"
+				(box :space-evenly false
+					(label :class "pacman-text" :text "${updates}")
+				)
+			)
+		)
+	)
+)
+
+;; Network
+(defwidget network []
+	(eventbox :onhover "eww update network-rev=true" :onhoverlost "eww update network-rev=false"
+		(box :space-evenly false			
+			(button :class "network-icon" :style "color: ${network-color}" "${network-icon}")
+			(revealer :transition "slideright" :reveal network-rev :duration "500ms"
+				(box :space-evenly false
+					(label :class "network-text" :text "${network-status}")
+				)
+			)
+		)
+	)
+)
+
+;; Volume Widget ;;
+(defwidget volume []
+	(eventbox :onhover "eww update volume-rev=true" :onhoverlost "eww update volume-rev=false"
+		(box :space-evenly false
+			(button :class "volumebar-icon" :style "color: ${volume-color}" :tooltip "${volume-percent}%" :onclick "./scripts/volume toggle" "${volume-icon}")
+			(revealer :class "volumebar-reveal" :transition "slideleft" :reveal volume-rev :duration "500ms"
+				(scale :class "volume-bar" :value volume-percent :tooltip "${volume-percent}%" :min 0 :max 101 :onchange "amixer set Master {}%" )
+			)
+		)
+	)
+)
+
+;; Clock Widget ;;
+(defwidget clock []
+	(eventbox :onhover "eww update date-rev=true" :onhoverlost "eww update date-rev=false"
+		(box :space-evenly false :spacing 8
+			(label :class "clock-hour" :text hour)
+			(label :class "clock-separator" :text "")
+			(label :class "clock-minute" :text minute)
+			(revealer :transition "slideleft" :reveal date-rev :duration "500ms"
+				(button :class "clock-date" :valign "center ":onclick "eww open-many --toggle background-closer calendar" datebar)
+			)
+		)
+	)
+)
+
+;; System Icons	
+(defwidget control []
+	(box :space-evenly false :class "control" :spacing 15
+		(pacman)
+		(network)
+		(volume)
+	)
+)
+
+;; Left Widgets
+(defwidget left []
+	(box :space-evenly false :halign "start" :spacing 20
+		(power)
+		(workspaces)
+		(windowtitle)
+	)
+)
+
+;; Center Widgets
+(defwidget center []
+	(box :space-evenly false :halign "center"
+		(music)
+	)
+)
+
+;; Right Widgets
+(defwidget right []
+	(box :space-evenly false :halign "end" :spacing 20
+		(menu)
+		(control)
+		(clock)
+	)
+)
+
+;; Bar Widgets
+(defwidget bar []
+	(box :class "bar-class"
+		(left)
+		(center)
+		(right)
+	)
+)
+
+;; Bar Window
+(defwindow bar
+	:stacking "fg"
+	:wm-ignore false				   
+	:windowtype "dock"
+	:geometry (geometry :x "0%"
+						:y "2%"
+						:width "80%"
+						:height 0
+						:anchor "top center")
+	(bar)
+)

@@ -1,0 +1,83 @@
+* {
+	all: unset;
+}
+
+.powermenu-box {
+	background-color: $bg;
+	border-radius: 12px;
+	padding: 20px;
+}
+
+.power-profile-box {
+	background-color: $bg-alt;
+	border-radius: 15px;
+	padding: 20px;
+}
+
+.power-profile-img {
+	border-radius: 15px;
+	background-repeat: no-repeat;
+	background-size: cover;
+	background-position: center;
+	min-height: 200px;
+	min-width: 200px;
+	box-shadow: -1px 1px 10px 5px rgba(0, 0, 0, 0.5);
+}
+
+.power-profile-info {
+	font-family: "SF Pro";
+	color: $fg;
+}
+
+.power-profile-name {
+	font-size: 25px;
+	font-weight: bold;
+}
+
+.power-profile-os,
+.power-profile-uptime {
+	font-size: 20px;
+}
+
+.buttons-box {
+	font-family: "Font Awesome 6 Pro Solid";
+	font-size: 25px;
+}
+
+.shutdown {
+	color: $red;
+}
+
+.reboot {
+	color: $green;
+}
+
+.reboot:hover,
+.shutdown:hover,
+.exit:hover,
+.lock:hover,
+.suspend:hover {
+	background-color: $black;
+}
+
+.reboot,
+.shutdown,
+.exit,
+.lock,
+.suspend {
+	font-family: "Font Awesome 6 Pro Solid";
+	font-size: 80px;
+	border-radius: 30px;
+	padding: 20px;
+	min-width: 130px;
+	min-height: 130px;
+	background-color: $bg-alt;
+}
+
+.exit {
+	color: $blue;
+}
+
+.suspend {
+	color: $magenta;
+}

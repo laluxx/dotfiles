@@ -1,0 +1,48 @@
+;; Music
+(defpoll music-art :interval "1s" "scripts/mediacontrol coverloc")
+(defpoll music-title :interval "1s" "scripts/mediacontrol title")
+(defpoll music-artist :interval "1s" "scripts/mediacontrol artist")
+(defpoll music-toggle :interval "1s" "scripts/mediacontrol statusicon")
+(defpoll music-status :interval "1s" "scripts/mediacontrol status")
+(defpoll music-position :interval "1s" "scripts/mediacontrol time")
+(defpoll music-length :interval "1s" "scripts/mediacontrol length")
+
+;; Volume
+(defpoll volume-icon :interval "1s" "scripts/volume icon")
+(defpoll volume-percent :interval "1s" :initial "0" "scripts/volume percentage")
+(defpoll volume-value :interval "1s" "scripts/volume vol")
+(defpoll volume-color :interval "1s" "scripts/volume color")
+(defvar volume-rev false)
+
+;; Uptime
+(defpoll uptime :interval "1m" "uptime -p | sed -e 's/up //g'")
+
+;; Clock
+(defpoll hour :interval "1s" "date '+%H'")
+(defpoll minute :interval "1s" "date '+%M'")
+
+;; Profile
+(defvar profile-image "./dashboard/assets/profile.jpg")
+(defpoll profile-username :interval "24h" "whoami")
+(defpoll profile-name :interval "24h" "./scripts/details --name")
+(defpoll profile-os :interval "24h" "./scripts/details --os")
+
+(include "./dashboard/eww.yuck")
+(include "./bar/eww.yuck")
+(include "./player/eww.yuck")
+(include "./calendar/eww.yuck")
+(include "./powermenu/eww.yuck")
+
+(defwidget closer []
+    (eventbox :onclick "eww close dashboard player calendar powermenu background-closer")
+)
+  
+(defwindow background-closer
+	:wm-ignore true
+	:stacking "fg"
+	:geometry (geometry :x "0%" 
+						:y "10%"
+						:width "100%" 
+						:height "100%")
+    (closer)
+)

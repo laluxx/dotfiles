@@ -1,0 +1,44 @@
+(defpoll music-shuffle-color :interval "1s" "scripts/mediacontrol shufflecolor")
+(defpoll music-loop-icon :interval "1s" "scripts/mediacontrol loopicon")
+(defpoll music-loop-color :interval "1s" "scripts/mediacontrol loopcolor")
+
+;; Player Widget
+(defwidget player []
+	(box :class "player" :space-evenly false
+		(box :class "player-art" :orientation "v" :style "background-image: url('${music-art}')"
+			(box :class "player-info" :orientation "v" :space-evenly false :hexpand true :spacing 10
+				(box :space-evenly false :spacing 10
+					(button :class "player-shuffle" 
+							:onclick "./scripts/mediacontrol --shuffle" 
+							:halign "start" 
+							:style "color:${music-shuffle-color}" "")
+					(button :class "player-loop" 
+							:onclick "./scripts/mediacontrol --loop"
+							:halign "start" 
+							:style "color:${music-loop-color}" music-loop-icon)
+				)
+				(label :class "player-title" :halign "start" :text music-title :limit-width 30)
+				(label :class "player-artist" :halign "start" :text music-artist :limit-width 35)
+				(label :class "player-position" :text "${music-position} / ${music-length}" :halign "start" :valign "end" :hexpand true :vexpand true)
+			)
+		)
+		(box :class "player-controls" :orientation "v"
+			(button :class "player-previous" :onclick "./scripts/mediacontrol --previous" "")
+			(button :class "player-toggle" :onclick "./scripts/mediacontrol --toggle" music-toggle)
+			(button :class "player-next" :onclick "./scripts/mediacontrol --next" "")
+		)
+	)
+)
+
+;; Player Window
+(defwindow player
+	:stacking "fg" 
+	:wm-ignore false
+	:windowtype "dock"
+	:geometry (geometry :x 0 
+						:y "8%"
+						:width 0 
+						:height 0 
+						:anchor "top center")
+	(player)
+)

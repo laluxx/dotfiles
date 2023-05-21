@@ -1,0 +1,173 @@
+* {
+	all: unset;
+}
+
+.bar-class {
+	background-color: $bg;
+	padding: 5px;
+}
+
+scale trough {
+	all: unset;
+	background-color: $black;
+	border-radius: 16px;
+	min-height: 5px;
+	min-width: 80px;
+	margin: 0px 0px 0px 5px;
+	box-shadow: 1px 1px 2px 1px rgba(0, 0, 0, 0.3);
+}
+
+.control {
+	background-color: $bg-alt;
+	padding: 0 18px 0 20px;
+	border-radius: 10px;
+}
+
+.power-icon,
+.works,
+.pacman-icon,
+.network-icon,
+.volumebar-icon,
+.menu-icon {
+	font-size: 18px;
+	font-family: "Font Awesome 6 Pro Solid";
+}
+
+.pacman-text,
+.network-text {
+	font-family: "SF Mono";
+	font-size: 15px;
+	font-weight: bold;
+}
+
+// Powermenu
+.power-icon {
+	color: $red;
+	margin-left: 20px;
+}
+
+// Workspaces
+.works {
+	background-color: $bg-alt;
+	padding: 0px 10px 0px 10px;
+	border-radius: 10px;
+}
+
+.workspace-focused {
+	font-size: 18px;
+	color: $green;
+	margin: 8px
+}
+
+.workspace-occupied {
+	font-size: 16px;
+	color: $gray;
+}
+
+.workspace-empty {
+	font-size: 16px;
+	color: $black;
+}
+
+// Window title
+.windowtitle {
+	font-family: "SF Pro";
+	font-size: 15px;
+	font-weight: 500;
+}
+
+// Dashboard icon
+.menu-icon {
+	color: $fg-alt;
+}
+
+// Pacman
+.pacman-icon {
+	color: $yellow;
+}
+
+.pacman-text {
+	color: $fg;
+	margin-left: 5px;
+}
+
+// Volume
+.volume-bar trough highlight {
+	background: linear-gradient($cyan, $green);
+	border-radius: 6px;
+}
+
+// Network
+.network-text {
+	color: $fg;
+	margin-left: 5px;
+}
+
+// Clock
+.clock-hour {
+	font-family: "SF Mono";
+	font-size: 20px;
+	font-weight: bold;
+	color: $fg;
+}
+
+.clock-minute {
+	font-family: "SF Mono";
+	font-size: 19px;
+	color: $fg-alt;
+	margin: 0px 12px 0px -1px;
+}
+
+.clock-separator {
+	font-size: 20px;
+	color: $fg-alt;
+	margin-top: 1px;
+}
+
+.clock-date {
+	font-family: "SF Mono";
+	font-size: 16px;
+	font-weight: bold;
+	margin: 0px 20px 0px 0px;
+	color: $magenta;
+}
+
+// Music
+.musicbar-art {
+	background-repeat: no-repeat;
+	background-size: cover;
+	background-position: center;
+	min-height: 25px;
+	min-width: 35px;
+	border-radius: 100px;
+}
+
+.musicbar-title {
+	color: $fg;
+	font-size: 15px;
+	font-weight: bold;
+	font-family: "SF Pro";
+}
+
+.musicbar-toggle-icon {
+	font-size: 20px;
+	margin-top: 2px;
+}
+
+.musicbar-previous-icon,
+.musicbar-next-icon {
+	font-size: 15px;
+}
+
+.musicbar-previous-icon,
+.musicbar-next-icon,
+.musicbar-toggle-icon {
+	font-family: "Font Awesome 6 Pro Solid";
+	color: $fg;
+}
+
+.musicbar-previous-icon:hover,
+.musicbar-next-icon:hover,
+.musicbar-toggle-icon:hover {
+	color: $magenta;
+}

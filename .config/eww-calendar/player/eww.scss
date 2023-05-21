@@ -1,0 +1,71 @@
+* {
+	all: unset;
+}
+
+.player {
+	background-color: $bg;
+	padding: 10px;
+	min-height: 160px;
+	border-radius: 12px;
+	font-family: "SF Pro", "Font Awesome 6 Pro Solid";
+}
+
+.player-art {
+	background-size: cover;
+	background-repeat: no-repeat;
+	background-position: center;
+	border-radius: 16px;
+	min-width: 350px;
+}
+
+.player-info {
+	border-radius: 12px;
+	background: linear-gradient(to right, rgb(25, 25, 25, 1), rgba(38, 38, 38, 0.5));
+	padding: 10px 0px 0px 10px;
+}
+
+.player-title {
+	font-size: 16px;
+	font-weight: bolder;
+}
+
+.player-artist,
+.player-position {
+	color: $white;
+}
+
+.player-position {
+	margin-bottom: 10px;
+	font-weight: 500;
+	color: $fg-alt;
+}
+
+.player-controls {
+	background-color: $bg-alt;
+	padding: 10px;
+	margin-left: 10px;
+	border-radius: 12px;
+	min-width: 25px;
+}
+
+.player-toggle {
+	font-size: 30px;
+	color: $fg;
+}
+
+.player-previous,
+.player-next {
+	font-size: 25px;
+	color: $fg-alt;
+}
+
+.player-toggle:hover,
+.player-previous:hover,
+.player-next:hover {
+	color: $magenta;
+}
+
+.player-shuffle,
+.player-loop {
+	font-size: 16px;
+}

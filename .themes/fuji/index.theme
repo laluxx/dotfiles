@@ -1,0 +1,13 @@
+[Desktop Entry]
+Type=X-GNOME-Metatheme
+Name=fuji
+Comment=A Material Design theme
+Encoding=UTF-8
+
+[X-GNOME-Metatheme]
+GtkTheme=fuji
+MetacityTheme=fuji
+IconTheme=fuji
+CursorTheme=WhiteSur-cursors
+CursorSize=26
+ButtonLayout=menu

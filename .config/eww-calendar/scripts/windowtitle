@@ -1,0 +1,7 @@
+#!/bin/env bash
+
+case "$1" in
+class)
+	xprop -id $(xprop -root _NET_ACTIVE_WINDOW | cut -d ' ' -f 5) WM_CLASS | sed -e 's/.*"\(.*\)".*/\1/'
+	;;
+esac

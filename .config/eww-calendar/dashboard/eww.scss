@@ -1,0 +1,229 @@
+* {
+	all: unset;
+}
+
+.dashboard-box {
+	background-color: $bg;
+	border-radius: 12px;
+}
+
+.calendar-box {
+	font-family: "SF Pro";
+	background-color: $bg-alt;
+	margin: 20px 0px 0px 20px;
+	min-width: 190px;
+	padding: 11px 10px 10px 10px;
+	border-radius: 15px;
+	color: $fg;
+}
+
+.time {
+	font-weight: bolder;
+	font-size: 50px;
+}
+
+.date {
+	font-size: 20px;
+	font-weight: 500;
+}
+
+.timeboxes {
+	font-size: 8px;
+
+	.magenta {
+		color: $magenta;
+	}
+
+	.green {
+		color: $green;
+	}
+
+	.yellow {
+		color: $yellow;
+	}
+}
+
+.weather-box {
+	background-color: $bg-alt;
+	margin: 20px 20px 0px 0px;
+	padding: 10px 20px 10px 10px;
+	border-radius: 15px;
+	min-width: 120px;
+}
+
+.weather-desc {
+	font-family: "SF Pro";
+	font-size: 20px;
+	color: $fg-alt;
+}
+
+.weather-temp {
+	font-family: "SF Pro";
+	font-size: 25px;
+	font-weight: bolder;
+	color: $fg;
+}
+
+.weather-icon {
+	font-family: "Font Awesome 6 Pro Solid";
+	font-size: 40px;
+}
+
+.stats-box {
+	background-color: $bg-alt;
+	margin: 0px 20px 0px 20px;
+	padding: 20px 35px 20px 25px;
+	border-radius: 15px;
+}
+
+.stats-header {
+	font-size: 15px;
+	font-weight: bold;
+	color: $gray;
+}
+
+.volume-icon,
+.cpu-icon,
+.memory-icon {
+	font-size: 24px;
+	font-family: "Font Awesome 6 Pro Solid";
+}
+
+.volume-icon {
+	color: $green;
+}
+
+.cpu-icon {
+	color: $red;
+}
+
+.memory-icon {
+	color: $yellow;
+}
+
+.volume-scale trough,
+.cpu-scale trough,
+.memory-scale trough {
+	all: unset;
+	background-color: $black;
+	min-height: 6px;
+	border-radius: 15px;
+	margin-left: 10px;
+	box-shadow: 1px 1px 2px 1px rgba(0, 0, 0, 0.2);
+}
+
+.volume-scale highlight {
+	background-color: $green;
+	border-radius: 15px;
+}
+
+.cpu-scale highlight {
+	background-color: $red;
+	border-radius: 15px;
+}
+
+.memory-scale highlight {
+	background-color: $yellow;
+	border-radius: 15px;
+}
+
+.music-art-box {
+	background-size: cover;
+	background-repeat: no-repeat;
+	min-width: 310px;
+	min-height: 150px;
+	border-radius: 16px;
+	background-position: center;
+	margin: 0px 0px 0px 20px;
+}
+
+.music-title {
+	font-family: "SF Pro";
+	font-size: 18px;
+	font-weight: bold;
+	color: $fg;
+	margin: 20px 0px 0px 20px;
+}
+
+.music-artist {
+	font-family: "SF Pro";
+	font-size: 15px;
+	color: $fg;
+	margin: 10px 0px 0px 20px;
+}
+
+.music-length {
+	font-family: "SF Pro";
+	font-size: 14px;
+	font-weight: 500;
+	margin: 0px 0px 10px 20px;
+	color: $fg;
+}
+
+.music-stuff-box {
+	font-family: "SF Pro";
+	min-height: 150px;
+	border-radius: 12px;
+	background: linear-gradient(to right, rgb(25, 25, 25, 1), rgba(38, 38, 38, 0.5));
+}
+
+.music-controls-box {
+	font-family: "Font Awesome 6 Pro Solid";
+	margin: 0px 0px 0px 0px;
+	background-color: $bg-alt;
+	padding: 0px 15px 0px 15px;
+	border-radius: 15px;
+	min-width: 30px;
+	text-shadow: 0px 10px 10px rgba(0, 0, 0, 1);
+}
+
+.music-next,
+.music-previous {
+	font-size: 30px;
+	color: $fg-alt;
+}
+
+.music-pp {
+	font-size: 35px;
+	color: $fg;
+}
+
+.music-next:hover,
+.music-previous:hover,
+.music-pp:hover {
+	color: $magenta;
+}
+
+.profile-stuff-box {
+	margin: 0px 20px 20px 20px;
+	background-color: $bg-alt;
+	border-radius: 15px;
+	padding: 15px 0px 15px 15px;
+}
+
+.profile-img {
+	border-radius: 15px;
+	background-repeat: no-repeat;
+	background-size: cover;
+	background-position: center;
+	min-height: 110px;
+	min-width: 110px;
+	box-shadow: 0px 0px 30px rgba(0, 0, 0, 1);
+}
+
+.profile-stuff {
+	font-family: "SF Pro";
+	color: $fg;
+}
+
+.profile-name {
+	font-size: 18px;
+	font-weight: bold;
+}
+
+.profile-wm,
+.profile-kernel,
+.profile-packages {
+	font-size: 16px;
+	font-weight: 400;
+}

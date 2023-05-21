@@ -1,0 +1,32 @@
+(defwidget powermenu[]
+	(box :class "powermenu-box" :space-evenly false :spacing 20 
+		(box :class "power-profile-box" :space-evenly false :orientation "v" :spacing 20
+			(box :class "power-profile-img" :space-evenly false  :orientation "v" :style "background-image: url('${profile-image}');")
+			(box :class "power-profile-info" :space-evenly false :orientation "v" :spacing 5
+				(label :class "power-profile-name" :text profile-name :halign "start")
+				(label :class "power-profile-os" :text profile-os :halign "start")
+				(label :class "power-profile-uptime" :text uptime :halign "start")
+			)
+		)
+		(box :class "buttons-box" :orientation "v" :space-evenly false :spacing 20 :valign "center"
+			(box :class "first-row" :space-evenly false :spacing 20
+				(button :class "shutdown" :onclick "systemctl poweroff -i" "")
+				(button :class "reboot" :onclick "systemctl reboot -i" "")
+			)
+			(box :class "second-row" :space-evenly false :spacing 20
+				(button :class "suspend" :onclick "systemctl suspend" "")
+				(button :class "exit" :onclick "bspc quit" "")
+			)
+		)
+	)
+)
+
+(defwindow powermenu
+	:stacking "fg" 
+	:wm-ignore false
+	:windowtype "dock"
+	:geometry (geometry :width "30%" 
+						:height 0
+						:anchor "center")
+	(powermenu)
+)

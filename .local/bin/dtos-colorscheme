@@ -1,0 +1,98 @@
+#!/usr/bin/env bash
+#
+# Script name: dtos-colorscheme
+# Description: Change colorscheme in DTOS.
+# Dependencies: dmenu, dmscripts
+# GitLab: https://www.gitlab.com/dwt1/dtos
+# License: https://www.gitlab.com/dwt1/dtos/LICENSE
+# Contributors: Derek Taylor
+
+# Set with the flags "-e", "-u","-o pipefail" cause the script to fail
+# if certain things happen, which is a good thing.  Otherwise, we can
+# get hidden bugs that are hard to discover.
+set -euo pipefail
+
+# shellcheck disable=SC1091
+source "$HOME/.config/dmscripts/config"
+
+options=("DoomOne"
+"Dracula"
+"GruvboxDark"
+"MonokaiPro"
+"Nord"
+"OceanicNext"
+"Palenight"
+"SolarizedDark"
+"SolarizedLight"
+"TomorrowNight")
+
+choice=$(printf '%s\n' "${options[@]}" | ${DMENU} 'Choose color scheme:' "${@}")
+
+if [ "$choice" ]; then
+    ## XMONAD ##
+    sed  -i "s/import Colors.*/import Colors.$choice/g" "$HOME"/.config/xmonad/README.org || echo "Cannot modify README.org"
+    sed  -i "s/import Colors.*/import Colors.$choice/g" "$HOME"/.config/xmonad/xmonad.hs || echo "Cannot modify xmonad.hs"
+    xmonad --restart || echo "Xmonad not running"
+
+    ## AWESOME ##
+    sed -i "s/^local colorscheme = .*/local colorscheme = \"$choice\"/g" "$HOME"/.config/awesome/README.org
+    sed -i "s/^local colorscheme = .*/local colorscheme = \"$choice\"/g" "$HOME"/.config/awesome/rc.lua
+    echo 'awesome.restart()' | awesome-client || echo "Awesome not running"
+
+    ## BSPWM ##
+    sed -i "s/^COLORSCHEME=.*/COLORSCHEME=\"$choice\"/g" "$HOME"/.config/bspwm/bspwmrc
+    bspc wm -r || echo "Bswpm not running"
+
+    ## QTILE ##
+    sed -i "s/^COLORSCHEME=.*/COLORSCHEME=\"$choice\"/g" "$HOME"/.config/qtile/autostart.sh
+    qtile cmd-obj -o cmd -f restart && $HOME/.config/qtile/autostart.sh || echo "Qtile not running"
+
+    ## ALACRITTY ##
+    sed -i "s/^colors: .*/colors: \*$choice/g" "$HOME"/.config/alacritty/alacritty.yml || echo "Error setting Alacritty colors"
+    
+
+    ## POLYBAR (Do not remove the spacing in these sed commands!!!)
+    sed -i -e "s/^background .*background/background = \${$choice.background/g" \
+    -e "s/^foreground .*foreground/foreground = \${$choice.foreground/g" \
+    -e "s/color0 .*color0/color0     = \${$choice.color0/g" \
+    -e "s/color1 .*color1/color1     = \${$choice.color1/g"  \
+    -e "s/color2 .*color2/color2     = \${$choice.color2/g"  \
+    -e "s/color3 .*color3/color3     = \${$choice.color3/g"  \
+    -e "s/color4 .*color4/color4     = \${$choice.color4/g"  \
+    -e "s/color5 .*color5/color5     = \${$choice.color5/g"  \
+    -e "s/color6 .*color6/color6     = \${$choice.color6/g"  \
+    -e "s/color7 .*color7/color7     = \${$choice.color7/g"  \
+    -e "s/color8 .*color8/color8     = \${$choice.color8/g"  \
+    -e "s/color9 .*color9/color9     = \${$choice.color9/g"  \
+    -e "s/color10.*color10/color10    = \${$choice.color10/g" \
+    -e "s/color11.*color11/color11    = \${$choice.color11/g" \
+    -e "s/color12.*color12/color12    = \${$choice.color12/g" \
+    -e "s/color13.*color13/color13    = \${$choice.color13/g" \
+    -e "s/color14.*color14/color14    = \${$choice.color14/g" \
+    -e "s/color15.*color15/color15    = \${$choice.color15/g" \
+    -e "s/^alert.*/alert      = \${$choice.color1}/g" "$HOME"/.config/polybar/README.org
+
+    sed -i -e "s/^background .*background/background = \${$choice.background/g" \
+    -e "s/^foreground .*foreground/foreground = \${$choice.foreground/g" \
+    -e "s/color0 .*color0/color0     = \${$choice.color0/g" \
+    -e "s/color1 .*color1/color1     = \${$choice.color1/g"  \
+    -e "s/color2 .*color2/color2     = \${$choice.color2/g"  \
+    -e "s/color3 .*color3/color3     = \${$choice.color3/g"  \
+    -e "s/color4 .*color4/color4     = \${$choice.color4/g"  \
+    -e "s/color5 .*color5/color5     = \${$choice.color5/g"  \
+    -e "s/color6 .*color6/color6     = \${$choice.color6/g"  \
+    -e "s/color7 .*color7/color7     = \${$choice.color7/g"  \
+    -e "s/color8 .*color8/color8     = \${$choice.color8/g"  \
+    -e "s/color9 .*color9/color9     = \${$choice.color9/g"  \
+    -e "s/color10.*color10/color10    = \${$choice.color10/g" \
+    -e "s/color11.*color11/color11    = \${$choice.color11/g" \
+    -e "s/color12.*color12/color12    = \${$choice.color12/g" \
+    -e "s/color13.*color13/color13    = \${$choice.color13/g" \
+    -e "s/color14.*color14/color14    = \${$choice.color14/g" \
+    -e "s/color15.*color15/color15    = \${$choice.color15/g" \
+    -e "s/^alert.*/alert      = \${$choice.color1}/g" "$HOME"/.config/polybar/config.ini
+
+# What to do if we just escape without choosing anything.
+else
+  echo "Program terminated." && exit 0
+fi

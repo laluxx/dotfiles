@@ -1,0 +1,35 @@
+* {
+	all: unset;
+}
+
+.calendarbox {
+	background-color: $bg;
+	font-size: 18px;
+	font-family: "SF Mono";
+	font-weight: 500;
+}
+
+.calendar-inner-box {
+	padding: 10px 10px 0px 10px;
+}
+
+.calendar {
+	padding: 10px 10px 5px 10px;
+}
+
+calendar:selected {
+	color: $green;
+}
+
+calendar.header {
+	color: $green;
+	font-weight: bold;
+}
+
+calendar.button {
+	color: $green;
+}
+
+calendar:indeterminate {
+	color: $gray;
+}
