@@ -766,7 +766,11 @@ ex()
 }
 
 
-
+############################################
+###########################################################
+#############################################################
+#############################################################
+############################################################# continua qua asblulla
 
 
 
@@ -848,10 +852,6 @@ function pac-analizer() {
 }
 
 
-# FIXME
-function xshellrp() {
-  xshellrp --config ~/.config/linux-discord-rich-presencerc &&
-}
 
 
 function package-web-app() {
@@ -867,142 +867,22 @@ function package-web-app() {
   echo "Desktop app for ${url} has been created in the current directory."
 }
 
-
-function file_picker() {
-    local filepath
-    filepath=$(paste <(find . -maxdepth 1 -type d -exec echo -e "\xf0\x9f\x93\x81" \; -o -type f -exec echo -e "\xf0\x9f\x93\x84" \;) <(find . -maxdepth 1 -type d -o -type f | sed 's|^./||' | sort) | fzf \
-        --height 100% \
-        --layout=reverse \
-        --preview="[[ -f {2} ]] && (file --mime-type {2} | grep -q '^.*text' && bat --style=header,grid --color=always --line-range :100 {2} || exa -l --color=always {2}) || (echo {2} && find {2} -maxdepth 2 -type d -o -type f | exa -l --color=always)" \
-        --preview-window=up:60%:wrap \
-        --color="fg:#bbccdd,fg+:#ddeeff,bg:#0C0E0F,preview-bg:#0C0E0F,border:#6791C9" \
-        --border=sharp \
-        --with-nth=2..)
-
-    filepath=$(echo "$filepath" | awk '{print $2}')
-
-    if [ -n "$filepath" ]; then
-        if [ -d "$filepath" ]; then
-            c "$filepath"
-        else
-            local ext
-            ext="${filepath##*.}"
-
-            if file --mime-type "$filepath" | grep -q '^.*text'; then
-                nvim "$filepath"
-            else
-                case "$ext" in
-                    mp4)
-                        mpv "$filepath"
-                        ;;
-                    mp3)
-                        mpg123 "$filepath"
-                        ;;
-                    *)
-                        echo "No action defined for the file type: $ext"
-                        ;;
-                esac
-            fi
-        fi
-    fi
-}
-
-
 function conf() {
-    if [ "$1" = "awesome" ]; then
-        c ~/.config/awesome
+    local config_folder="$HOME/.config"
+
+    if [ -z "$1" ]; then
+        cd "$config_folder"
     else
-        echo "Usage: conf <folder-name>"
-    fi
-}
-
-
-
-# 0.0.1
-# # Directory containing the scripts
-# script_dir="/home/l/Desktop/xos/modules/terminal-eyecandies"
-
-# # Check if the directory exists
-# if [ -d "$script_dir" ]; then
-#     # Get a list of all the script files in the directory
-#     scripts=($(find "$script_dir" -maxdepth 1 -type f -executable))
-
-#     # Pick a random script from the list
-#     random_script="${scripts[RANDOM % ${#scripts[@]}]}"
-
-#     # Check if the script file exists before running it
-#     if [ -f "$random_script" ]; then
-#         bash "$random_script"
-#     else
-#         echo "Error: Script file not found: $random_script"
-#     fi
-# else
-#     echo "Error: Directory not found: $script_dir"
-# fi
-
-
-
-
-# # Directory containing the scripts
-# script_dir="/home/l/Desktop/xos/modules/terminal-eyecandies"
-
-# # Check if the directory exists
-# if [ -d "$script_dir" ]; then
-#     # Get a random number between 1 and 100
-#     random_number=$((RANDOM % 100 + 1))
-
-#     # 20% chance to run a script (80% chance to do nothing)
-#     if [ $random_number -le 20 ]; then
-#         # Get a list of all the script files in the directory
-#         scripts=($(find "$script_dir" -maxdepth 1 -type f -executable))
-
-#         # Pick a random script from the list
-#         random_script="${scripts[RANDOM % ${#scripts[@]}]}"
-
-#         # Check if the script file exists before running it
-#         if [ -f "$random_script" ]; then
-#             bash "$random_script"
-#         else
-#             echo "Error: Script file not found: $random_script"
-#         fi
-#     fi
-# else
-#     echo "Error: Directory not found: $script_dir"
-# fi
-
-
-
-
-
-
-function randoms() {
-    # Directory containing the scripts
-    script_dir="/home/l/Desktop/xos/modules/terminal-eyecandies"
-
-    # Check if the directory exists
-    if [ -d "$script_dir" ]; then
-        # Get a random number between 1 and 100
-        random_number=$((RANDOM % 100 + 1))
-
-        # 20% chance to run a script (80% chance to do nothing)
-        if [ $random_number -le 100 ]; then
-            # Get a list of all the script files in the directory
-            scripts=($(find "$script_dir" -maxdepth 1 -type f -executable))
-
-            # Pick a random script from the list
-            random_script="${scripts[RANDOM % ${#scripts[@]}]}"
-
-            # Check if the script file exists before running it
-            if [ -f "$random_script" ]; then
-                bash "$random_script"
-            else
-                echo "Error: Script file not found: $random_script"
-            fi
+        local target_folder="$config_folder/$1"
+        if [ -d "$target_folder" ]; then
+            cd "$target_folder"
+        else
+            echo -e "\e[1;31mError: Directory '$1' does not exist in '$config_folder'.\e[0m"
         fi
-    else
-        echo "Error: Directory not found: $script_dir"
     fi
 }
+
+
 
 
 
@@ -1031,42 +911,12 @@ function z() {
     clear && cd "$dir"
 }
 
-
-
-
-
-
-
-
-
-
-
-
-
-# function clone() {
-#     src_file="$1"
-#     dest_file="$(basename "$2")"
-#     dest_dir="$(dirname "$2")"
-#     if rsync -av --exclude=".git" --exclude=".svn" --exclude=".hg" --exclude=".bzr" "$src_file" "$dest_dir"; then
-#         cd "$dest_dir" && echo "Your files have been cloned! 🚀"
-#     else
-#         echo "Failed to clone files."
-#     fi
-# }
-
-
 function clone() {
     src_file="$1"
     dest_dir="$2"
     cp -r "$src_file" "$dest_dir"
     c "$dest_dir" && echo "Your files have been cloned! 🚀"
 }
-
-
-
-
-
-
 
 # LAZY-TESTING
 function run_sequentially() {
@@ -1097,7 +947,6 @@ function run_sequentially() {
 }
 
 
-#TODO
 function lazytest() {
   # Find all Lua and Python files in the current directory
   files=()
@@ -1107,53 +956,6 @@ function lazytest() {
 
   run_sequentially "${files[@]}"
 }
-
-
-
-
-
-
-
-
-
-
-function compile_and_run_c_cpp() {
-  local files=("$@")
-
-  for file in "${files[@]}"; do
-    echo "Compiling and running $file"
-    local output_file="${file%.*}.out"
-
-    case "${file##*.}" in
-      c)
-        gcc "$file" -o "$output_file" && ./"$output_file"
-        ;;
-      cpp)
-        g++ "$file" -o "$output_file" && ./"$output_file"
-        ;;
-      *)
-        echo "Unsupported file extension for $file"
-        continue
-        ;;
-    esac
-  done
-}
-
-
-function lazyc() {
-  # Find all C and C++ files in the current directory
-  files=()
-  while IFS= read -r -d $'\0' file; do
-    files+=("$file")
-  done < <(find . -maxdepth 1 -type f \( -iname "*.c" -o -iname "*.cpp" \) -print0)
-
-  compile_and_run_c_cpp "${files[@]}"
-}
-
-
-
-
-
 
 
 
@@ -1192,15 +994,9 @@ xgeometry() {
 
 
 
-function v() {
-  nvim -c "set laststatus=0" -c "set nonumber" -c "set showtabline=0" "$@"
-}
 
 
 
-################
-# XSH SHELL 0.8
-################
 function hown() {
     for file in $@
     do
@@ -1216,145 +1012,6 @@ function unvim() {
   rm -rf ~/.local/share/nvim
 }
 
-
-# TEST BEOFRE USING IT
-# TODO
-function sshkeymanager() {
-  local SSH_DIR="$HOME/.ssh"
-  local SSH_KEYS=($(ls $SSH_DIR/id_* 2>/dev/null))
-
-  if [ ${#SSH_KEYS[@]} -eq 0 ]; then
-    echo "No SSH keys found."
-    return 1
-  fi
-
-  local SELECTED_KEY
-  PS3="Select an SSH key: "
-  select SELECTED_KEY in ${SSH_KEYS[@]} "Add new key" "Exit"; do
-    if [ "$SELECTED_KEY" == "Add new key" ]; then
-      echo "Generating new SSH key..."
-      read -p "Enter email address for new key: " EMAIL
-      ssh-keygen -t rsa -b 4096 -C "$EMAIL" -f "$SSH_DIR/id_$(date +%Y-%m-%d_%H-%M-%S)" -N ""
-      echo "New key generated."
-      return 0
-    elif [ "$SELECTED_KEY" == "Exit" ]; then
-      return 0
-    elif [ ! -f "$SELECTED_KEY" ]; then
-      echo "Invalid selection."
-      return 1
-    else
-      local ACTION
-      PS3="Select an action: "
-      select ACTION in "Delete key" "Edit key" "Cancel"; do
-        if [ "$ACTION" == "Delete key" ]; then
-          rm -i "$SELECTED_KEY" "$SELECTED_KEY.pub"
-          echo "SSH key deleted."
-          return 0
-        elif [ "$ACTION" == "Edit key" ]; then
-          echo "Editing SSH key $SELECTED_KEY..."
-          ssh-keygen -p -f "$SELECTED_KEY"
-          echo "SSH key edited."
-          return 0
-        elif [ "$ACTION" == "Cancel" ]; then
-          return 0
-        else
-          echo "Invalid selection."
-          return 1
-        fi
-      done
-    fi
-  done
-}
-
-
-#0.0.0
-# function dd_iso() {
-#   # Use fzf to select an ISO file from the ~/Downloads/iso directory
-#   iso=$(find ~/Downloads/iso -maxdepth 1 -type f -name "*.iso" | fzf --prompt "Select an ISO file: ")
-
-#   # Exit if no ISO file is selected
-#   if [[ -z $iso ]]; then
-#     echo "No ISO file selected."
-#     return
-#   fi
-
-#   # Use lsblk with custom formatting to select a disk to write to
-#   disk=$(lsblk --noheadings --list --output NAME,SIZE | fzf --prompt "Select a disk to write to: " | awk '{print $1}')
-
-#   # Exit if no disk is selected
-#   if [[ -z $disk ]]; then
-#     echo "No disk selected."
-#     return
-#   fi
-
-#   # Print lsblk output with custom formatting
-#   lsblk --fs --output NAME,FSTYPE,LABEL,SIZE,MOUNTPOINT | awk '{ printf "%-20s %-10s %-10s %-10s %-20s\n", $1, $2, $3, $4, $5 }'
-
-#   # Prompt the user for confirmation before proceeding
-#   read -rp "Are you sure you want to write $iso to $disk? (y/N) " confirm
-#   if [[ ! $confirm =~ ^[yY]$ ]]; then
-#     echo "Aborting."
-#     return
-#   fi
-
-#   # Use dd to write the selected ISO file to the selected disk
-#   echo "Writing $iso to $disk..."
-#   sudo dd bs=4M if="$iso" of="/dev/$disk" status=progress conv=fsync oflag=direct
-#   echo "Done!"
-# }
-
-#TODO
-function dd_iso() {
-  # Define a function to show the lsblk output with custom formatting and color
-  function show_lsblk() {
-    lsblk --fs --output NAME,FSTYPE,LABEL,SIZE,MOUNTPOINT | awk '{ printf "\e[1m%-20s %-10s %-10s %-10s %-20s\e[0m\n", $1, $2, $3, $4, $5 }'
-  }
-
-  # Define a function to show the ISO file description
-  function show_iso_description() {
-    if [[ -n $iso ]]; then
-      echo -e "\e[1mISO file information:\e[0m"
-      isoinfo -d -i "$iso" | sed 's/^/  /'
-    fi
-  }
-
-  # Use fzf to select an ISO file from the ~/Downloads/iso directory
-  iso=$(find ~/Downloads/iso -maxdepth 1 -type f -name "*.iso" | fzf --prompt "Select an ISO file: " \
-    --preview-window=right:60% \
-    --preview="echo -e \"\e[1mSelected ISO file:\e[0m\n  {}\"; show_iso_description")
-
-  # Exit if no ISO file is selected
-  if [[ -z $iso ]]; then
-    echo "No ISO file selected."
-    return
-  fi
-
-  # Use lsblk with custom formatting to select a disk to write to
-  disk=$(lsblk --noheadings --list --output NAME,SIZE | fzf --prompt "Select a disk to write to: " \
-    --preview-window=right:60% \
-    --preview="echo -e \"\e[1mSelected disk:\e[0m\n  {}\"; show_lsblk | grep -E \"(^| ){}($| )\"")
-
-  # Exit if no disk is selected
-  if [[ -z $disk ]]; then
-    echo "No disk selected."
-    return
-  fi
-
-  # Print lsblk output with custom formatting and color
-  show_lsblk
-
-  # Prompt the user for confirmation before proceeding
-  read -rp "Are you sure you want to write $iso to $disk? (y/N) " confirm
-  if [[ ! $confirm =~ ^[yY]$ ]]; then
-    echo "Aborting."
-    return
-  fi
-
-  # Use dd to write the selected ISO file to the selected disk
-  echo "Writing $iso to $disk..."
-  sudo dd bs=4M if="$iso" of="/dev/$disk" status=progress conv=fsync oflag=direct
-  echo "Done!"
-}
 
 
 function edit-keys() {
@@ -1451,16 +1108,6 @@ function mvall() {
 
 
 
-
-
-function push() {
-  git add .
-  git commit -m "Changes committed on $(date +"%Y-%m-%d %H:%M:%S")"
-  git push
-}
-
-
-
 function origin() {
   gh repo set-default
 }
@@ -1476,11 +1123,6 @@ next() {
 
 
 
-#TODO
-function rmrepo() {
-  repo_name="$1"
-  gh repo delete "$repo_name" --yes
-}
 
 
 function gen () {
@@ -1557,19 +1199,6 @@ envycontrol_menu() {
     esac
   done
 }
-
-
-
-
-
-
-
-#0.0.0 WORKING
-# function ltree() {
-#   exa -aT --color=always --group-directories-first "$1" | less --prompt="$2" --RAW-CONTROL-CHARS
-# }
-
-
 
 function ltree() {
   local dir="$1"
@@ -1653,7 +1282,6 @@ function nofree() {
 
 
 
-#GOAT
 #FIXME
 function freedom() {
   for package in $(pacman -Qq); do
@@ -1673,21 +1301,6 @@ function stop() {
 }
 
 
-#TODO
-#0.0.0
-# function undo_last_command {
-#   # Check if we're running zsh
-#   if [[ -n "$ZSH_VERSION" ]]; then
-#     # Use fc command to access the command history in zsh.
-#     # The -ln options specify that we want to access the last command in the history list
-#     # (where "n" is the number of the command you want to access, and "-1" means the last command).
-#     eval $(fc -ln -1)
-#   else
-#     # If we're not running zsh, print an error message and exit.
-#     echo "This function only works in zsh."
-#     return 1
-#   fi
-# }
 
 
 
@@ -1749,23 +1362,6 @@ function whilex() {
 
 
 
-#0.0.0
-# function path() {
-#   local dir_list=$(echo $PATH | sed "s/:/'\n'/g")
-#   local color_code=${PATH_COLOR:-"\033[1;35m"} # default to bold purple
-#   printf "${color_code}EnvPath([\n%s\n])\033[0m\n" "$dir_list" | sed "s/^/'/; s/$/',/" | sed "s/\[\([^]]*\)\]/\[\033[1;35m\1\033[0m\]/g"
-# }
-
-
-
-#0.0.2
-# function path() {
-#   local dir_list=$(echo $PATH | sed "s/:/\\n/g")
-#   local color_code=${PATH_COLOR:-"\033[1;35m"} # default to bold purple
-#   printf "${color_code}EnvPath(\n%s\n)\033[0m" "$dir_list" | sed "s|^ |/|; s|^|  '|; s|\$|',|; 1s|^|['|; \$s|,|]|"
-# }
-
-
 function path() {
   local dir_list=$(echo $PATH | sed "s/:/\\n/g")
   printf "EnvPath([\n" && printf "'%s',\n" $dir_list | sed "s|^ |/|; s|^|  |" && printf "])\n"
@@ -1778,7 +1374,6 @@ function path() {
 
 
 
-# GOAT
 color() {
   # Check if color is set in terminal, otherwise get it from xresources
   if [[ -n "$TERM" ]]; then
@@ -1848,36 +1443,6 @@ backup () {
 
 
 
-# BASE KEEP
-# function lsc() {
-#   ls -1 --color=auto | awk '{print length, $0}' | sort -rn | awk '{print $2}' | awk '
-#     BEGIN {
-#       # Define the lookup table for directory icons
-#       icons["rust"] = "\033[38;5;214;1m\033[0m"
-#       icons["python"] = "\033[38;5;108;1m\033[0m"
-#       icons["haskel"] = "\033[38;5;220;1m\033[0m"
-#       icons["cpp"] = "\033[38;5;33;1m\033[0m"
-#     }
-#     {
-#       # Get the icon for the current directory (if any)
-#       icon = icons[$0]
-#       if (!icon) {
-#         icon = "\033[38;5;245;1m\033[0m" # Default icon for other directories
-#       }
-
-#       # Print the output with the icon
-#       printf("%s %s\n", icon, $0)
-#     }' | sed "s/\./🐱/g;s/\//🐾/g" | awk -v term_cols="$(tput cols)" '
-#       {
-#         # Calculate the amount of padding needed to center the text
-#         padding = int((term_cols - length($0)) / 2)
-#         printf "%*s%s\n", padding, "", $0
-#       }'
-# }
-
-
-
-
 function lsc() {
   local -A icons=(
     ["rust"]="\033[38;5;214;1m\033[0m"
@@ -1927,28 +1492,40 @@ function lsc() {
   '
 }
 
-
-
-
-
-
 function compile() {
     if [[ -z "$1" ]]; then
-        echo "Usage: runc <file>"
+        echo "Usage: compile <file>"
         return 1
     fi
 
-    if [[ "${1##*.}" == "c" ]]; then
-        gcc -Wall -Wextra -Wpedantic -std=c99 -O2 -o "${1%.*}" "$1" && "./${1%.*}"
-    elif [[ "${1##*.}" == "cpp" ]]; then
-        g++ -Wall -Wextra -Wpedantic -std=c++17 -O2 -o "${1%.*}" "$1" && "./${1%.*}"
-    else
-        echo "Error: Unsupported file type"
-        return 1
-    fi
+    case "${1##*.}" in
+        c)
+            gcc -Wall -Wextra -Wpedantic -std=c99 -O2 -o "${1%.*}" "$1" && "./${1%.*}"
+            ;;
+        cpp)
+            g++ -Wall -Wextra -Wpedantic -std=c++17 -O2 -o "${1%.*}" "$1" && "./${1%.*}"
+            ;;
+        py)
+            python "$1"
+            ;;
+        lua)
+            lua "$1"
+            ;;
+        hs)
+            ghc -O2 -o "${1%.*}" "$1" && "./${1%.*}"
+            ;;
+        cs)
+            mcs "$1" && mono "${1%.*}.exe"
+            ;;
+        lisp)
+            sbcl --script "$1"
+            ;;
+        ,*)
+            echo "Error: Unsupported file type"
+            return 1
+            ;;
+    esac
 }
-
-
 
 
 function iso-init() {
@@ -2256,40 +1833,11 @@ function pulls(){
 }
 
 
-
-
-# Function to set up Git configuration using `gh`
-setup_git() {
-  echo "Git Setup"
-  echo "---------"
-
-  # Prompt for GitHub username
-  read -r "username?Enter your GitHub username: "
-
-  # Prompt for GitHub email address
-  read -r "email?Enter your GitHub email address: "
-
-  # Set global Git configurations
-  git config --global user.name "$username"
-  git config --global user.email "$email"
-
-  # Generate and display an SSH key
-  generate_ssh_key
-
-  # Prompt for GitHub personal access token with necessary privileges
-  read -r -s "token?Enter your GitHub personal access token with necessary privileges: "
-
-  # Authenticate `gh` CLI with the personal access token
-  gh auth login --with-token <<< "$token"
-
-  # Configure Git to use the token for authentication
-  gh config set git_protocol ssh
-  gh config set prompt auth
-
-  echo ""
-  echo "Git setup completed."
+function clones(){
+  c ~/Desktop/clones
 }
 
 
 
-z &&
+
+# z &&

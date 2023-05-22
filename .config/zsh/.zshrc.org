@@ -1,5 +1,6 @@
 #+title: .zshrc
 * SHELL
+
 #+begin_src shell
 
 #chpwd dependencie
@@ -12,9 +13,6 @@ function display_image() {
     kitty +kitten icat "$image_path"
   fi
 }
-
-
-
 
 function chpwd() {
   local path_parts=("${(@s:/:)PWD}") # Split the current path into an array
@@ -36,22 +34,82 @@ Call the chpwd function once to display the image if you're already in the ~/Des
 chpwd
 
 #+end_src
-* xos-package-manager
- it will be a superclass of pacman
- no functionality from pacman will be missed
- pacman on steroids
 
+* GIT
+** clone
+This will check a repo on your gh account
+USAGE : clone dotfiles
 #+begin_src shell
 
+#FIXME
+function clone() {
+    src_file="$1"
+    dest_dir="$2"
+    cp -r "$src_file" "$dest_dir"
+    c "$dest_dir" && echo "Your files have been cloned! 🚀"
+}
 
-function pullpkg() {
-  HELPER=${HELPER:-yay} # Set default AUR helper to yay if HELPER variable not defined
-  for pkgname in $*; do
-    git clone "https://aur.archlinux.org/$pkgname.git"
-    cd "$pkgname"
-    "$HELPER" --downloadonly --noredownload --noconfirm
-    cd ..
-  done
+#+end_src
+** fork
+#+begin_src shell
+
+function fork() {
+  repo_url=$1
+
+  # Extract the repository name from the URL
+  repo_name=${repo_url##*/}
+
+  # Remove the ".git" extension if present
+  repo_name=${repo_name%.git}
+
+  # Fork the repository using the gh CLI
+  gh repo fork $repo_url
+
+  echo "Forked $repo_name"
+}
+
+#+end_src
+** origin
+select the origin
+#+begin_src shell
+
+function origin() {
+  gh repo set-default
+}
+#+end_src
+** pulls
+#+begin_src shell
+
+function pulls(){
+  c ~/Desktop/pulls
+}
+
+#+end_src
+
+** clones
+#+begin_src shell
+
+function clones(){
+  c ~/Desktop/clones
+}
+
+#+end_src
+
+* QUICK-ACCESS
+** uchrome
+cd into userchrome folder
+#+begin_src shell
+
+uchrome() {
+  c ~/.mozilla/firefox/exnoy41o.default-release/chrome
+}
+
+#+end_src
+** dapp
+#+begin_src shell
+
+dapp() {
+    c ~/.local/share/applications
 }
 
 #+end_src
@@ -78,7 +136,6 @@ declare -A image_map=(
   ["nix"]="$HOME/Desktop/xos/xicons/nix256x256.png"
   ["go"]="$HOME/Desktop/xos/xicons/go.png"
   ["debian"]="$HOME/Desktop/xos/xicons/debian.png"
-  ["nico"]="$HOME/Desktop/xos/xicons/nico.png"
   ["head"]="$HOME/Desktop/xos/xicons/head.png"
   ["docker"]="$HOME/Desktop/xos/xicons/docker.png"
   ["md"]="$HOME/Desktop/xos/xicons/md.png"
@@ -88,7 +145,6 @@ declare -A image_map=(
   ["ubuntu"]="$HOME/Desktop/xos/xicons/ubuntu.png"
   ["awesome"]="$HOME/Desktop/xos/xicons/awesome.png"
   ["xos"]="$HOME/Desktop/xos/xicons/xos.png"
-  ["cuttlefish"]="$HOME/Desktop/xos/xicons/cuttlefish.png"
  # ["ai"]="$HOME/Desktop/xos/xicons/head.png"
   ["deepin"]="$HOME/Desktop/xos/xicons/deepin.png"
   ["welcome"]="$HOME/Desktop/xos/xicons/weloce.png"
@@ -103,25 +159,114 @@ declare -A image_map=(
 
 
 * DEV-TOOLS
-** git
+** bin
+*** hex
 #+begin_src shell
 
-function push() {
-  git add .
-  git commit -m "Changes committed on $(date +"%Y-%m-%d %H:%M:%S")"
-  git push
+function hex() {
+    # Get a list of actual binary files in the /usr/bin directory
+    local binaries=( $(find /usr/bin -type f -executable -not -name "*.so*" -exec file -i {} \; | grep "charset=binary" | cut -d ":" -f 1) )
+
+    # Prompt the user to select a binary file
+    PS3="Select a binary to disassemble: "
+    select binfile in "${binaries[@]}"; do
+        if [[ -n "$binfile" ]]; then
+            # Prompt the user to enter the objdump command
+            read -p "Enter objdump command to disassemble $binfile: " objcmd
+
+            # Call the user-specified objdump command on the selected binary file
+            $objcmd "$binfile" | less
+            break
+        else
+            echo "Invalid option. Please select a valid binary file."
+        fi
+    done
 }
 
+#+end_src
+** web-apps
+*** package-web-app
+#+begin_src shell
 
-function origin() {
-  gh repo set-default
+function package-web-app() {
+  if [ "$#" -ne 1 ]; then
+    echo "Usage: xapp <url>"
+    return 1
+  fi
+
+  local url="$1"
+  local app_name="$(echo ${url} | sed -E 's/.*\:\/\/([^\/]+)(.*)/\1/')"
+
+  nativefier --name "${app_name}" "${url}" --single-instance && c
+  echo "Desktop app for ${url} has been created in the current directory."
 }
 
-#TODO
-function rmrepo() {
-  repo_name="$1"
-  gh repo delete "$repo_name" --yes
+#+end_src
+** lazytest
+Usefull when you have a folder full of scripts to test.
+#+begin_src shell
+
+function lazytest() {
+  # Find all Lua and Python files in the current directory
+  files=()
+  while IFS= read -r -d $'\0' file; do
+    files+=("$file")
+  done < <(find . -maxdepth 1 -type f \( -iname "*.lua" -o -iname "*.py" \) -print0)
+
+  run_sequentially "${files[@]}"
 }
+
+#+end_src
+*** run-sequentially
+#+begin_src shell
+
+function run_sequentially() {
+  local files=("$@")
+
+  for file in "${files[@]}"; do
+    echo "Running $file"
+
+    case "${file##*.}" in
+      lua)
+        interpreter="lua"
+        ;;
+      py)
+        interpreter="python3"
+        ;;
+      sh)
+        interpreter="bash"
+        ;;
+      *)
+        echo "Unsupported file extension for $file"
+        continue
+        ;;
+    esac
+
+    $interpreter "$file" & # Run the script in the background
+    wait $!               # Wait for the background process to finish
+  done
+}
+
+#+end_src
+** meson
+*** mesosbu
+#+begin_src shell
+
+# TODO
+#dont wipe the first time
+function mesosbu() {
+  sudo meson setup --wipe build && sudo meson setup --buildtype=release . build && sudo ninja -C build/ && sudo ninja -C build install
+}
+
+#+end_src
+** next
+#+begin_src shell
+
+next() {
+  npx create-next-app "$1"
+}
+# TODO NEXT-BUILD
+
 #+end_src
 ** COMPILE
 *** TODO gtk+
@@ -151,12 +296,6 @@ function compile() {
 
 #+end_src
 
-
-
-
-
-
-
 ** steal websites
 #+begin_src shell
 
@@ -165,8 +304,113 @@ pull-web-site() {
 }
 
 #+end_src
-** EXPLAIN
-"explain" any shell function, alias, variables..
+
+
+
+
+
+
+* BASICS
+** movement
+c will replace cd in most functions
+#+begin_src shell
+
+function c() {
+    local dir="$1"
+    if [ ! -d "$dir" ]; then
+        mkdir -p "$dir"
+    fi
+    clear && cd "$dir" && ls &&  ls -l -a | wc -l     # && bash ~/Desktop/xos/modules/ls-candy/cb-small
+}
+
+#+end_src
+*** conf
+#+begin_src shell
+
+function conf() {
+    local config_folder="$HOME/.config"
+
+    if [ -z "$1" ]; then
+        cd "$config_folder"
+    else
+        local target_folder="$config_folder/$1"
+        if [ -d "$target_folder" ]; then
+            cd "$target_folder"
+        else
+            echo -e "\e[1;31mError: Directory '$1' does not exist in '$config_folder'.\e[0m"
+        fi
+    fi
+}
+
+#+end_src
+** z
+#+begin_src shell
+
+function z() {
+    local dir="$1"
+    if [ ! -d "$dir" ]; then
+        mkdir -p "$dir"
+    fi
+    clear && cd "$dir"
+}
+
+#+end_src
+** user
+*** hown
+#+begin_src shell
+
+function hown() {
+    for file in $@
+    do
+        cp $file ~/.local/bin/
+    done
+}
+
+#+end_src
+** un-section
+*** unvim
+delete all nvim config
+#+begin_src shell
+
+function unvim() {
+  rm -rf ~/.config/nvim
+  rm -rf ~/.local/share/nvim
+}
+
+#+end_src
+** lifehacks
+*** gen
+gen 10 xos.c
+#+begin_src shell
+
+function gen () {
+  local count=1
+  local prefix=${2%.*}
+
+  while [[ $count -le $1 ]]; do
+    touch "${prefix}${count}.${2#*.}"
+    count=$(( count + 1 ))
+  done
+}
+
+#+end_src
+** ltree
+ltree ~/.config/zsh
+#+begin_src shell
+
+function ltree() {
+  local dir="$1"
+  local prompt="${2:-}"
+  if [ -z "$prompt" ]; then
+    lt "$dir" | less --prompt="e[1me[5mTHIS IS A BIG BOLD MESSAGEe[0m"
+  else
+    lt "$dir" | less --prompt="$prompt"
+  fi
+}
+
+#+end_src
+** explain
+"explain" any shell function, alias, variable..
 
 #+begin_src shell
 
@@ -210,8 +454,230 @@ function explain() {
 }
 
 #+end_src
-* BASICS
-** render
+** logic
+*** forx
+#+begin_src shell
+
+function forx() {
+  local n=$1
+  shift
+  for i in $(seq 1 $n); do
+    eval "$@"
+  done
+}
+
+#+end_src
+*** whilex
+#+begin_src shell
+
+function whilex() {
+  i=$1
+  max=$2
+  cmd=$3
+
+  while [ $i -le $max ]; do
+    eval "$cmd"
+    i=$((i+1))
+  done
+}
+
+#+end_src
+** formatting
+*** color
+SYNTAX : <command> | color <color>
+#+begin_src shell
+
+color() {
+  # Check if color is set in terminal, otherwise get it from xresources
+  if [[ -n "$TERM" ]]; then
+    case "$1" in
+      black)   color="\033[0;30m" ;;
+      red)     color="\033[0;31m" ;;
+      green)   color="\033[0;32m" ;;
+      yellow)  color="\033[0;33m" ;;
+      blue)    color="\033[0;34m" ;;
+      purple)  color="\033[0;35m" ;;
+      cyan)    color="\033[0;36m" ;;
+      white)   color="\033[0;37m" ;;
+      *)       color="\033[0m"     ;;
+    esac
+  elif [[ -n "$XTERM_VERSION" ]]; then
+    case "$1" in
+      black)   color="\033[0;30m" ;;
+      red)     color="\033[0;31m" ;;
+      green)   color="\033[0;32m" ;;
+      yellow)  color="\033[0;33m" ;;
+      blue)    color="\033[0;34m" ;;
+      purple)  color="\033[0;35m" ;;
+      cyan)    color="\033[0;36m" ;;
+      white)   color="\033[0;37m" ;;
+      *)       color="\033[0m"     ;;
+    esac
+  else
+    color="\033[0m"
+  fi
+
+  # Read input from pipe and colorize it
+  while read -r line; do
+    echo -e "${color}${line}\033[0m"
+  done
+}
+#+end_src
+** backup
+#+begin_src shell
+
+backup () {
+    if [ -z "$1" ]; then
+        echo -e "\033[0;31mError: Please specify a file or directory to backup\033[0m"
+        return 1
+    fi
+
+    local backup_dir="$(pwd)/${1}-backup-$(date +%Y-%m-%d-%H-%M-%S)"
+    cp -r "$1" "$backup_dir" && \
+    echo -e "\033[0;32m✔ Success: Created backup in $backup_dir\033[0m" && \
+    bat "$backup_dir"
+}
+
+#+end_src
+** ls
+*** lsc
+#+begin_src shell
+
+function lsc() {
+  local -A icons=(
+    ["rust"]="\033[38;5;214;1m\033[0m"
+    ["python"]="\033[38;5;108;1m\033[0m"
+    ["haskel"]="\033[38;5;220;1m\033[0m"
+    ["cpp"]="\033[38;5;33;1m\033[0m"
+  )
+
+  ls -1 --color=auto "$@" | awk '{print length, $0}' | sort -rn | awk -v icons="${icons[*]}" '
+    BEGIN {
+      split(icons, icon_arr, " ")
+      for (i=1; i<=length(icon_arr); i+=2) {
+        icon[icon_arr[i]] = icon_arr[i+1]
+      }
+      default_icon = "\033[38;5;245;1m\033[0m" # Default icon for other directories
+      max_len = 0 # initialize variable for longest file name length
+    }
+    {
+      # Get the icon for the current directory (if any)
+      if ($0 in icon) {
+        current_icon = icon[$0]
+      } else {
+        current_icon = default_icon
+      }
+
+      # Track the length of the longest file or directory name
+      if (length($0) > max_len) {
+        max_len = length($0)
+      }
+
+      # Print the output with the icon
+      printf("%s %s\n", current_icon, $0)
+    }
+    END {
+      # Calculate the amount of padding needed to center the text
+      padding = int((term_cols - max_len) / 2)
+      OFS = ""
+      # Print the output with the icon, aligned to the center
+      for (i=1; i<=NR; i++) {
+        printf("%s %*s\n", $i, padding - length($i), "")
+      }
+    }
+  ' | sed "s/\./🐱/g;s/\//🐾/g" | awk -v term_cols="$(tput cols)" '
+    {
+      print $0
+    }
+  '
+}
+#+end_src
+*** ccx
+clickable ls
+#+begin_src shell
+
+#HACK cd into the clicked dir
+function ccx() {
+    local dir="$1"
+    local full_dir
+    if [ ! -d "$dir" ]; then
+        mkdir -p "$dir"
+    fi
+    full_dir=$(realpath "$dir")
+    clear && cd "$full_dir" && ls --color=always -1 | awk -v pwd="$full_dir" '{ printf "\033]8;;file://localhost" pwd "/" $0 "\007" $0 "\033]8;;\007\n" }'
+}
+
+#+end_src
+** compile
+#+begin_src shell
+
+function compile() {
+    if [[ -z "$1" ]]; then
+        echo "Usage: compile <file>"
+        return 1
+    fi
+
+    case "${1##*.}" in
+        c)
+            gcc -Wall -Wextra -Wpedantic -std=c99 -O2 -o "${1%.*}" "$1" && "./${1%.*}"
+            ;;
+        cpp)
+            g++ -Wall -Wextra -Wpedantic -std=c++17 -O2 -o "${1%.*}" "$1" && "./${1%.*}"
+            ;;
+        py)
+            python "$1"
+            ;;
+        lua)
+            lua "$1"
+            ;;
+        hs)
+            ghc -O2 -o "${1%.*}" "$1" && "./${1%.*}"
+            ;;
+        cs)
+            mcs "$1" && mono "${1%.*}.exe"
+            ;;
+        lisp)
+            sbcl --script "$1"
+            ;;
+        ,*)
+            echo "Error: Unsupported file type"
+            return 1
+            ;;
+    esac
+}
+
+
+#+end_src
+** terminal-image-manipulation
+*** img-resize
+#+begin_src shell
+
+function img-resize() {
+    if [ $# -ne 3 ]; then
+        echo "Usage: xresize <input-file> <width> <height>"
+        return 1
+    fi
+
+    local input_file="$1"
+    local width="$2"
+    local height="$3"
+    local file_extension="${input_file##*.}"
+    local output_file="${input_file%.*}${width}x${height}.${file_extension}"
+    local lowercase_file_extension="$(echo "$file_extension" | tr '[:upper:]' '[:lower:]')"
+
+    if [[ "${lowercase_file_extension}" =~ ^(jpg|jpeg|png)$ ]]; then
+        convert "${input_file}" -resize "${width}x${height}" "${output_file}"
+        echo "Resized ${input_file} to ${output_file}"
+    else
+        echo "Invalid file extension. Supported formats: jpg, jpeg, png"
+        return 1
+    fi
+}
+
+#+end_src
+*** render
+render an image in the terminal
+WORKS ONLY WITH KITTY!
 #+begin_src shell
 
 function render() {
@@ -239,6 +705,69 @@ function render() {
 }
 
 #+end_src
+** admin
+*** rmdir
+#+begin_src shell
+
+rmdir() {
+  if [ -d "$1" ]; then
+    rm -rf "$1"
+  else
+    echo "Error: '$1' is not a directory"
+  fi
+}
+
+#+end_src
+*** mvall
+#+begin_src shell
+
+function mvall() {
+  # Get the destination path from the first argument
+  dest_path="$1"
+
+  # Create the destination directory if it doesn't exist
+  mkdir -p "$dest_path"
+
+  # Move all files and directories in the current directory to the destination directory, excluding .git
+  rsync -av --exclude=".git" --remove-source-files . "$dest_path"
+}
+
+#+end_src
+*** cpall
+#+begin_src shell
+
+function cpall() {
+  # Get the destination path from the first argument
+  dest_path="$1"
+
+  # Create the destination directory if it doesn't exist
+  mkdir -p "$dest_path"
+
+  # Copy all files and directories in the current directory to the destination directory, excluding .git
+  rsync -av --exclude=".git" . "$dest_path"
+}
+
+#+end_src
+*** rmall
+#+begin_src shell
+
+function rmall () {
+  current_dir=$(pwd)
+  case "$1" in
+    -f)  # remove all files
+      noglob find "$current_dir" -mindepth 1 -maxdepth 1 -type f ! -name ".gitignore" -exec rm -f {} +
+      ;;
+    -d)  # remove all directories
+      noglob find "$current_dir" -mindepth 1 -maxdepth 1 -type d ! -name ".git" -exec rm -rf {} +
+      ;;
+    *)  # remove all files and directories
+      noglob find "$current_dir" -mindepth 1 -maxdepth 1 ! -name ".git" -exec rm -rf {} +
+      ;;
+  esac
+}
+
+#+end_src
+* enviroment
 ** path
 #+begin_src shell
 
@@ -248,6 +777,13 @@ function path() {
 }
 
 #+end_src
+** variables
+#+begin_src shell
+
+here=$PWD
+
+#+end_src
+
 * SSH
 ** delete all keys
 #+begin_src shell
@@ -319,12 +855,31 @@ generate_ssh_key_interactive() {
 #+end_src
 
 
-
 * ARCHISO-UTILS
 ** iso-init
 #+begin_src shell
 
+function iso-init() {
+  # Check if archiso package is installed
+  if ! command -v mkarchiso &>/dev/null; then
+    # Archiso package not found, prompt to install it
+    read -p "The 'archiso' package is required but not installed. Do you want to install it? (y/n): " choice
+    if [[ $choice =~ ^[Yy]$ ]]; then
+      # Install archiso package using sudo pacman
+      sudo pacman -S archiso
+    else
+      echo "Aborted. 'archiso' package not installed."
+      return 1
+    fi
+  fi
 
+  # Set Dracula colorscheme
+  export LSCOLORS="Gxfxcxdxbxegedabagacad"
+  export LS_COLORS="$LS_COLORS:ow=1;36:"
+
+  # Copy archiso configs
+  cp -r /usr/share/archiso/configs/releng/ "$here"
+}
 #+end_src
 ** iso-build
 #+begin_src shell
@@ -358,8 +913,217 @@ eval "$(starship init zsh)"
 # eval "$(oh-my-posh init zsh)"
 
 #+end_src
+* DESKTOP
+** refresh rate
+*** xrate144
+#+begin_src shell
+
+function xrate144() {
+  connected_display=$(xrandr | grep ' connected' | awk '{print $1}')
+  xrandr --output "$connected_display" --mode 1920x1080 --rate 144
+}
+
+#+end_src
+*** xrate60
+#+begin_src shell
+
+function xrate60() {
+  local display=$(xrandr | grep ' connected' | awk '{print $1}')
+  xrandr --output "$display" --mode 1920x1080 --rate 60
+}
+#+end_src
+
+* xos-package-manager
+ it will be a superclass of pacman
+ no functionality from pacman will be missed
+ pacman on steroids
+*** pullpkg
+#+begin_src shell
+
+function pullpkg() {
+  HELPER=${HELPER:-yay} # Set default AUR helper to yay if HELPER variable not defined
+  for pkgname in $*; do
+    git clone "https://aur.archlinux.org/$pkgname.git"
+    cd "$pkgname"
+    "$HELPER" --downloadonly --noredownload --noconfirm
+    cd ..
+  done
+}
+
+#+end_src
+*** pac-analizer
+#+begin_src shell
+
+function pac-analizer() {
+	echo -n "All Packages: "
+	pacman -Q | wc -l
+	echo -n "  Packages: "
+	pacman -Qe | wc -l
+	echo -n "    Official Packages: "
+	pacman -Qen | wc -l
+	echo -n "    AUR Packages: "
+	pacman -Qem | wc -l
+	echo -n "  Dependent Packages: "
+	pacman -Qd | wc -l
+	echo -n "    Official Dependent Packages: "
+	pacman -Qdn | wc -l
+	echo -n "    AUR Dependent Packages: "
+	pacman -Qdm | wc -l
+}
+
+#+end_src
+
+* my-useless-creations
+** freedom
+it doesnt actually work
+#+begin_src shell
+
+#FIXME
+function freedom() {
+  for package in $(pacman -Qq); do
+    license=$(pacman -Qi $package | awk '/License/ { print $3 }')
+    if [[ $license =~ "custom:..(noncommercial|nolicense|permissive)" || $license =~ "AGPL" || $license =~ "Apache" || $license =~ "Artistic" || $license =~ "BSD" || $license =~ "CC-BY" || $license =~ "CC-BY-NC" || $license =~ "CC-BY-ND" || $license =~ "CC-BY-SA" || $license =~ "CC-BY-NC-SA" || $license =~ "CDDL" || $license =~ "EPL" || $license =~ "GPL" || $license =~ "LGPL" || $license =~ "MIT" || $license =~ "MPL" || $license =~ "OpenSSL" || $license =~ "Python" || $license =~ "W3C" || $license =~ "Zlib" ]]; then
+      echo -e "${package}\t\e[32mFREE\e[0m"
+    else
+      echo -e "${package}\t\e[31mPROPRIETARY\e[0m"
+    fi
+  done
+}
+
+#+end_src
+*** allfree
+even more useless
+#+begin_src shell
+
+function allfree() {
+  for package in $(pacman -Qq); do
+    is_free=$(pacman -Qi $package | grep "License" | grep -q "custom:..free")
+    if [[ $is_free -eq 0 ]]; then
+      echo -e "${package}\t\e[32mFREE\e[0m"
+    else
+      echo -e "${package}\t\e[31mPROPRIETARY\e[0m"
+    fi
+  done
+}
+
+#+end_src
+*** nofree
+even more useless
+#+begin_src shell
+
+function nofree() {
+  for package in $(pacman -Qq); do
+    license=$(pacman -Qi $package | awk '/License/ { print $3 }')
+    if [[ $license =~ "custom:..free" ]]; then
+      echo -e "${package}\t\e[32mFREE\e[0m"
+    else
+      echo -e "${package}\t\e[31mPROPRIETARY\e[0m"
+    fi
+  done
+}
+
+#+end_src
+** envycontrol menu
+use at your own risk!
+#+begin_src shell
+
+#HACK
+envycontrol_menu() {
+  local choice
+  echo "Select an option:"
+  select choice in \
+    "Switch to Integrated graphics mode" \
+    "Switch to Hybrid graphics mode" \
+    "Switch to Nvidia graphics mode" \
+    "Enable ForceCompositionPipeline on Nvidia mode" \
+    "Enable Coolbits on Nvidia mode" \
+    "Setup PCI-Express Runtime D3 (RTD3) Power Management on Hybrid mode" \
+    "Restore default Xsetup file" \
+    "Revert changes made by EnvyControl" \
+    "Quit"
+  do
+    case $choice in
+      "Switch to Integrated graphics mode")
+        sudo envycontrol -s integrated
+        break
+        ;;
+      "Switch to Hybrid graphics mode")
+        sudo envycontrol -s hybrid
+        break
+        ;;
+      "Switch to Nvidia graphics mode")
+        read -p "Enter your Display Manager (gdm, gdm3, sddm, lightdm): " dm
+        sudo envycontrol --dm $dm -s nvidia
+        break
+        ;;
+      "Enable ForceCompositionPipeline on Nvidia mode")
+        sudo envycontrol --force-comp -s nvidia
+        break
+        ;;
+      "Enable Coolbits on Nvidia mode")
+        read -p "Enter Coolbits value (default: 28): " coolbits
+        sudo envycontrol --coolbits ${coolbits:-28} -s nvidia
+        break
+        ;;
+      "Setup PCI-Express Runtime D3 (RTD3) Power Management on Hybrid mode")
+        read -p "Enter RTD3 value (0-3, default: 2): " rtd3
+        sudo envycontrol --rtd3 ${rtd3:-2} -s hybrid
+        break
+        ;;
+      "Restore default Xsetup file")
+        sudo envycontrol --reset-sddm
+        break
+        ;;
+      "Revert changes made by EnvyControl")
+        sudo envycontrol --reset
+        break
+        ;;
+      "Quit")
+        break
+        ;;
+      *)
+        echo "Invalid option $REPLY"
+        ;;
+    esac
+  done
+}
+
+#+end_src
+* XORG-TOOL-BOX
+** xgeometry
+#+begin_src shell
+
+xgeometry() {
+  xwininfo_output=$(xwininfo -frame)
+  x=$(echo "$xwininfo_output" | awk '/Absolute upper-left X:/ { print $4 }')
+  y=$(echo "$xwininfo_output" | awk '/Absolute upper-left Y:/ { print $4 }')
+  width=$(echo "$xwininfo_output" | awk '/Width:/ { print $2 }')
+  height=$(echo "$xwininfo_output" | awk '/Height:/ { print $2 }')
+
+  echo "X: $x"
+  echo "Y: $y"
+  echo "Width: $width"
+  echo "Height: $height"
+}
+
+#+end_src
+* HACK
+** edit keys
+#+begin_src shell
+
+function edit-keys() {
+  nvim ~/.config/sxhkd/sxhkdrc
+}
+
+#+end_src
 * TODO
 #+begin_src shell
+
+
+# FIXME
+function xshellrp() {
+  xshellrp --config ~/.config/linux-discord-rich-presencerc &&
+}
 
 #TODO
 lower() {
@@ -372,5 +1136,85 @@ reverse_array() {
     shopt -s extdebug
     f()(printf '%s\n' "${BASH_ARGV[@]}"); f "$@"
     shopt -u extdebug
+}
+
+
+#TODO
+#0.0.0
+# function undo_last_command {
+#   # Check if we're running zsh
+#   if [[ -n "$ZSH_VERSION" ]]; then
+#     # Use fc command to access the command history in zsh.
+#     # The -ln options specify that we want to access the last command in the history list
+#     # (where "n" is the number of the command you want to access, and "-1" means the last command).
+#     eval $(fc -ln -1)
+#   else
+#     # If we're not running zsh, print an error message and exit.
+#     echo "This function only works in zsh."
+#     return 1
+#   fi
+# }
+
+
+
+
+#TODO
+function rmrepo() {
+  repo_name="$1"
+  gh repo delete "$repo_name" --yes
+}
+
+
+#TODO
+function dd_iso() {
+  # Define a function to show the lsblk output with custom formatting and color
+  function show_lsblk() {
+    lsblk --fs --output NAME,FSTYPE,LABEL,SIZE,MOUNTPOINT | awk '{ printf "\e[1m%-20s %-10s %-10s %-10s %-20s\e[0m\n", $1, $2, $3, $4, $5 }'
+  }
+
+  # Define a function to show the ISO file description
+  function show_iso_description() {
+    if [[ -n $iso ]]; then
+      echo -e "\e[1mISO file information:\e[0m"
+      isoinfo -d -i "$iso" | sed 's/^/  /'
+    fi
+  }
+
+  # Use fzf to select an ISO file from the ~/Downloads/iso directory
+  iso=$(find ~/Downloads/iso -maxdepth 1 -type f -name "*.iso" | fzf --prompt "Select an ISO file: " \
+    --preview-window=right:60% \
+    --preview="echo -e \"\e[1mSelected ISO file:\e[0m\n  {}\"; show_iso_description")
+
+  # Exit if no ISO file is selected
+  if [[ -z $iso ]]; then
+    echo "No ISO file selected."
+    return
+  fi
+
+  # Use lsblk with custom formatting to select a disk to write to
+  disk=$(lsblk --noheadings --list --output NAME,SIZE | fzf --prompt "Select a disk to write to: " \
+    --preview-window=right:60% \
+    --preview="echo -e \"\e[1mSelected disk:\e[0m\n  {}\"; show_lsblk | grep -E \"(^| ){}($| )\"")
+
+  # Exit if no disk is selected
+  if [[ -z $disk ]]; then
+    echo "No disk selected."
+    return
+  fi
+
+  # Print lsblk output with custom formatting and color
+  show_lsblk
+
+  # Prompt the user for confirmation before proceeding
+  read -rp "Are you sure you want to write $iso to $disk? (y/N) " confirm
+  if [[ ! $confirm =~ ^[yY]$ ]]; then
+    echo "Aborting."
+    return
+  fi
+
+  # Use dd to write the selected ISO file to the selected disk
+  echo "Writing $iso to $disk..."
+  sudo dd bs=4M if="$iso" of="/dev/$disk" status=progress conv=fsync oflag=direct
+  echo "Done!"
 }
 #+end_src
