@@ -1,5 +1,4 @@
 
-# PATH section
 export PATH="/home/l/.config/emacs/bin:$PATH"
 
 
@@ -186,24 +185,6 @@ export LESS_TERMCAP_mb=$(tput bold; tput setaf 39)
 export LESS_TERMCAP_md=$(tput bold; tput setaf 45)
 export LESS_TERMCAP_me=$(tput sgr0)
 
-# powerline-daemon -q
-
-
-
-
-# zshrc or bashrc
-#lf () {
-#	LF_TEMPDIR="$(mktemp -d -t lf-tempdir-XXXXXX)"
-#	LF_TEMPDIR="$LF_TEMPDIR" lf-run -last-dir-path="$LF_TEMPDIR/lastdir" "$@"
-#	if [ "$(cat "$LF_TEMPDIR/cdtolastdir" 2>/dev/null)" = "1" ]; then
-#		cd "$(cat "$LF_TEMPDIR/lastdir")"
-#	fi
-#	rm -r "$LF_TEMPDIR"
-#	unset LF_TEMPDIR
-#}
-
-
-
 
 function mdir () {
   command mkdir -p "$@" && c "${@: -1}" && c
@@ -248,84 +229,14 @@ declare -A image_map=(
 
 
 
-function xshare() {
-    syncthing
-}
-
-
-function move() {
-  mv "$1" "$2"
-  if [ -d "$2" ]; then
-    c "$2"
-  else
-    c "$(dirname "$2")"
-  fi
-}
-
-
-
 function xup() {
   chmod +x "$1" && c
-}
-
-
-
-
-
-
-function xwal() {
-  c ~/xos/xwal
-}
-
-
-function nixx() {
-  c ~/Desktop/nix
 }
 
 
 function sapo() {
   c ~/Desktop/scuola/sapo
 }
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-# CARGO AND RUST <3
 
 
 function xcargo init() {
@@ -543,14 +454,6 @@ function untar() {
 
 
 
-
-
-
-
-
-
-# xos-git-box
-
 ginit() {
   # Check if `gh` and `git` commands are installed
   command -v gh >/dev/null 2>&1 || { echo >&2 "The 'gh' command is required. Please install it before running this function."; return 1; }
@@ -634,52 +537,6 @@ function gclone() {
 }
 
 
-
-
-# function to clone directly to you github suing ssh FIXME
-# clone() {
-#   if [[ $1 == "wal" && $(git config --get remote.origin.url) == "git@github.com:laluxx/wal.git" ]]; then
-#     git clone git@github.com:laluxx/wal.git
-#   else
-#     echo "Invalid input or repository not found"
-#   fi
-# }
-
-# # function to git clone only one spcified folder
-# function one-clone {
-#     repo_url=$(echo "$1" | cut -d' ' -f1)
-#     folder_path=$(echo "$1" | cut -d' ' -f2)
-#     repo_name=$(basename "${repo_url}" .git)
-#     git clone --depth=1 "${repo_url}" "${repo_name}" && cd "${repo_name}" && git sparse-checkout init --cone && git sparse-checkout set "${folder_path}"
-# }
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-# GIT END
-
-
-
-
 # this function canonnly be executed once
 sbus_executed=false
 
@@ -696,37 +553,6 @@ function sbus () {
 }
 
 
-
-#IDEAS TODO
-    # Voice Recognition: The shell function can be programmed to recognize voice commands and execute them. This could include opening specific applications, running scripts, or performing other tasks.
-
-    # AI-powered suggestions: The shell function could use artificial intelligence algorithms to suggest commands based on past usage or other contextual information. This could help users save time and make the shell function more user-friendly.
-
-    # Predictive typing: Similar to the auto-complete function found in many modern text editors, a predictive typing function in the shell could suggest commands based on the user's input.
-
-    # Multi-tasking: The shell function could be designed to perform multiple tasks simultaneously, allowing users to execute complex commands or workflows with ease.
-
-# 5   Smart error handling: The shell function could be programmed to provide more informative error messages when a command fails. This could include suggestions for how to correct the error or alternative approaches to achieve the same result.
-
-    # Cloud-based functionality: The shell function could be designed to interact with cloud-based services such as Amazon Web Services or Microsoft Azure, allowing users to manage their cloud resources from the command line.
-
-    # Integration with virtual assistants: The shell function could be integrated with popular virtual assistants such as Amazon Alexa or Google Assistant, allowing users to perform command line tasks using voice commands.
-
-    # Security features: The shell function could include built-in security features such as encryption or multi-factor authentication, helping to protect sensitive data and prevent unauthorized access.
-
-    # Augmented reality: Using augmented reality technology, the shell function could allow users to interact with their environment in new and innovative ways, such as by overlaying virtual screens or objects onto the physical world.
-
-    # Blockchain integration: The shell function could be designed to interact with blockchain technology, allowing users to perform transactions or manage blockchain-based applications from the command line.
-
-
-
-
-
-
-
-
-# EXTRACTION
-
 unrar() {
     if [ -z "$1" ]; then
         echo "Please provide a RAR file to extract."
@@ -742,7 +568,7 @@ unrar() {
 }
 
 
-ex()
+function ex()
 {
   if [ -f $1 ] ; then
     case $1 in
@@ -764,14 +590,6 @@ ex()
     echo "'$1' is not a valid file"
   fi
 }
-
-
-############################################
-###########################################################
-#############################################################
-#############################################################
-############################################################# continua qua asblulla
-
 
 
 
@@ -1837,6 +1655,28 @@ function clones(){
   c ~/Desktop/clones
 }
 
+
+function screenshot() {
+  # Capture screenshot and save it to a temporary file
+  local tmp_file="/tmp/screenshot.png"
+  screencapture -i "$tmp_file"
+
+  # Check if the screenshot was captured successfully
+  if [ -f "$tmp_file" ]; then
+    # Copy the screenshot to the clipboard
+    if [ "$(uname)" = "Darwin" ]; then
+      # macOS
+      pbcopy < "$tmp_file"
+    elif [ "$(uname)" = "Linux" ]; then
+      # Linux
+      xclip -selection clipboard -t image/png -i "$tmp_file"
+    fi
+
+    echo "Screenshot captured and copied to clipboard."
+  else
+    echo "Error capturing the screenshot."
+  fi
+}
 
 
 

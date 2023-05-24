@@ -1,4 +1,132 @@
 #+title: .zshrc
+* PATH
+#+begin_src shell
+
+function path() {
+  local dir_list=$(echo $PATH | sed "s/:/\\n/g")
+  printf "EnvPath([\n" && printf "'%s',\n" $dir_list | sed "s|^ |/|; s|^|  |" && printf "])\n"
+}
+
+#+end_src
+
+** exports
+#+begin_src shell
+
+export PATH="/home/l/.config/emacs/bin:$PATH"
+#+end_src
+* DEFAULT
+#+begin_src shell
+
+#Enable colors and change prompt:
+autoload -U colors && colors
+PS1="%B%{$fg[red]%}[%{$fg[yellow]%}%n%{$fg[green]%}@%{$fg[blue]%}%M %{$fg[magenta]%}%~%{$fg[red]%}]%{$reset_color%}$%b "
+
+# Fetch all plugins in dir
+plugins=(`echo $(ls $ZSH/plugins | sed -z 's/\n/ /g')`)
+
+# Basic auto/tab complete:
+autoload -U compinit
+zstyle ':completion:*' menu select
+zmodload zsh/complist
+#compinit _comp_options+=(globdots)		# Include hidden files.
+
+# Use vim keys in tab complete menu:
+bindkey -M menuselect 'h' vi-backward-char
+bindkey -M menuselect 'k' vi-up-line-or-history
+bindkey -M menuselect 'l' vi-forward-char
+bindkey -M menuselect 'j' vi-down-line-or-history
+bindkey -v '^?' backward-delete-char
+
+bindkey -s '^r' 'lfcd\n'
+# below opens a new terminal in current dir
+bindkey -s '^t' 't\n'
+
+case "$TERM" in (rxvt|rxvt-*|st|st-*|*xterm*|(dt|k|E)term)
+    local term_title () { print -n "\e]0;${(j: :q)@}\a" }
+    precmd () {
+      local DIR="$(print -P '[%c]')"
+      term_title "$DIR" "st"
+    }
+    preexec () {
+      local DIR="$(print -P '[%c]%#')"
+      local CMD="${(j:\n:)${(f)1}}"
+      #term_title "$DIR" "$CMD" use this if you want directory in command, below only prints program name
+	  term_title "$CMD"
+    }
+  ;;
+esac
+
+#Set bookmarks dir
+# To add any bookmark, use command below without quotes:
+# bm 'bookmarkdir' '@bookmarkname' OR bm @bookmarkname to bookmark current directory
+[[ -d "$ZSHCFG/bookmarks" ]] && export CDPATH=".:$ZSHCFG/bookmarks:/" \
+	&& alias jmp="cd -P"
+
+setopt autocd
+# change below theme if using oh-my-zsh
+#ZSH_THEME=""
+HISTSIZE=10000
+SAVEHIST=10000
+setopt appendhistory
+
+
+# Change cursor shape for different vi modes.
+function zle-keymap-select {
+  if [[ ${KEYMAP} == vicmd ]] ||
+     [[ $1 = 'block' ]]; then
+    echo -ne '\e[1 q'
+  elif [[ ${KEYMAP} == main ]] ||
+       [[ ${KEYMAP} == viins ]] ||
+       [[ ${KEYMAP} = '' ]] ||
+       [[ $1 = 'beam' ]]; then
+    echo -ne '\e[5 q'
+  fi
+}
+function _set_cursor() {
+    if [[ $TMUX = '' ]]; then
+      echo -ne $1
+    else
+      echo -ne "\ePtmux;\e\e$1\e\\"
+    fi
+}
+
+
+
+#bash ~/Desktop/xos-0.5/xapps/xpalette/catpuccin.sh
+
+# Load aliases
+[ -f "$ZSHCFG/aliasrc" ] && source "$ZSHCFG/aliasrc"
+
+# Note that in different distro or installation way below source files need to be changed, they are usually in ~/.zsh/
+source "$ZSHCFG/OMZ/oh-my-zsh.sh"
+source /usr/share/zsh/plugins/fast-syntax-highlighting/fast-syntax-highlighting.plugin.zsh 2>/dev/null
+
+# vi mode
+bindkey -v
+export KEYTIMEOUT=1
+export GPG_TTY=$(tty)
+if [ ! -z $BM_DIR ]; then
+    cd -P $BM_DIR &&
+    export BM_DIR=""
+fi
+
+# Edit line in vim with ctrl-e:
+autoload edit-command-line; zle -N edit-command-line
+bindkey '^e' edit-command-line
+
+
+# Below to change autosuggestion options
+#ZSH_AUTOSUGGEST_HIGHLIGHT_STYLE="fg=#ff00ff,bg=cyan,bold,underline"	# To get colored completion text
+bindkey '^[[Z' autosuggest-accept   # shift tab to accept ghost text
+ZSH_AUTOSUGGEST_CLEAR_WIDGETS+=(buffer-empty bracketed-paste accept-line push-line-or-edit)
+ZSH_AUTOSUGGEST_STRATEGY=(history completion)
+ZSH_AUTOSUGGEST_USE_ASYNC=true
+
+export LESS_TERMCAP_mb=$(tput bold; tput setaf 39)
+export LESS_TERMCAP_md=$(tput bold; tput setaf 45)
+export LESS_TERMCAP_me=$(tput sgr0)
+#+end_src
+
 * SHELL
 
 #+begin_src shell
@@ -32,66 +160,6 @@ function chpwd() {
 
 Call the chpwd function once to display the image if you're already in the ~/Desktop/test directory
 chpwd
-
-#+end_src
-
-* GIT
-** clone
-This will check a repo on your gh account
-USAGE : clone dotfiles
-#+begin_src shell
-
-#FIXME
-function clone() {
-    src_file="$1"
-    dest_dir="$2"
-    cp -r "$src_file" "$dest_dir"
-    c "$dest_dir" && echo "Your files have been cloned! 🚀"
-}
-
-#+end_src
-** fork
-#+begin_src shell
-
-function fork() {
-  repo_url=$1
-
-  # Extract the repository name from the URL
-  repo_name=${repo_url##*/}
-
-  # Remove the ".git" extension if present
-  repo_name=${repo_name%.git}
-
-  # Fork the repository using the gh CLI
-  gh repo fork $repo_url
-
-  echo "Forked $repo_name"
-}
-
-#+end_src
-** origin
-select the origin
-#+begin_src shell
-
-function origin() {
-  gh repo set-default
-}
-#+end_src
-** pulls
-#+begin_src shell
-
-function pulls(){
-  c ~/Desktop/pulls
-}
-
-#+end_src
-
-** clones
-#+begin_src shell
-
-function clones(){
-  c ~/Desktop/clones
-}
 
 #+end_src
 
@@ -156,9 +224,97 @@ declare -A image_map=(
 
 
 
-
-
 * DEV-TOOLS
+** rust
+*** xcargo
+#+begin_src shell
+
+function xcargo init() {
+  local project_name="$1"
+  # Create a new directory with the specified project name
+  mkdir "$project_name"
+  cd "$project_name"
+
+  # Initialize a new Cargo project
+  cargo init --bin .
+
+  # Build and run the project
+  cargo run &
+  sleep 2
+
+  # Open the project directory in neovim
+  nvim .
+
+  # Clean up the built files
+  cargo clean
+}
+
+#+end_src
+** file-creation
+*** nte
+better version of n
+#+begin_src shell
+
+function nte() {
+    if [[ $# -eq 0 ]]; then
+        echo "Usage: n <filename>"
+        return 1
+    fi
+
+    # Get file extension
+    ext="${1##*.}"
+
+    # Define templates for each file type
+    case "$ext" in
+        "cpp")
+            template="#include <iostream>\n\nusing namespace std;\n\nint main() {\n    // your code goes here\n    return 0;\n}"
+            ;;
+        "html")
+            template="td;\n\nint main() {\n    // your code goes here\n    return 0;\n}"
+            ;;
+        "py")
+            template="#!/usr/bin/env python3\n\n# your code goes here"
+            ;;
+        "sh")
+            template="#!/bin/bash\n\n# your code goes here"
+            ;;
+        "lua")
+            template="-- your code goes here"
+            ;;
+        "rs")
+            template="fn main() {\n    // your code goes here\n}"
+            ;;
+        "go")
+            template="package main\n\nimport \"fmt\"\n\nfunc main() {\n    // your code goes here\n}"
+            ;;
+        "zig")
+            template="const std = @import(\"std\");\n\npub fn main() !void {\n    // your code goes here\n}"
+            ;;
+        "hs")
+            template="main = do\n    -- your code goes here\n    return ()"
+            ;;
+        *)
+            echo "Unsupported file type: $ext"
+            return 1
+            ;;
+    esac
+
+    # Generate file with timestamp and template (if available)
+    ts=$(date +"%Y%m%d_%H%M%S")
+    if [[ -n "$template" ]]; then
+        echo -e "$template" > "$ts.$1"
+    else
+        touch "$ts.$1"
+    fi
+
+    # Open file with emacs in the background
+    nohup emacs "$ts.$1" >/dev/null 2>&1 &
+
+    # Exit the terminal
+    exit
+}
+
+#+end_src
 ** bin
 *** hex
 #+begin_src shell
@@ -269,6 +425,49 @@ next() {
 
 #+end_src
 ** COMPILE
+*** xcompile
+#+begin_src shell
+
+xcompile() {
+  # Use fzf to select a file to compile
+  filename=$(find . -type f \( -name "*.c" -o -name "*.cpp" -o -name "*.py" -o -name "*.lua" \) | fzf --preview 'bat --color=always {}')
+
+  # Check if a file was selected
+  if [ -n "$filename" ]
+  then
+    # Create directory if it doesn't exist
+    dir="xcompiled"
+    if [ ! -d "$dir" ]
+    then
+        mkdir "$dir"
+    fi
+
+    # Move file to the generated directory
+    mv "$filename" "$dir"
+
+    # Compile and execute the file inside the generated directory
+    cd "$dir"
+    if [[ $filename == *.c ]]
+    then
+        gcc "$filename" -o "${filename%.*}"
+        "./${filename%.*}"
+    elif [[ $filename == *.cpp ]]
+    then
+        g++ "$filename" -o "${filename%.*}"
+        "./${filename%.*}"
+    elif [[ $filename == *.py ]]
+    then
+        python3 "$filename"
+    elif [[ $filename == *.lua ]]
+    then
+        lua "$filename"
+    else
+        echo "Invalid file extension. Please provide a C, C++, Python, or Lua file."
+    fi
+  fi
+}
+
+#+end_src
 *** TODO gtk+
 
 #+begin_src shell
@@ -305,41 +504,122 @@ pull-web-site() {
 
 #+end_src
 
-
-
-
-
-
 * BASICS
-** movement
-c will replace cd in most functions
+** screenshot
 #+begin_src shell
 
-function c() {
-    local dir="$1"
-    if [ ! -d "$dir" ]; then
-        mkdir -p "$dir"
-    fi
-    clear && cd "$dir" && ls &&  ls -l -a | wc -l     # && bash ~/Desktop/xos/modules/ls-candy/cb-small
+function screenshot() {
+  # Capture screenshot and save it to a temporary file
+  local tmp_file="/tmp/screenshot.png"
+  maim -s "$tmp_file"
+
+  # Check if the screenshot was captured successfully
+  if [ -f "$tmp_file" ]; then
+    # Copy the screenshot to the clipboard
+    xclip -selection clipboard -t image/png -i "$tmp_file"
+
+    echo "Screenshot captured and copied to clipboard."
+  else
+    echo "Error capturing the screenshot."
+  fi
+}
+#+end_src
+** discord
+** xshellrp
+i lost the config file :)
+#+begin_src shell
+
+# FIXME
+function xshellrp() {
+  xshellrp --config ~/.config/linux-discord-rich-presencerc &&
 }
 
 #+end_src
-*** conf
+** commons
+*** xup
 #+begin_src shell
 
-function conf() {
-    local config_folder="$HOME/.config"
+function xup() {
+  chmod +x "$1" && c
+}
 
+#+end_src
+*** mdir
+#+begin_src shell
+
+function mdir () {
+  command mkdir -p "$@" && c "${@: -1}" && c
+}
+
+#+end_src
+
+*** hown
+#+begin_src shell
+
+function hown() {
+    for file in $@
+    do
+        cp $file ~/.local/bin/
+    done
+}
+
+#+end_src
+** file-extraction
+*** ex
+exctract anything
+#+begin_src shell
+
+function ex()
+{
+  if [ -f $1 ] ; then
+    case $1 in
+      *.tar.bz2)   tar xjf $1   ;;
+      *.tar.gz)    tar xzf $1   ;;
+      *.tar.xz)    tar xJf $1   ;;
+      *.bz2)       bunzip2 $1   ;;
+      *.rar)       unrar x $1     ;;
+      *.gz)        gunzip $1    ;;
+      *.tar)       tar xf $1    ;;
+      *.tbz2)      tar xjf $1   ;;
+      *.tgz)       tar xzf $1   ;;
+      *.zip)       unzip $1     ;;
+      *.Z)         uncompress $1;;
+      *.7z)        7z x $1      ;;
+      *)           echo "'$1' cannot be extracted via ex()" ;;
+    esac
+  else
+    echo "'$1' is not a valid file"
+  fi
+}
+
+#+end_src
+*** unrar
+#+begin_src shell
+
+unrar() {
     if [ -z "$1" ]; then
-        cd "$config_folder"
-    else
-        local target_folder="$config_folder/$1"
-        if [ -d "$target_folder" ]; then
-            cd "$target_folder"
-        else
-            echo -e "\e[1;31mError: Directory '$1' does not exist in '$config_folder'.\e[0m"
-        fi
+        echo "Please provide a RAR file to extract."
+        return 1
     fi
+
+    if [ ! -f "$1" ]; then
+        echo "The provided file does not exist."
+        return 1
+    fi
+
+    unrar x "$1"
+}
+#+end_src
+
+*** untar
+#+begin_src shell
+
+function untar() {
+  if [ -f "$1" ]; then
+    tar -xvf "$1" && c
+  else
+    echo "$1 is not a valid tar archive"
+  fi
 }
 
 #+end_src
@@ -356,17 +636,6 @@ function z() {
 
 #+end_src
 ** user
-*** hown
-#+begin_src shell
-
-function hown() {
-    for file in $@
-    do
-        cp $file ~/.local/bin/
-    done
-}
-
-#+end_src
 ** un-section
 *** unvim
 delete all nvim config
@@ -375,6 +644,48 @@ delete all nvim config
 function unvim() {
   rm -rf ~/.config/nvim
   rm -rf ~/.local/share/nvim
+}
+
+#+end_src
+*** ungit
+#+begin_src shell
+
+function ungit() {
+  rmdir .git
+  echo "WHAT ARE YOU DOING ?" && sleep 1 && rm .gitignore && c
+}
+
+#+end_src
+*** ungo
+#+begin_src shell
+
+function ungo() {
+  rm go.mod
+  echo "WHAT ARE YOU DOING ?" && sleep 1 && c
+}
+
+#+end_src
+*** uncargo
+#+begin_src shell
+
+function uncargo() {
+  # Check if a Cargo.toml file exists in the current directory
+  if [ ! -f "Cargo.toml" ]; then
+    echo "No Cargo.toml file found in the current directory."
+    return 1
+  fi
+
+  # Remove the Cargo.toml and Cargo.lock files
+  rm -f Cargo.toml Cargo.lock
+
+  # Search for a src directory and rename it to unrusted-src
+  if [ -d "src" ]; then
+    mv src unrusted-src
+    echo "src directory renamed to unrusted-src."
+  else
+    echo "No src directory found."
+  fi
+  c
 }
 
 #+end_src
@@ -768,15 +1079,6 @@ function rmall () {
 
 #+end_src
 * enviroment
-** path
-#+begin_src shell
-
-function path() {
-  local dir_list=$(echo $PATH | sed "s/:/\\n/g")
-  printf "EnvPath([\n" && printf "'%s',\n" $dir_list | sed "s|^ |/|; s|^|  |" && printf "])\n"
-}
-
-#+end_src
 ** variables
 #+begin_src shell
 
@@ -853,7 +1155,6 @@ generate_ssh_key_interactive() {
 }
 
 #+end_src
-
 
 * ARCHISO-UTILS
 ** iso-init
@@ -974,6 +1275,25 @@ function pac-analizer() {
 #+end_src
 
 * my-useless-creations
+** sbus
+this function canonnly be executed once
+#+begin_src shell
+
+sbus_executed=false
+
+function sbus () {
+  if [ "$sbus_executed" = true ]; then
+    echo "You just did that... zzzZZzzZZZ"
+    :
+  else
+    # Add your sbus code here
+    echo "Function sbus executed"
+    # Set the flag variable to true
+    sbus_executed=true
+  fi
+}
+
+#+end_src
 ** freedom
 it doesnt actually work
 #+begin_src shell
@@ -1116,14 +1436,242 @@ function edit-keys() {
 }
 
 #+end_src
-* TODO
+
+* MOTIONS
+** quick-acces
+*** school
+**** sapo
 #+begin_src shell
 
-
-# FIXME
-function xshellrp() {
-  xshellrp --config ~/.config/linux-discord-rich-presencerc &&
+function sapo() {
+  c ~/Desktop/scuola/sapo
 }
+
+#+end_src
+** c
+c will replace cd in most functions
+#+begin_src shell
+
+function c() {
+    local dir="$1"
+    if [ ! -d "$dir" ]; then
+        mkdir -p "$dir"
+    fi
+    clear && cd "$dir" && ls &&  ls -l -a | wc -l     # && bash ~/Desktop/xos/modules/ls-candy/cb-small
+}
+
+#+end_src
+** conf
+#+begin_src shell
+
+function conf() {
+    local config_folder="$HOME/.config"
+
+    if [ -z "$1" ]; then
+        cd "$config_folder"
+    else
+        local target_folder="$config_folder/$1"
+        if [ -d "$target_folder" ]; then
+            cd "$target_folder"
+        else
+            echo -e "\e[1;31mError: Directory '$1' does not exist in '$config_folder'.\e[0m"
+        fi
+    fi
+}
+
+#+end_src
+** lfcd
+#+begin_src shell
+
+lfcd () {
+    tmp="$(mktemp)"
+    lf -last-dir-path="$tmp" "$@"
+    if [ -f "$tmp" ]; then
+        dir="$(cat "$tmp")"
+        rm -f "$tmp"
+        [ -d "$dir" ] && [ "$dir" != "$(pwd)" ] && c "$dir"
+    fi
+}
+
+#+end_src
+* GIT
+** gclone
+git clone, but you can display a custom image (super usefull if you like images!1!1!1!1!)
+#+begin_src shell
+
+function gclone() {
+  clear
+  if [ $# -lt 1 ]; then
+    echo "Usage: gclone <repository> [directory]"
+    return 1
+  fi
+
+  # Set the repository URL and directory name from the input arguments
+  local repo="$1"
+  local dir="$2"
+
+  # Display the cloning image inside the terminal using kitty icat
+  kitty +kitten icat ~/Desktop/xos/xassets/git.png
+
+  # Use the name of the repository as the directory name if none is provided
+  if [ -z "$dir" ]; then
+    dir=$(basename "$repo" .git)
+  fi
+
+  # Clone the repository into the specified directory and change into the cloned directory
+  git clone "$repo" "$dir" && c "$dir"
+}
+
+#+end_src
+** ginit
+inizialize a and push an entire repo to github
+#+begin_src shell
+
+ginit() {
+  # Check if `gh` and `git` commands are installed
+  command -v gh >/dev/null 2>&1 || { echo >&2 "The 'gh' command is required. Please install it before running this function."; return 1; }
+  command -v git >/dev/null 2>&1 || { echo >&2 "The 'git' command is required. Please install it before running this function."; return 1; }
+
+  # Check if repository name is provided
+  if [ -z "$1" ]; then
+    echo "Please provide a repository name as an argument."
+    return 1
+  fi
+
+  # Options
+  local commit_message="first commit"
+  local branch_name="main"
+
+  # Check if directory size exceeds 2 GB
+  if [ "$(du -sb . | cut -f1)" -gt $((2*1024*1024*1024)) ]; then
+    echo "The directory size exceeds 2 GB. Aborting."
+    return 1
+  fi
+
+  # Create the repository on GitHub
+  echo "Creating repository $1 on GitHub..."
+  gh repo create "$1" --public
+
+  # Initialize the local Git repository
+  echo "Initializing local Git repository..."
+  git init
+
+  # Copy the README.md file to the current directory
+  # echo "Copying README.md file..."
+  # cp ~/Desktop/test/smart-git/BLANK_README.md README.md
+  # cp -R ~/Desktop/test/smart-git/images .
+
+
+  # Add all files in current directory to the staging area
+  echo "Adding all files to the staging area..."
+  git add .
+
+  # Commit the changes
+  echo "Committing changes..."
+  git commit -m "$commit_message"
+
+  # Rename the default branch to main
+  echo "Renaming default branch to $branch_name..."
+  git branch -M "$branch_name"
+
+  # Set the remote origin to the GitHub repository
+  echo "Setting remote origin to GitHub repository..."
+  git remote add origin "https://github.com/laluxx/$1.git"
+
+  # Push the changes to the remote repository
+  echo "Pushing changes to remote repository..."
+  git push -u origin "$branch_name"
+
+  echo "Done!"
+}
+
+#+end_src
+** clone
+This will check a repo on your gh account
+USAGE : clone dotfiles
+#+begin_src shell
+
+#FIXME
+function clone() {
+    src_file="$1"
+    dest_dir="$2"
+    cp -r "$src_file" "$dest_dir"
+    c "$dest_dir" && echo "Your files have been cloned! 🚀"
+}
+
+#+end_src
+** fork
+#+begin_src shell
+
+function fork() {
+  repo_url=$1
+
+  # Extract the repository name from the URL
+  repo_name=${repo_url##*/}
+
+  # Remove the ".git" extension if present
+  repo_name=${repo_name%.git}
+
+  # Fork the repository using the gh CLI
+  gh repo fork $repo_url
+
+  echo "Forked $repo_name"
+}
+
+#+end_src
+** origin
+select the origin
+#+begin_src shell
+
+function origin() {
+  gh repo set-default
+}
+#+end_src
+** pulls
+#+begin_src shell
+
+function pulls(){
+  c ~/Desktop/pulls
+}
+
+#+end_src
+
+** clones
+#+begin_src shell
+
+function clones(){
+  c ~/Desktop/clones
+}
+
+#+end_src
+
+* TODO
+** undo-last-command
+I'm customizing my zsh shell and need your help. I want to bind a function to Ctrl+Z that undoes the last command. It should clear the screen after ls, delete files created with touch, close apps launched from the terminal, and even undo recent Git pushes, it should undo anything started from your shell, i want this to be very powerfull Any suggestions or scripts to achieve this?
+
+i hope this is possible, if this function
+will ever work i will bind it to ctrl-z
+#+begin_src shell
+
+#TODO
+#0.0.0
+function undo_last_command {
+  # Check if we're running zsh
+  if [[ -n "$ZSH_VERSION" ]]; then
+    # Use fc command to access the command history in zsh.
+    # The -ln options specify that we want to access the last command in the history list
+    # (where "n" is the number of the command you want to access, and "-1" means the last command).
+    eval $(fc -ln -1)
+  else
+    # If we're not running zsh, print an error message and exit.
+    echo "This function only works in zsh."
+    return 1
+  fi
+}
+
+#+end_src
+** simple logic to add
+#+begin_src shell
 
 #TODO
 lower() {
@@ -1138,31 +1686,23 @@ reverse_array() {
     shopt -u extdebug
 }
 
-
-#TODO
-#0.0.0
-# function undo_last_command {
-#   # Check if we're running zsh
-#   if [[ -n "$ZSH_VERSION" ]]; then
-#     # Use fc command to access the command history in zsh.
-#     # The -ln options specify that we want to access the last command in the history list
-#     # (where "n" is the number of the command you want to access, and "-1" means the last command).
-#     eval $(fc -ln -1)
-#   else
-#     # If we're not running zsh, print an error message and exit.
-#     echo "This function only works in zsh."
-#     return 1
-#   fi
-# }
-
-
-
+#+end_src
+** git
+*** rmrepo
+#+begin_src shell
 
 #TODO
 function rmrepo() {
   repo_name="$1"
   gh repo delete "$repo_name" --yes
 }
+
+
+#+end_src
+** dd-iso
+#+begin_src shell
+
+#+begin_src shell
 
 
 #TODO
@@ -1217,4 +1757,19 @@ function dd_iso() {
   sudo dd bs=4M if="$iso" of="/dev/$disk" status=progress conv=fsync oflag=direct
   echo "Done!"
 }
+#+end_src
+
+#+end_src
+
+** make an alias
+#+begin_src shell
+
+function test() {
+    c ~/Desktop/test/$1
+}
+
+function xos() {
+    c ~/Desktop/xos/$1
+}
+
 #+end_src
