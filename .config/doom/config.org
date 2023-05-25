@@ -6,6 +6,10 @@
 * TABLE OF CONTENTS :toc:
 - [[#about-this-config][ABOUT THIS CONFIG]]
 - [[#xos][XOS]]
+  - [[#update-dotfiles][update-dotfiles]]
+  - [[#keybinds][keybinds]]
+  - [[#toolbar][toolbar]]
+  - [[#look-and-feel][look and feel]]
 - [[#beacon][BEACON]]
 - [[#bookmarks-and-buffers][BOOKMARKS AND BUFFERS]]
   - [[#bookmarks][Bookmarks]]
@@ -64,21 +68,61 @@
 This is my personal Doom Emacs config.  Doom Emacs is a distribution of Emacs that uses the "evil" keybindings (Vim keybindings) and includes a number of nice extensions and a bit of configuration out of the box.  I am maintaining this config not just for myself, but also for those that want to explore some of what is possible with Emacs.  I will add a lot of examples of plugins and settings, some of them I may not even use personally.  I do this because many people following me on YouTube look at my configs as "documentation".
 
 * XOS
-#+begin_src shell
+** update-dotfiles
+Probably the most efficent thing i ever created.
+
+whenever you save a file inside "~/Desktop/pulls/dotfiles" or one of its subdirectories
+&& if that file is a org file
+it basicly runs the update-dotfile function inside xos shell try "explain update-dotfiles"
+
+#+begin_src emacs-lisp
+
+(defun my/update-dotfiles ()
+  "Update dotfiles."
+  (interactive)
+  (let* ((dotfiles-path (expand-file-name "~/Desktop/pulls/dotfiles"))
+         (command (concat "rsync -a " dotfiles-path "/. $HOME/")))
+    (shell-command command)
+    (message "Updated dotfiles")))
+
+(defun my/run-update-dotfiles ()
+  "Run `my/update-dotfiles` if the current file is inside ~/Desktop/pulls/dotfiles or its subdirectories."
+  (when (and buffer-file-name
+             (string-prefix-p (expand-file-name "~/Desktop/pulls/dotfiles") buffer-file-name)
+             (string= (file-name-extension buffer-file-name) "org"))
+    (my/update-dotfiles)))
+
+(add-hook 'after-save-hook 'my/run-update-dotfiles)
+
+
+#+end_src
+** keybinds
+#+begin_src emacs-lisp
 
 ;; (map! :leader
 ;;       :desc "Toggle treemacs"
 ;;       "e"#'treemacs)
 
+#+end_src
+** toolbar
 
+#+begin_src emacs-lisp
 (tool-bar-mode  -1)
 (scroll-bar-mode  -1)
 (menu-bar-mode  -1)
+#+end_src
+** look and feel
+*** raibow-delimiters
+#+begin_src emacs-lisp
 
 (use-package rainbow-delimiters
   :hook (prog-mode . rainbow-delimiters-mode))
 
-;; SET TRASPARENCY OF EMACS
+#+end_src
+*** trasparency
+SET TRASPARENCY OF EMACS
+#+begin_src shell
+
 (set-frame-parameter (selected-frame) 'alpha '(90 65))
 (add-to-list 'default-frame-alist '(alpha 90 65))
 

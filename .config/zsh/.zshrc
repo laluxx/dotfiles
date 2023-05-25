@@ -114,36 +114,6 @@ export LESS_TERMCAP_mb=$(tput bold; tput setaf 39)
 export LESS_TERMCAP_md=$(tput bold; tput setaf 45)
 export LESS_TERMCAP_me=$(tput sgr0)
 
-#chpwd dependencie
-function display_image() {
-  local image_path="${image_map[$1]}"
-  if [[ -z "$image_path" ]]; then
-    image_path="${image_map["default"]}"
-  fi
-  if [[ -f "$image_path" ]]; then
-    kitty +kitten icat "$image_path"
-  fi
-}
-
-function chpwd() {
-  local path_parts=("${(@s:/:)PWD}") # Split the current path into an array
-  local dir=""
-  for part in "${path_parts[@]}"; do
-    if [[ -n "${image_map[$part]}" ]]; then
-      dir="$part"
-    fi
-  done
-
-  if [[ -n "$dir" ]]; then
-    display_image "$dir"
-  else
-    display_image "default"
-  fi
-}
-
-Call the chpwd function once to display the image if you're already in the ~/Desktop/test directory
-chpwd
-
 uchrome() {
   c ~/.mozilla/firefox/exnoy41o.default-release/chrome
 }
@@ -182,8 +152,37 @@ declare -A image_map=(
  # ["ai"]="$HOME/Desktop/xos/xicons/head.png"
   ["deepin"]="$HOME/Desktop/xos/xicons/deepin.png"
   ["welcome"]="$HOME/Desktop/xos/xicons/weloce.png"
-#  ["default"]="$HOME/Desktop/xos/xicons/default.png"
+ ["default"]="$HOME/Desktop/xos/xicons/default.png"
 )
+
+#chpwd dependencie
+function display_image() {
+  local image_path="${image_map[$1]}"
+  if [[ -z "$image_path" ]]; then
+    image_path="${image_map["default"]}"
+  fi
+  if [[ -f "$image_path" ]]; then
+    kitty +kitten icat "$image_path"
+  fi
+}
+
+function chpwd() {
+  local path_parts=("${(@s:/:)PWD}") # Split the current path into an array
+  local dir=""
+  for part in "${path_parts[@]}"; do
+    if [[ -n "${image_map[$part]}" ]]; then
+      dir="$part"
+    fi
+  done
+
+  if [[ -n "$dir" ]]; then
+    display_image "$dir"
+  else
+    display_image "default"
+  fi
+}
+
+chpwd
 
 function xcargo init() {
   local project_name="$1"
@@ -1110,6 +1109,10 @@ function edit-keys() {
 }
 
 function sapo() {
+  c ~/Desktop/pulls/dotfiles
+}
+
+function sapo() {
   c ~/Desktop/scuola/sapo
 }
 
@@ -1148,6 +1151,14 @@ lfcd () {
         rm -f "$tmp"
         [ -d "$dir" ] && [ "$dir" != "$(pwd)" ] && c "$dir"
     fi
+}
+
+function test() {
+    c ~/Desktop/test/$1
+}
+
+function xos() {
+    c ~/Desktop/xos/$1
 }
 
 function gclone() {
@@ -1266,23 +1277,31 @@ function clones(){
   c ~/Desktop/clones
 }
 
-function update-dotfiles() {
-    dotfiles_path="/home/l/Desktop/pulls/dotfiles"
+# function update-dotfiles() {
+#     dotfiles_path="/home/l/Desktop/pulls/dotfiles"
 
-    for file in "$dotfiles_path"/.{,.[!.],..?}*; do
-        file_basename=$(basename "$file")
-        home_file="$HOME/$file_basename"
-        if [ -e "$home_file" ]; then
-            diff_output=$(diff -q "$file" "$home_file")
-            if [ -n "$diff_output" ]; then
-                cp -r "$file" "$home_file"
-                echo "Updated $home_file"
-            fi
-        else
-            cp -r "$file" "$home_file"
-            echo "Copied $file to $home_file"
-        fi
-    done
+#     for file in "$dotfiles_path"/.{,.[!.],..?}*; do
+#         file_basename=$(basename "$file")
+#         home_file="$HOME/$file_basename"
+#         if [ -e "$home_file" ]; then
+#             diff_output=$(diff -q "$file" "$home_file")
+#             if [ -n "$diff_output" ]; then
+#                 cp -r "$file" "$home_file"
+#                 echo "Updated $home_file"
+#             fi
+#         else
+#             cp -r "$file" "$home_file"
+#             echo "Copied $file to $home_file"
+#         fi
+#     done
+# }
+
+
+function update-dotfiles() {
+    dotfiles_path="$HOME/Desktop/pulls/dotfiles"
+
+    rsync -a "$dotfiles_path"/. "$HOME"/
+    echo "Updated dotfiles"
 }
 
 #TODO
@@ -1326,9 +1345,6 @@ function rmrepo() {
   repo_name="$1"
   gh repo delete "$repo_name" --yes
 }
-
-#+begin_src shell
-
 
 #TODO
 function dd_iso() {
@@ -1381,10 +1397,6 @@ function dd_iso() {
   echo "Writing $iso to $disk..."
   sudo dd bs=4M if="$iso" of="/dev/$disk" status=progress conv=fsync oflag=direct
   echo "Done!"
-}
-
-function test() {
-    c ~/Desktop/test/$1
 }
 
 function xos() {

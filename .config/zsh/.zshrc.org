@@ -129,42 +129,6 @@ export LESS_TERMCAP_md=$(tput bold; tput setaf 45)
 export LESS_TERMCAP_me=$(tput sgr0)
 #+end_src
 
-* SHELL
-
-#+begin_src shell
-
-#chpwd dependencie
-function display_image() {
-  local image_path="${image_map[$1]}"
-  if [[ -z "$image_path" ]]; then
-    image_path="${image_map["default"]}"
-  fi
-  if [[ -f "$image_path" ]]; then
-    kitty +kitten icat "$image_path"
-  fi
-}
-
-function chpwd() {
-  local path_parts=("${(@s:/:)PWD}") # Split the current path into an array
-  local dir=""
-  for part in "${path_parts[@]}"; do
-    if [[ -n "${image_map[$part]}" ]]; then
-      dir="$part"
-    fi
-  done
-
-  if [[ -n "$dir" ]]; then
-    display_image "$dir"
-  else
-    display_image "default"
-  fi
-}
-
-Call the chpwd function once to display the image if you're already in the ~/Desktop/test directory
-chpwd
-
-#+end_src
-
 * QUICK-ACCESS
 ** uchrome
 cd into userchrome folder
@@ -184,10 +148,10 @@ dapp() {
 
 #+end_src
 
-*  image-map
+* SHELL
+**  image-map
 Define a mapping between directory names and image files
 #+begin_src shell
-
 declare -A image_map=(
   # ["rust"]="$HOME/Desktop/xos/xicons/rust.png"
   ["rust"]="$HOME/Desktop/xos/xicons/3.png"
@@ -218,11 +182,48 @@ declare -A image_map=(
  # ["ai"]="$HOME/Desktop/xos/xicons/head.png"
   ["deepin"]="$HOME/Desktop/xos/xicons/deepin.png"
   ["welcome"]="$HOME/Desktop/xos/xicons/weloce.png"
-#  ["default"]="$HOME/Desktop/xos/xicons/default.png"
+ ["default"]="$HOME/Desktop/xos/xicons/default.png"
 )
 
 #+end_src
 
+** display_image
+#+begin_src shell
+
+#chpwd dependencie
+function display_image() {
+  local image_path="${image_map[$1]}"
+  if [[ -z "$image_path" ]]; then
+    image_path="${image_map["default"]}"
+  fi
+  if [[ -f "$image_path" ]]; then
+    kitty +kitten icat "$image_path"
+  fi
+}
+
+#+end_src
+** chpwd
+#+begin_src shell
+
+function chpwd() {
+  local path_parts=("${(@s:/:)PWD}") # Split the current path into an array
+  local dir=""
+  for part in "${path_parts[@]}"; do
+    if [[ -n "${image_map[$part]}" ]]; then
+      dir="$part"
+    fi
+  done
+
+  if [[ -n "$dir" ]]; then
+    display_image "$dir"
+  else
+    display_image "default"
+  fi
+}
+
+chpwd
+
+#+end_src
 
 
 * DEV-TOOLS
@@ -316,8 +317,8 @@ function nte() {
 }
 
 #+end_src
-** bin
-*** hex
+**** bin
+***** hex
 #+begin_src shell
 
 function hex() {
@@ -341,8 +342,8 @@ function hex() {
 }
 
 #+end_src
-** web-apps
-*** package-web-app
+**** web-apps
+***** package-web-app
 #+begin_src shell
 
 function package-web-app() {
@@ -359,7 +360,7 @@ function package-web-app() {
 }
 
 #+end_src
-** lazytest
+**** lazytest
 Usefull when you have a folder full of scripts to test.
 #+begin_src shell
 
@@ -374,7 +375,7 @@ function lazytest() {
 }
 
 #+end_src
-*** run-sequentially
+***** run-sequentially
 #+begin_src shell
 
 function run_sequentially() {
@@ -405,8 +406,8 @@ function run_sequentially() {
 }
 
 #+end_src
-** meson
-*** mesosbu
+**** meson
+***** mesosbu
 #+begin_src shell
 
 # TODO
@@ -416,7 +417,7 @@ function mesosbu() {
 }
 
 #+end_src
-** next
+**** next
 #+begin_src shell
 
 next() {
@@ -425,8 +426,8 @@ next() {
 # TODO NEXT-BUILD
 
 #+end_src
-** COMPILE
-*** xcompile
+**** COMPILE
+***** xcompile
 #FIXME not working when tangled from here ?
 #+begin_src shell
 
@@ -470,13 +471,13 @@ next() {
 # }
 
 #+end_src
-*** TODO gtk+
+***** TODO gtk+
 
 #+begin_src shell
 #gcc -o simple simple.c `pkg-config --libs --cflags gtk+-2.0`
 
 #+end_src
-*** core function
+***** core function
 #+begin_src shell
 
 function compile() {
@@ -497,7 +498,7 @@ function compile() {
 
 #+end_src
 
-** steal websites
+**** steal websites
 #+begin_src shell
 
 pull-web-site() {
@@ -626,6 +627,7 @@ function untar() {
 
 #+end_src
 ** z
+refresh the terminal
 #+begin_src shell
 
 function z() {
@@ -1124,7 +1126,7 @@ function key() {
 }
 
 #+end_src
-** new ssh key
+** generate-ssh-key
 #+begin_src shell
 
 generate_ssh_key_interactive() {
@@ -1255,6 +1257,7 @@ function pullpkg() {
 
 #+end_src
 *** pac-analizer
+so ugly
 #+begin_src shell
 
 function pac-analizer() {
@@ -1440,6 +1443,14 @@ function edit-keys() {
 #+end_src
 
 * MOTIONS
+** dotfiles
+#+begin_src shell
+
+function sapo() {
+  c ~/Desktop/pulls/dotfiles
+}
+
+#+end_src
 ** quick-acces
 *** school
 **** sapo
@@ -1504,6 +1515,23 @@ lfcd () {
 }
 
 #+end_src
+
+** test
+#+begin_src shell
+
+function test() {
+    c ~/Desktop/test/$1
+}
+
+#+end_src
+** xos
+#+begin_src shell
+
+function xos() {
+    c ~/Desktop/xos/$1
+}
+#+end_src
+
 * GIT
 ** gclone
 git clone, but you can display a custom image (super usefull if you like images!1!1!1!1!)
@@ -1655,31 +1683,38 @@ function clones(){
 
 #+end_src
 
-
 * UPDATE DOTFILES
 #+begin_src shell
 
+# function update-dotfiles() {
+#     dotfiles_path="/home/l/Desktop/pulls/dotfiles"
+
+#     for file in "$dotfiles_path"/.{,.[!.],..?}*; do
+#         file_basename=$(basename "$file")
+#         home_file="$HOME/$file_basename"
+#         if [ -e "$home_file" ]; then
+#             diff_output=$(diff -q "$file" "$home_file")
+#             if [ -n "$diff_output" ]; then
+#                 cp -r "$file" "$home_file"
+#                 echo "Updated $home_file"
+#             fi
+#         else
+#             cp -r "$file" "$home_file"
+#             echo "Copied $file to $home_file"
+#         fi
+#     done
+# }
+
+
 function update-dotfiles() {
-    dotfiles_path="/home/l/Desktop/pulls/dotfiles"
+    dotfiles_path="$HOME/Desktop/pulls/dotfiles"
 
-    for file in "$dotfiles_path"/.{,.[!.],..?}*; do
-        file_basename=$(basename "$file")
-        home_file="$HOME/$file_basename"
-        if [ -e "$home_file" ]; then
-            diff_output=$(diff -q "$file" "$home_file")
-            if [ -n "$diff_output" ]; then
-                cp -r "$file" "$home_file"
-                echo "Updated $home_file"
-            fi
-        else
-            cp -r "$file" "$home_file"
-            echo "Copied $file to $home_file"
-        fi
-    done
+    rsync -a "$dotfiles_path"/. "$HOME"/
+    echo "Updated dotfiles"
 }
-
-
 #+end_src
+
+#+RESULTS:
 
 * TODO
 ** undo-last-command
@@ -1748,7 +1783,6 @@ function rmrepo() {
 ** dd-iso
 #+begin_src shell
 
-#+begin_src shell
 
 
 #TODO
@@ -1805,14 +1839,10 @@ function dd_iso() {
 }
 #+end_src
 
-#+end_src
 
 ** make an alias
 #+begin_src shell
 
-function test() {
-    c ~/Desktop/test/$1
-}
 
 function xos() {
     c ~/Desktop/xos/$1
