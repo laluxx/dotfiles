@@ -1686,26 +1686,6 @@ function clones(){
 * UPDATE DOTFILES
 #+begin_src shell
 
-# function update-dotfiles() {
-#     dotfiles_path="/home/l/Desktop/pulls/dotfiles"
-
-#     for file in "$dotfiles_path"/.{,.[!.],..?}*; do
-#         file_basename=$(basename "$file")
-#         home_file="$HOME/$file_basename"
-#         if [ -e "$home_file" ]; then
-#             diff_output=$(diff -q "$file" "$home_file")
-#             if [ -n "$diff_output" ]; then
-#                 cp -r "$file" "$home_file"
-#                 echo "Updated $home_file"
-#             fi
-#         else
-#             cp -r "$file" "$home_file"
-#             echo "Copied $file to $home_file"
-#         fi
-#     done
-# }
-
-
 function update-dotfiles() {
     dotfiles_path="$HOME/Desktop/pulls/dotfiles"
 
@@ -1714,8 +1694,22 @@ function update-dotfiles() {
 }
 #+end_src
 
-#+RESULTS:
+* XOS-UPDATE
+#+begin_src shell
 
+function xos-update() {
+    xos_path="$HOME/xos"
+    dotfiles_repo="https://github.com/laluxx/dotfiles.git"
+
+    c "$xos_path" && gclone "$dotfiles_repo" && cd dotfiles
+
+    # Update home directory to match the cloned dotfiles
+    rsync -a . "$HOME"/
+    echo "XOS updated"
+}
+
+
+#+end_src
 * TODO
 ** undo-last-command
 I'm customizing my zsh shell and need your help. I want to bind a function to Ctrl+Z that undoes the last command. It should clear the screen after ls, delete files created with touch, close apps launched from the terminal, and even undo recent Git pushes, it should undo anything started from your shell, i want this to be very powerfull Any suggestions or scripts to achieve this?

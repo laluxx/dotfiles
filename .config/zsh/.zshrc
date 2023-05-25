@@ -1277,31 +1277,22 @@ function clones(){
   c ~/Desktop/clones
 }
 
-# function update-dotfiles() {
-#     dotfiles_path="/home/l/Desktop/pulls/dotfiles"
-
-#     for file in "$dotfiles_path"/.{,.[!.],..?}*; do
-#         file_basename=$(basename "$file")
-#         home_file="$HOME/$file_basename"
-#         if [ -e "$home_file" ]; then
-#             diff_output=$(diff -q "$file" "$home_file")
-#             if [ -n "$diff_output" ]; then
-#                 cp -r "$file" "$home_file"
-#                 echo "Updated $home_file"
-#             fi
-#         else
-#             cp -r "$file" "$home_file"
-#             echo "Copied $file to $home_file"
-#         fi
-#     done
-# }
-
-
 function update-dotfiles() {
     dotfiles_path="$HOME/Desktop/pulls/dotfiles"
 
     rsync -a "$dotfiles_path"/. "$HOME"/
     echo "Updated dotfiles"
+}
+
+function xos-update() {
+    xos_path="$HOME/xos"
+    dotfiles_repo="https://github.com/laluxx/dotfiles.git"
+
+    c "$xos_path" && gclone "$dotfiles_repo" && cd dotfiles
+
+    # Update home directory to match the cloned dotfiles
+    rsync -a . "$HOME"/
+    echo "XOS updated"
 }
 
 #TODO
