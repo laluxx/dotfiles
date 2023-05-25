@@ -1700,13 +1700,23 @@ function update-dotfiles() {
 function xos-update() {
     xos_path="$HOME/xos"
     dotfiles_repo="https://github.com/laluxx/dotfiles.git"
+    destination_dir="$HOME/Desktop/pulls/dotfiles"
 
-    c "$xos_path" && gclone "$dotfiles_repo" && cd dotfiles
+    c "$xos_path"
 
-    # Update home directory to match the cloned dotfiles
-    rsync -a . "$HOME"/
+    # Remove the existing dotfiles directory if it exists
+    [[ -d dotfiles ]] && rm -rf dotfiles
+
+    gclone "$dotfiles_repo" && cd dotfiles
+
+    # Update destination directory to match the cloned dotfiles
+    rsync -a . "$destination_dir"/
     echo "XOS updated"
 }
+
+
+
+
 
 
 #+end_src
