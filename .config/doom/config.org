@@ -1,6 +1,6 @@
-#+TITLE: DT's Doom Emacs Config
-#+AUTHOR: Derek Taylor (DT)
-#+DESCRIPTION: DT's personal Doom Emacs config.
+#+TITLE: XOS Doom Emacs Config
+#+AUTHOR: laluxx
+#+DESCRIPTION: personal Doom Emacs config.
 #+STARTUP: showeverything
 
 * TABLE OF CONTENTS :toc:
@@ -97,11 +97,23 @@ it basicly runs the update-dotfile function inside xos shell try "explain update
 
 #+end_src
 ** keybinds
+*** custom dotfile directory
+this will overwrite the default SPC f p keybind
+it will also open dired inside a window
 #+begin_src emacs-lisp
 
-;; (map! :leader
-;;       :desc "Toggle treemacs"
-;;       "e"#'treemacs)
+(map! :leader
+      :desc "Open dotfiles directory"
+      "f p" (lambda () (interactive) (dired "~/Desktop/pulls/dotfiles/.config/doom")))
+
+#+end_src
+*** toggle treemacs
+
+#+begin_src emacs-lisp
+
+(map! :leader
+      :desc "Toggle treemacs"
+      "t e" #'treemacs)
 
 #+end_src
 ** toolbar
@@ -120,7 +132,8 @@ it basicly runs the update-dotfile function inside xos shell try "explain update
 
 #+end_src
 *** trasparency
-SET TRASPARENCY OF EMACS
+set trasparency of emacs
+when focused and not focused
 #+begin_src shell
 
 (set-frame-parameter (selected-frame) 'alpha '(90 65))
@@ -131,7 +144,7 @@ SET TRASPARENCY OF EMACS
 Never lose your cursor.  When you scroll, your cursor will shine!  This is a global minor-mode. Turn it on everywhere with:
 
 #+begin_src emacs-lisp
-(beacon-mode 1)
+(beacon-mode -1)
 #+end_src
 
 * BOOKMARKS AND BUFFERS
