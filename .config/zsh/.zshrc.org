@@ -1,4 +1,6 @@
 #+title: .zshrc
+#+PROPERTY: header-args :tangle .zshrc
+#+auto_tangle: t
 * PATH
 #+begin_src shell
 
@@ -223,7 +225,6 @@ declare -A image_map=(
 
 
 
-
 * DEV-TOOLS
 ** rust
 *** xcargo
@@ -426,52 +427,53 @@ next() {
 #+end_src
 ** COMPILE
 *** xcompile
+#FIXME not working when tangled from here ?
 #+begin_src shell
 
-xcompile() {
-  # Use fzf to select a file to compile
-  filename=$(find . -type f \( -name "*.c" -o -name "*.cpp" -o -name "*.py" -o -name "*.lua" \) | fzf --preview 'bat --color=always {}')
+# xcompile() {
+#   # Use fzf to select a file to compile
+#   filename=$(find . -type f \( -name "*.c" -o -name "*.cpp" -o -name "*.py" -o -name "*.lua" \) | fzf --preview 'bat --color=always {}')
 
-  # Check if a file was selected
-  if [ -n "$filename" ]
-  then
-    # Create directory if it doesn't exist
-    dir="xcompiled"
-    if [ ! -d "$dir" ]
-    then
-        mkdir "$dir"
-    fi
+#   # Check if a file was selected
+#   if [ -n "$filename" ]
+#   then
+#     # Create directory if it doesn't exist
+#     dir="xcompiled"
+#     if [ ! -d "$dir" ]
+#     then
+#         mkdir "$dir"
+#     fi
 
-    # Move file to the generated directory
-    mv "$filename" "$dir"
+#     # Move file to the generated directory
+#     mv "$filename" "$dir"
 
-    # Compile and execute the file inside the generated directory
-    cd "$dir"
-    if [[ $filename == *.c ]]
-    then
-        gcc "$filename" -o "${filename%.*}"
-        "./${filename%.*}"
-    elif [[ $filename == *.cpp ]]
-    then
-        g++ "$filename" -o "${filename%.*}"
-        "./${filename%.*}"
-    elif [[ $filename == *.py ]]
-    then
-        python3 "$filename"
-    elif [[ $filename == *.lua ]]
-    then
-        lua "$filename"
-    else
-        echo "Invalid file extension. Please provide a C, C++, Python, or Lua file."
-    fi
-  fi
-}
+#     # Compile and execute the file inside the generated directory
+#     cd "$dir"
+#     if [[ $filename == *.c ]]
+#     then
+#         gcc "$filename" -o "${filename%.*}"
+#         "./${filename%.*}"
+#     elif [[ $filename == *.cpp ]]
+#     then
+#         g++ "$filename" -o "${filename%.*}"
+#         "./${filename%.*}"
+#     elif [[ $filename == *.py ]]
+#     then
+#         python3 "$filename"
+#     elif [[ $filename == *.lua ]]
+#     then
+#         lua "$filename"
+#     else
+#         echo "Invalid file extension. Please provide a C, C++, Python, or Lua file."
+#     fi
+#   fi
+# }
 
 #+end_src
 *** TODO gtk+
 
 #+begin_src shell
- gcc -o simple simple.c `pkg-config --libs --cflags gtk+-2.0`
+#gcc -o simple simple.c `pkg-config --libs --cflags gtk+-2.0`
 
 #+end_src
 *** core function
@@ -1179,7 +1181,7 @@ function iso-init() {
   export LS_COLORS="$LS_COLORS:ow=1;36:"
 
   # Copy archiso configs
-  cp -r /usr/share/archiso/configs/releng/ "$here"
+  sudo cp -r /usr/share/archiso/configs/releng/ "$here"
 }
 #+end_src
 ** iso-build
@@ -1448,6 +1450,14 @@ function sapo() {
 }
 
 #+end_src
+**** mate
+#+begin_src shell
+
+function mate() {
+  c ~/Desktop/scuola/
+}
+
+#+end_src
 ** c
 c will replace cd in most functions
 #+begin_src shell
@@ -1645,6 +1655,32 @@ function clones(){
 
 #+end_src
 
+
+* UPDATE DOTFILES
+#+begin_src shell
+
+function update-dotfiles() {
+    dotfiles_path="/home/l/Desktop/pulls/dotfiles"
+
+    for file in "$dotfiles_path"/.{,.[!.],..?}*; do
+        file_basename=$(basename "$file")
+        home_file="$HOME/$file_basename"
+        if [ -e "$home_file" ]; then
+            diff_output=$(diff -q "$file" "$home_file")
+            if [ -n "$diff_output" ]; then
+                cp -r "$file" "$home_file"
+                echo "Updated $home_file"
+            fi
+        else
+            cp -r "$file" "$home_file"
+            echo "Copied $file to $home_file"
+        fi
+    done
+}
+
+
+#+end_src
+
 * TODO
 ** undo-last-command
 I'm customizing my zsh shell and need your help. I want to bind a function to Ctrl+Z that undoes the last command. It should clear the screen after ls, delete files created with touch, close apps launched from the terminal, and even undo recent Git pushes, it should undo anything started from your shell, i want this to be very powerfull Any suggestions or scripts to achieve this?
@@ -1672,19 +1708,29 @@ function undo_last_command {
 #+end_src
 ** simple logic to add
 #+begin_src shell
-
 #TODO
 lower() {
     # Usage: lower "string"
     printf '%s\n' "${1,,}"
 }
+#+end_src
+** set-wallpaper
+#+begin_src shell
 
-reverse_array() {
-    # Usage: reverse_array "array"
-    shopt -s extdebug
-    f()(printf '%s\n' "${BASH_ARGV[@]}"); f "$@"
-    shopt -u extdebug
+function set-wallpaper() {
+    if [ -n "$1" ]; then
+        if [ -f "$1" ]; then
+            feh --bg-scale "$1"
+        else
+            echo "File does not exist: $1"
+            return 1
+        fi
+    else
+        echo "Usage: set-wallpaper <filename>"
+        return 1
+    fi
 }
+
 
 #+end_src
 ** git

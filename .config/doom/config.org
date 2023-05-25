@@ -3,11 +3,10 @@
 #+DESCRIPTION: DT's personal Doom Emacs config.
 #+STARTUP: showeverything
 
-
 * TABLE OF CONTENTS :toc:
 - [[#about-this-config][ABOUT THIS CONFIG]]
-- [[#beacon][BEACON]]
 - [[#xos][XOS]]
+- [[#beacon][BEACON]]
 - [[#bookmarks-and-buffers][BOOKMARKS AND BUFFERS]]
   - [[#bookmarks][Bookmarks]]
   - [[#buffers][Buffers]]
@@ -31,6 +30,7 @@
 - [[#eww][EWW]]
 - [[#exwm][EXWM]]
 - [[#fonts][FONTS]]
+- [[#imenu][IMENU]]
 - [[#insert-date][INSERT DATE]]
 - [[#ivy][IVY]]
   - [[#ivy-posframe][IVY-POSFRAME]]
@@ -61,17 +61,11 @@
 - [[#zap-to-char][ZAP TO CHAR]]
 
 * ABOUT THIS CONFIG
-This is my personal Doom Emacs config.  Doom Emacs is a distribution of Emacs. I am maintaining this config not just for myself, but also for those that want to explore some of what is possible with Emacs.  I will add a lot of examples of plugins and settings, some of them I may not even use personally.  I do this because many people following me on YouTube look at my configs as "documentation".
-
-* BEACON
-Never lose your cursor.  When you scroll, your cursor will shine!  This is a global minor-mode. Turn it on everywhere with:
-
-#+begin_src emacs-lisp
-(beacon-mode -1)
-#+end_src
+This is my personal Doom Emacs config.  Doom Emacs is a distribution of Emacs that uses the "evil" keybindings (Vim keybindings) and includes a number of nice extensions and a bit of configuration out of the box.  I am maintaining this config not just for myself, but also for those that want to explore some of what is possible with Emacs.  I will add a lot of examples of plugins and settings, some of them I may not even use personally.  I do this because many people following me on YouTube look at my configs as "documentation".
 
 * XOS
-#+begin_src emacs-lisp
+#+begin_src shell
+
 ;; (map! :leader
 ;;       :desc "Toggle treemacs"
 ;;       "e"#'treemacs)
@@ -87,7 +81,15 @@ Never lose your cursor.  When you scroll, your cursor will shine!  This is a glo
 ;; SET TRASPARENCY OF EMACS
 (set-frame-parameter (selected-frame) 'alpha '(90 65))
 (add-to-list 'default-frame-alist '(alpha 90 65))
+
 #+end_src
+* BEACON
+Never lose your cursor.  When you scroll, your cursor will shine!  This is a global minor-mode. Turn it on everywhere with:
+
+#+begin_src emacs-lisp
+(beacon-mode 1)
+#+end_src
+
 * BOOKMARKS AND BUFFERS
 Doom Emacs uses 'SPC b' for keybindings related to bookmarks and buffers.
 
@@ -242,12 +244,6 @@ To use tabs in Doom Emacs, be sure to uncomment "tabs" in Doom's init.el.  Displ
 | centaur-tabs-backward       | /Previous tab/              | g <left> or g T  |
 | centaur-tabs-forward-group  | /Next tab group/            | g <down>         |
 | centaur-tabs-backward-group | /Previous tab group/        | g <up>           |
-
-
-
-
-
-
 
 #+BEGIN_SRC emacs-lisp
 (setq centaur-tabs-set-bar 'over
@@ -593,6 +589,27 @@ Settings related to fonts within Doom Emacs:
 (custom-set-faces!
   '(font-lock-comment-face :slant italic)
   '(font-lock-keyword-face :slant italic))
+#+END_SRC
+
+* IMENU
+Imenu produces menus for accessing locations in documents, typically in the current buffer. You can access the locations using an ordinary menu (menu bar or other) or using minibuffer completion, or you can install 'imenu-list' and have the imenu displayed as a vertical split that you can toggle show/hide.
+
+| COMMAND                 | DESCRIPTION                      | KEYBINDING |
+|-------------------------+----------------------------------+------------|
+| counsel-imenu           | /Menu to jump to places in buffer/ | SPC s i    |
+| imenu-list-smart-toggle | /Toggle imenu shown in a sidebar/  | SPC t i    |
+
+#+BEGIN_SRC emacs-lisp
+(setq imenu-list-focus-after-activation t)
+
+(map! :leader
+      (:prefix ("s" . "Search")
+       :desc "Menu to jump to places in buffer" "i" #'counsel-imenu))
+
+(map! :leader
+      (:prefix ("t" . "Toggle")
+       :desc "Toggle imenu shown in a sidebar" "i" #'imenu-list-smart-toggle))
+
 #+END_SRC
 
 * INSERT DATE
@@ -1207,7 +1224,7 @@ We need ox-man for "Org eXporting" to manpage format and ox-gemini for exporting
 #+begin_src emacs-lisp
 (after! org
   (setq org-roam-directory "~/nc/Org/roam/"
-        org-roam-graph-viewer "/usr/bin/firefox"))
+        org-roam-graph-viewer "/usr/bin/brave"))
 
 (map! :leader
       (:prefix ("n r" . "org-roam")
@@ -1338,23 +1355,23 @@ I set splits to default to opening on the right using 'prefer-horizontal-split'.
 Instead of using Doom's Dashboard or the Emacs Dashboard program, I have decided to just set an custom start file as my "dashboard" since it allows me more customization options.  I have added to the 'start-mode-hook' the argument 'read-only-mode'.  This is to prevent accidental editing of the start file, and to prevent clashes with the 'start-mode' specific keybindings.  You can toggle on/off read-only-mode with 'SPC t r'.
 
 #+begin_src emacs-lisp
-;; (setq initial-buffer-choice "~/.config/doom/start.org")
+(setq initial-buffer-choice "~/.config/doom/start.org")
 
-;; (define-minor-mode start-mode
-;;   "Provide functions for custom start page."
-;;   :lighter " start"
-;;   :keymap (let ((map (make-sparse-keymap)))
-;;           ;;(define-key map (kbd "M-z") 'eshell)
-;;             (evil-define-key 'normal start-mode-map
-;;               (kbd "1") '(lambda () (interactive) (find-file "~/.config/doom/config.org"))
-;;               (kbd "2") '(lambda () (interactive) (find-file "~/.config/doom/init.el"))
-;;               (kbd "3") '(lambda () (interactive) (find-file "~/.config/doom/packages.el"))
-;;               (kbd "4") '(lambda () (interactive) (find-file "~/.config/doom/eshell/aliases"))
-;;               (kbd "5") '(lambda () (interactive) (find-file "~/.config/doom/eshell/profile")))
-;;           map))
+(define-minor-mode start-mode
+  "Provide functions for custom start page."
+  :lighter " start"
+  :keymap (let ((map (make-sparse-keymap)))
+          ;;(define-key map (kbd "M-z") 'eshell)
+            (evil-define-key 'normal start-mode-map
+              (kbd "1") '(lambda () (interactive) (find-file "~/.config/doom/config.org"))
+              (kbd "2") '(lambda () (interactive) (find-file "~/.config/doom/init.el"))
+              (kbd "3") '(lambda () (interactive) (find-file "~/.config/doom/packages.el"))
+              (kbd "4") '(lambda () (interactive) (find-file "~/.config/doom/eshell/aliases"))
+              (kbd "5") '(lambda () (interactive) (find-file "~/.config/doom/eshell/profile")))
+          map))
 
-;; (add-hook 'start-mode-hook 'read-only-mode) ;; make start.org read-only; use 'SPC t r' to toggle off read-only.
-;; (provide 'start-mode)
+(add-hook 'start-mode-hook 'read-only-mode) ;; make start.org read-only; use 'SPC t r' to toggle off read-only.
+(provide 'start-mode)
 #+end_src
 
 * WINNER MODE
