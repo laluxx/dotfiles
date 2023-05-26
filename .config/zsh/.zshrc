@@ -1125,6 +1125,10 @@ function dotfiles() {
   c ~/Desktop/pulls/dotfiles
 }
 
+function scripts() {
+    c ~/xos/scripts
+}
+
 function sapo() {
   c ~/Desktop/scuola/sapo
 }
@@ -1138,7 +1142,7 @@ function c() {
     if [ ! -d "$dir" ]; then
         mkdir -p "$dir"
     fi
-    clear && cd "$dir" && ls &&  ls -l -a | wc -l     # && bash ~/Desktop/xos/modules/ls-candy/cb-small
+    clear && cd "$dir" && exa -la # &&  ls -l -a | wc -l
 }
 
 function conf() {

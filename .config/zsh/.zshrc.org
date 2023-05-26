@@ -1434,7 +1434,7 @@ xgeometry() {
 
 #+end_src
 ** xgeometry_focused
-output x, y, width, heoght about the currently focused window
+output x, y, width, height about the currently focused window, WORK WITH ANY WM
 #+begin_src shell
 xgeometry_focused() {
 	focused_window_id=$(xdotool getwindowfocus)
@@ -1470,6 +1470,12 @@ function dotfiles() {
 }
 
 #+end_src
+** scripts
+#+begin_src shell
+function scripts() {
+    c ~/xos/scripts
+}
+#+end_src
 ** quick-acces
 *** school
 **** sapo
@@ -1489,7 +1495,7 @@ function mate() {
 
 #+end_src
 ** c
-c will replace cd in most functions
+c will replace cd in most shell functions
 #+begin_src shell
 
 function c() {
@@ -1497,7 +1503,7 @@ function c() {
     if [ ! -d "$dir" ]; then
         mkdir -p "$dir"
     fi
-    clear && cd "$dir" && ls &&  ls -l -a | wc -l     # && bash ~/Desktop/xos/modules/ls-candy/cb-small
+    clear && cd "$dir" && exa -la # &&  ls -l -a | wc -l
 }
 
 #+end_src
