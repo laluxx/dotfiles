@@ -73,7 +73,7 @@ Probably the most efficent thing i ever created.
 
 whenever you save a file inside "~/Desktop/pulls/dotfiles" or one of its subdirectories
 && if that file is a org file
-it basicly runs the update-dotfile function inside xos shell try "explain update-dotfiles"
+it basicly runs the update-dotfile function inside xos shell, try "explain update-dotfiles"
 
 #+begin_src emacs-lisp
 

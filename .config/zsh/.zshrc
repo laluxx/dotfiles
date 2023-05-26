@@ -1104,11 +1104,24 @@ xgeometry() {
   echo "Height: $height"
 }
 
+xgeometry_focused() {
+	focused_window_id=$(xdotool getwindowfocus)
+	xwininfo_output=$(xwininfo -id "$focused_window_id")
+	x=$(echo "$xwininfo_output" | awk '/Absolute upper-left X:/ { print $4 }')
+	y=$(echo "$xwininfo_output" | awk '/Absolute upper-left Y:/ { print $4 }')
+	width=$(echo "$xwininfo_output" | awk '/Width:/ { print $2 }')
+	height=$(echo "$xwininfo_output" | awk '/Height:/ { print $2 }')
+	echo "X: $x"
+	echo "Y: $y"
+	echo "Width: $width"
+	echo "Height: $height"
+}
+
 function edit-keys() {
   nvim ~/.config/sxhkd/sxhkdrc
 }
 
-function sapo() {
+function dotfiles() {
   c ~/Desktop/pulls/dotfiles
 }
 
@@ -1277,30 +1290,6 @@ function clones(){
   c ~/Desktop/clones
 }
 
-function update-dotfiles() {
-    dotfiles_path="$HOME/Desktop/pulls/dotfiles"
-
-    rsync -a "$dotfiles_path"/. "$HOME"/
-    echo "Updated dotfiles"
-}
-
-function xos-update() {
-    xos_path="$HOME/xos"
-    dotfiles_repo="https://github.com/laluxx/dotfiles.git"
-    destination_dir="$HOME/Desktop/pulls/dotfiles"
-
-    c "$xos_path"
-
-    # Remove the existing dotfiles directory if it exists
-    [[ -d dotfiles ]] && rm -rf dotfiles
-
-    gclone "$dotfiles_repo" && cd dotfiles
-
-    # Update destination directory to match the cloned dotfiles
-    rsync -a . "$destination_dir"/
-    echo "XOS updated"
-}
-
 #TODO
 #0.0.0
 function undo_last_command {
@@ -1398,4 +1387,61 @@ function dd_iso() {
 
 function xos() {
     c ~/Desktop/xos/$1
+}
+
+function update-dotfiles() {
+    dotfiles_path="$HOME/Desktop/pulls/dotfiles"
+
+    rsync -a "$dotfiles_path"/. "$HOME"/
+    echo "Updated dotfiles"
+}
+
+function xos-update() {
+    xos_path="$HOME/xos"
+    dotfiles_repo="https://github.com/laluxx/dotfiles.git"
+    destination_dir="$HOME/Desktop/pulls/dotfiles"
+
+    c "$xos_path"
+
+    # Remove the existing dotfiles directory if it exists
+    [[ -d dotfiles ]] && rm -rf dotfiles
+
+    gclone "$dotfiles_repo" && cd dotfiles
+
+    # Update destination directory to match the cloned dotfiles
+    rsync -a . "$destination_dir"/
+    echo "XOS updated"
+}
+
+function toggle-autologin() {
+  # Path to the systemd service
+  service_path="/etc/systemd/system/autologin@.service"
+
+  if [[ ! -f $service_path ]]; then
+    echo -e "\e[92mEnabling autologin...\e[0m"
+
+    # Ask for the username interactively
+    read "username?Username: "
+
+    # Copy getty service and modify for autologin
+    sudo sh -c "cp /usr/lib/systemd/system/getty@.service $service_path"
+    sudo sh -c "sed -i 's|ExecStart=-/usr/bin/agetty -o '-p -- \\u' --noclear %I $TERM|ExecStart=-/usr/bin/agetty -a $username --noclear %I 38400|' $service_path"
+
+    # Create the symbolic link for tty1
+    sudo sh -c "ln -sf $service_path /etc/systemd/system/getty.target.wants/getty@tty1.service"
+
+    # Reload systemd daemon and start the service
+    sudo systemctl daemon-reload
+    sudo systemctl restart getty@tty1.service
+  else
+    echo -e "\e[91mDisabling autologin...\e[0m"
+
+    # Remove the autologin service and symbolic link
+    sudo sh -c "rm $service_path"
+    sudo sh -c "ln -sf /usr/lib/systemd/system/getty@.service /etc/systemd/system/getty.target.wants/getty@tty1.service"
+
+    # Reload systemd daemon and start the service
+    sudo systemctl daemon-reload
+    sudo systemctl restart getty@tty1.service
+  fi
 }
