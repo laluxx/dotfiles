@@ -65,6 +65,7 @@
 ;; 	  :recipe (:host github :repo "magit/git-modes"
 ;; 			 :files ("gitignore-mode.el")))
 * PACKAGES
+** default
 #+begin_src emacs-lisp
 
 (package! flycheck-aspell)
@@ -95,4 +96,11 @@
 (package! clippy)
 (package! minimap)
 (package! olivetti)
+#+end_src
+** xos
+#+begin_src emacs-lisp
+
+;; (use-package org-roam
+;;   :ensure t)
+
 #+end_src

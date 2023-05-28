@@ -8,8 +8,6 @@
 - [[#xos][XOS]]
   - [[#update-dotfiles][update-dotfiles]]
   - [[#keybinds][keybinds]]
-  - [[#toolbar][toolbar]]
-  - [[#look-and-feel][look and feel]]
 - [[#beacon][BEACON]]
 - [[#bookmarks-and-buffers][BOOKMARKS AND BUFFERS]]
   - [[#bookmarks][Bookmarks]]
@@ -65,14 +63,12 @@
 - [[#zap-to-char][ZAP TO CHAR]]
 
 * ABOUT THIS CONFIG
-This is my personal Doom Emacs config.  Doom Emacs is a distribution of Emacs that uses the "evil" keybindings (Vim keybindings) and includes a number of nice extensions and a bit of configuration out of the box.  I am maintaining this config not just for myself, but also for those that want to explore some of what is possible with Emacs.  I will add a lot of examples of plugins and settings, some of them I may not even use personally.  I do this because many people following me on YouTube look at my configs as "documentation".
+This is my personal Doom Emacs config.
+Doom Emacs is a distribution of Emacs that uses the "evil" keybindings (Vim keybindings) and includes a number of nice extensions and a bit of configuration out of the box.  I am maintaining this config not just for myself, but also for those that want to explore some of what is possible with Emacs.  I will add a lot of examples of plugins and settings, some of them I may not even use personally.  I do this because many people following me on YouTube look at my configs as "documentation".
 
 * XOS
 ** update-dotfiles
-Probably the most efficent thing i ever created.
-
-whenever you save a file inside "~/Desktop/pulls/dotfiles" or one of its subdirectories
-&& if that file is a org file
+whenever you save a file inside "~/Desktop/pulls/dotfiles" or one of its subdirectories && if that file is a org file
 it basicly runs the update-dotfile function inside xos shell, try "explain update-dotfiles"
 
 #+begin_src emacs-lisp
@@ -96,9 +92,9 @@ it basicly runs the update-dotfile function inside xos shell, try "explain updat
 
 
 #+end_src
+
 ** keybinds
-*** custom dotfile directory
-this will overwrite the default SPC f p keybind
+this will overwrite the default doom emacs SPC f p keybind
 it will also open dired inside a window
 #+begin_src emacs-lisp
 
@@ -116,22 +112,22 @@ it will also open dired inside a window
       "t e" #'treemacs)
 
 #+end_src
-** toolbar
+*** toolbar
 
 #+begin_src emacs-lisp
 (tool-bar-mode  -1)
 (scroll-bar-mode  -1)
 (menu-bar-mode  -1)
 #+end_src
-** look and feel
-*** raibow-delimiters
+*** look and feel
+**** raibow-delimiters
 #+begin_src emacs-lisp
 
 (use-package rainbow-delimiters
   :hook (prog-mode . rainbow-delimiters-mode))
 
 #+end_src
-*** trasparency
+**** trasparency
 set trasparency of emacs
 when focused and not focused
 #+begin_src shell

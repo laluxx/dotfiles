@@ -1,4 +1,14 @@
+#+title: aliasrc.org
+#+PROPERTY: header-args :tangle aliasrc
+#+auto_tangle: t
+
+
+* ALIAS
+#+begin_src shell
 #!/bin/sh
+#+end_src
+** pacman
+#+begin_src shell
 
 alias get='sudo pacman -S'
 alias up='sudo pacman -Syyu'
@@ -9,6 +19,10 @@ alias databases="sudo pacman -Syy"
 alias pacup='kitty +kitten icat  && sudo pacman -Syu'
 
 alias paclog="sudo tail -f /var/log/pacman.log"
+#+end_src
+** emacs
+#TODO
+#+begin_src shell
 
 alias em="/usr/bin/emacs -nw"
 alias emacs="emacsclient -c -a 'emacs'"
@@ -17,21 +31,47 @@ alias doomdoctor="~/.emacs.d/bin/doom doctor"
 alias doomupgrade="~/.emacs.d/bin/doom upgrade"
 alias doompurge="~/.emacs.d/bin/doom purge"
 
+#+end_src
+** neovim
+#+begin_src shell
 alias v="nvim"
-
+#+end_src
+** dev
+*** npm
+#+begin_src shell
 alias npm="sudo npm"
-
+#+end_src
+*** luarocks
+#+begin_src shell
 alias luarocks="sudo luarocks"
+#+end_src
+*** cargo
+#+begin_src shell
 
 alias cr="cargo run"
 alias ca="cargo add"
 alias cs="cargo search"
 
+#+end_src
+
+** xos
+*** benchmark
+#+begin_src shell
+
 alias benchmark='hyperfine'
 
+#+end_src
+*** open
+#+begin_src shell
 alias open='xdg-open'
-
+#+end_src
+*** system
+#+begin_src shell
 alias shutdown="systemctl poweroff"
+
+#+end_src
+*** xtesting
+#+begin_src shell
 
 alias xprocess="ps -eo pid,comm,%cpu --sort=-%cpu | head"
 alias xmem="ps -eo pid,comm,%mem --sort=-%mem | head"
@@ -40,13 +80,23 @@ alias remind="notify-send "Reminder" "Time to take a break""
 
 alias todo='nvim ~/taskx'
 alias xtop='zfxtop'
+#+end_src
+** compression
+#+begin_src shell
 
 alias compress="tar -czvf"
 alias extract="tar -xzvf"
 
+#+end_src
+** picom
+#+begin_src shell
+
 alias invisible='picom-trans -w $(xdotool getactivewindow) 0'
 alias trans='wid=$(xdotool selectwindow); picom-trans -w $wid'
 
+#+end_src
+** motions
+#+begin_src shell
 alias x='clear && xonsh'
 alias .="c"
 alias c..="c .."
@@ -62,21 +112,36 @@ alias scuola='c ~/Desktop/scuola/'
 alias xapps='c ~/Desktop/xapps/'
 
 alias glo="frogmouth"
-
+#+end_src
+** pip
+#+begin_src shell
 alias pipbat="pip list --format=columns | bat"
 alias p="python3"
+#+end_src
 
+** ssh
+#+begin_src shell
 alias meteo="curl wttr.in"
 alias xconfetty="ssh -p 2222 ssh.caarlos0.dev"
 alias xfireworks="ssh -p 2223 ssh.caarlos0.dev"
-
+#+end_src
+** kitty
+#+begin_src shell
 alias icat="kitty +kitten icat"
+#+end_src
+** git
+#+begin_src shell
 
 alias gs="git status"
 alias gc="git commit"
 alias gp="git push"
 alias gpl="git pull"
 alias gpom="git push origin master"
+
+#+end_src
+** default
+Verbosity and settings that you pretty much just always are going to want.
+#+begin_src shell
 
 alias \
 	cp="cp -iv" \
@@ -131,3 +196,5 @@ alias \
 #else
 #    alias lf="/usr/bin/lfrun"
 #fi
+
+#+end_src

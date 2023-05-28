@@ -1,38 +1,76 @@
+#+title: sxhkdrc.org
+#+PROPERTY: header-args :tangle sxhkdrc
+#+auto_tangle: t
+
+* ABOUT THIS CONFIG
+This keybind configuration file contains global
+keybinds that can be used throughout the XOS ecosystem,
+making it easier and more efficient to navigate and operate beetween Desktops.
+* REFRESH-SXHKD
+#+begin_src conf
 alt + Escape
     pkill sxhkd && sxhkd &
-
+#+end_src
+* KEYBINDS
+** apps
+#+begin_src conf
 alt +a; {d,}
     {ded}
-
+#+end_src
+** find process
+#+begin_src conf
 alt + f; p
     kitty --config ~/Desktop/xos/modules/term/kitty/overlay/kitty.conf -e btop &
-
+#+end_src
+** terminals
+*** kitty
+#+begin_src conf
 alt + t; k
     kitty --config ~/Desktop/xos/modules/term/kitty/trasparent/kitty.conf &
-
+#+end_src
+**** overlay
+#+begin_src conf
 alt + t; m
     kitty --config ~/Desktop/xos/modules/term/kitty/overlay/kitty.conf &
-
+#+end_src
+*** wezterm
+#+begin_src conf
 alt + t; w
     wexterm &
-
+#+end_src
+*** st
+#+begin_src conf
 alt + t; s
     st &
-
+#+end_src
+*** alacritty
+#+begin_src conf
 alt + t; a
     alacritty &
-
+#+end_src
+** gpick
+#+begin_src conf
 alt + g; {p,}
     {gpick -p}
-
+#+end_src
+** emacs
+#+begin_src conf
 alt + e; {e,s,d,b,v}
     {emacs,emacsclient -c -a 'emacs' --eval '(eshell)',emacsclient -c -a 'emacs' --eval '(dired nil)',emacsclient -c -a 'emacs' --eval '(ibuffer)',emacsclient -c -a 'emacs' --eval '(+vterm/here nil)'}
+#+end_src
 
+** dmenu
+#+begin_src conf
 alt + p; {p,h,k,m,o,q,s,w}
     {dmenu_run,dm-hub,dm-kill,dm-man,dm-bookman,dm-logout,dm-websearch,dn-wifi}
-
+#+end_src
+** rofi
+#+begin_src conf
 alt + r; {r,e,s}
     {bash /home/l/.config/rofi/launchers/type-3/launcher.sh,bash /home/l/.config/rofi/applets/bin/appasroot.sh,bash /home/l/.config/rofi/applets/bin/screenshot.sh}
-
+#+end_src
+** browser
+#+begin_src conf
 alt + w
     firefox
+#+end_src

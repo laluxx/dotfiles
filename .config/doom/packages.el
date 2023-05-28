@@ -26,3 +26,6 @@
 (package! clippy)
 (package! minimap)
 (package! olivetti)
+
+;; (use-package org-roam
+;;   :ensure t)

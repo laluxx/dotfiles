@@ -945,6 +945,11 @@ function iso-build {
 eval "$(starship init zsh)"
 # eval "$(oh-my-posh init zsh)"
 
+export FZF_DEFAULT_OPTS=" \
+--color=bg+:#313244,bg:#1e1e2e,spinner:#f5e0dc,hl:#f38ba8 \
+--color=fg:#cdd6f4,header:#f38ba8,info:#cba6f7,pointer:#f5e0dc \
+--color=marker:#f5e0dc,fg+:#cdd6f4,prompt:#cba6f7,hl+:#f38ba8"
+
 function xrate144() {
   connected_display=$(xrandr | grep ' connected' | awk '{print $1}')
   xrandr --output "$connected_display" --mode 1920x1080 --rate 144
@@ -1393,30 +1398,6 @@ function xos() {
     c ~/Desktop/xos/$1
 }
 
-function update-dotfiles() {
-    dotfiles_path="$HOME/Desktop/pulls/dotfiles"
-
-    rsync -a "$dotfiles_path"/. "$HOME"/
-    echo "Updated dotfiles"
-}
-
-function xos-update() {
-    xos_path="$HOME/xos"
-    dotfiles_repo="https://github.com/laluxx/dotfiles.git"
-    destination_dir="$HOME/Desktop/pulls/dotfiles"
-
-    c "$xos_path"
-
-    # Remove the existing dotfiles directory if it exists
-    [[ -d dotfiles ]] && rm -rf dotfiles
-
-    gclone "$dotfiles_repo" && cd dotfiles
-
-    # Update destination directory to match the cloned dotfiles
-    rsync -a . "$destination_dir"/
-    echo "XOS updated"
-}
-
 function toggle-autologin() {
   # Path to the systemd service
   service_path="/etc/systemd/system/autologin@.service"
@@ -1448,4 +1429,47 @@ function toggle-autologin() {
     sudo systemctl daemon-reload
     sudo systemctl restart getty@tty1.service
   fi
+}
+
+function update-dotfiles() {
+    dotfiles_path="$HOME/Desktop/pulls/dotfiles"
+
+    rsync -a "$dotfiles_path"/. "$HOME"/
+    echo "Updated dotfiles"
+}
+
+function xos-update() {
+    xos_path="$HOME/xos"
+    dotfiles_repo="https://github.com/laluxx/dotfiles.git"
+    destination_dir="$HOME/Desktop/pulls/dotfiles"
+
+    c "$xos_path"
+
+    # Remove the existing dotfiles directory if it exists
+    [[ -d dotfiles ]] && rm -rf dotfiles
+
+    gclone "$dotfiles_repo" && cd dotfiles
+
+    # Update destination directory to match the cloned dotfiles
+    rsync -a . "$destination_dir"/
+    echo "XOS updated"
+    # want to ovverride ~/.config folder ? y/n #TODO
+}
+
+#FIXME
+function startwm() {
+    if [ "$#" -ne 1 ]; then
+        echo "Usage: startwm <window_manager>"
+        return 1
+    fi
+
+    # Uncomment these lines if you want to kill any running X server
+    # if pidof Xorg >/dev/null; then
+    #    echo "X server is running. Killing it..."
+    #    pkill Xorg
+    #    sleep 1
+    # fi
+
+    echo "Starting ${1}..."
+    ${1} >/dev/null 2>&1 &
 }
