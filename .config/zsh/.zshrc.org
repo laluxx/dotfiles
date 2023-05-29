@@ -1,6 +1,7 @@
 #+title: .zshrc
 #+PROPERTY: header-args :tangle .zshrc
 #+auto_tangle: t
+
 * PATH
 #+begin_src shell
 
@@ -13,11 +14,18 @@ function path() {
 
 ** exports
 #+begin_src shell
-
 export PATH="/home/l/.config/emacs/bin:$PATH"
 #+end_src
-* DEFAULT
+** source
+*** plugins
 #+begin_src shell
+source /usr/share/zsh/plugins/zsh-syntax-highlighting/zsh-syntax-highlighting.zsh 2>/dev/null
+#+end_src
+* MAIN
+things that run at runtime ? idk im stupid
+#+begin_src shell
+
+#bash ~/Desktop/xos-0.5/xapps/xpalette/catpuccin.sh
 
 #Enable colors and change prompt:
 autoload -U colors && colors
@@ -94,7 +102,6 @@ function _set_cursor() {
 
 
 
-#bash ~/Desktop/xos-0.5/xapps/xpalette/catpuccin.sh
 
 # Load aliases
 [ -f "$ZSHCFG/aliasrc" ] && source "$ZSHCFG/aliasrc"
@@ -130,19 +137,19 @@ export LESS_TERMCAP_me=$(tput sgr0)
 #+end_src
 
 * QUICK-ACCESS
-** uchrome
+** userchrome
 cd into userchrome folder
 #+begin_src shell
 
-uchrome() {
+userchrome() {
   c ~/.mozilla/firefox/exnoy41o.default-release/chrome
 }
 
 #+end_src
-** dapp
+** desktop-apps
 #+begin_src shell
 
-dapp() {
+function desktop-apps() {
     c ~/.local/share/applications
 }
 
@@ -151,6 +158,7 @@ dapp() {
 * SHELL
 **  image-map
 Define a mapping between directory names and image files
+custom images based on the enviroment for a more interactive shell
 #+begin_src shell
 declare -A image_map=(
   # ["rust"]="$HOME/Desktop/xos/xicons/rust.png"
@@ -254,6 +262,7 @@ function xcargo init() {
 ** file-creation
 *** nte
 better version of n
+#HACK #TODO
 #+begin_src shell
 
 function nte() {
@@ -318,6 +327,7 @@ function nte() {
 #+end_src
 **** bin
 ***** hex
+i dont remember how to use it
 #+begin_src shell
 
 function hex() {
@@ -343,6 +353,8 @@ function hex() {
 #+end_src
 **** web-apps
 ***** package-web-app
+package a website in a desktop app
+"package-web-app https://github.com"
 #+begin_src shell
 
 function package-web-app() {
@@ -1444,7 +1456,7 @@ xgeometry() {
 ** xgeometry_focused
 output x, y, width, height about the currently focused window, WORKS WITH ANY WM
 #+begin_src shell
-xgeometry_focused() {
+function xgeometry_focused() {
 	focused_window_id=$(xdotool getwindowfocus)
 	xwininfo_output=$(xwininfo -id "$focused_window_id")
 	x=$(echo "$xwininfo_output" | awk '/Absolute upper-left X:/ { print $4 }')
@@ -1939,6 +1951,34 @@ function toggle-autologin() {
 }
 
 #+end_src
+
+* STARTWM
+start any window manager #FIXME
+#+begin_src shell
+
+#FIXME
+function startwm() {
+    if [ "$#" -ne 1 ]; then
+        echo "Usage: startwm <window_manager>"
+        return 1
+    fi
+
+    # Uncomment these lines if you want to kill any running X server
+    # if pidof Xorg >/dev/null; then
+    #    echo "X server is running. Killing it..."
+    #    pkill Xorg
+    #    sleep 1
+    # fi
+
+    echo "Starting ${1}..."
+    ${1} >/dev/null 2>&1 &
+}
+
+#+end_src
+
+
+
+
 * UPDATE DOTFILES
 #+begin_src shell
 
@@ -1972,26 +2012,203 @@ function xos-update() {
 }
 
 #+end_src
-* STARTWM
-start any window manager #FIXME
+* GUM
+very cool stuff
+** theme
+*** dracula
+#+begin_src shell
+export GUM_INPUT_CURSOR_FOREGROUND="#FF0"
+export GUM_INPUT_PROMPT_FOREGROUND="#9AEDFE"
+export GUM_INPUT_PLACEHOLDER="What's up?"
+export GUM_INPUT_PROMPT="➜ "
+export GUM_INPUT_WIDTH=80
+#+end_src
+** gum-commit
 #+begin_src shell
 
-#FIXME
-function startwm() {
-    if [ "$#" -ne 1 ]; then
-        echo "Usage: startwm <window_manager>"
-        return 1
-    fi
+function gum-commit(){
+TYPE=$(gum choose "fix" "feat" "docs" "style" "refactor" "test" "chore" "revert")
+SCOPE=$(gum input --placeholder "scope")
 
-    # Uncomment these lines if you want to kill any running X server
-    # if pidof Xorg >/dev/null; then
-    #    echo "X server is running. Killing it..."
-    #    pkill Xorg
-    #    sleep 1
-    # fi
+# Since the scope is optional, wrap it in parentheses if it has a value.
+test -n "$SCOPE" && SCOPE="($SCOPE)"
 
-    echo "Starting ${1}..."
-    ${1} >/dev/null 2>&1 &
+# Pre-populate the input with the type(scope): so that the user may change it
+SUMMARY=$(gum input --value "$TYPE$SCOPE: " --placeholder "Summary of this change")
+DESCRIPTION=$(gum write --placeholder "Details of this change (CTRL+D to finish)")
+
+# Commit these changes
+gum confirm "Commit changes?" && git commit -m "$SUMMARY" -m "$DESCRIPTION"
 }
+#+end_src
+** prompt
+#+begin_src shell
+
+function gum-prompt(){
+    gum input --cursor.foreground "#FF0" --prompt.foreground "#0FF" --prompt "* " \
+        --placeholder "What's up?" --width 80 --value "Not much, hby?"
+}
+
+
+#+end_src
+** gum-input
+this is hardcoded will be made more modular
+will generate an answer.txt file containing tha answer
+#+begin_src shell
+function gum-input(){
+    gum input > answer.txt
+}
+#+end_src
+** gum-password
+#+begin_src shell
+function gum-password(){
+    gum input --password > password.txt
+}
+#+end_src
+** gum-write
+Prompt for some multi-line text.
+#+begin_src shell
+function gum-write(){
+    gum write > story.txt
+}
+
+#+end_src
+** gum-filter
+Use fuzzy matching to filter a list of values:
+#+begin_src shell
+function gum-filter(){
+    echo Strawberry >> flavors.txt
+    echo Banana >> flavors.txt
+    echo Cherry >> flavors.txt
+    cat flavors.txt | gum filter > selection.txt
+}
+#+end_src
+*** limit
+#+begin_src shell
+function gum-filter-limit(){
+    cat flavors.txt | gum filter --limit 2
+}
+#+end_src
+*** no limit
+#+begin_src shell
+function gum-filter-no-limit(){
+    cat flavors.txt | gum filter --no-limit
+}
+#+end_src
+** gum-choose
+Choose an option from a list of choices.
+#+begin_src shell
+function gum-choose(){
+    echo "Pick a card, any card..."
+    CARD=$(gum choose --height 15 {{A,K,Q,J},{10..2}}" "{♠,♥,♣,♦})
+    echo "Was your card the $CARD?"
+}
+#+end_src
+*** limit
+#+begin_src shell
+function gum-choose-limit(){
+    echo "Pick your top 5 songs."
+    cat songs.txt | gum choose --limit 5
+}
+#+end_src
+*** no limit
+#+begin_src shell
+function gum-choose-no-limit(){
+    echo "What do you need from the grocery store?"
+    cat foods.txt | gum choose --no-limit
+}
+#+end_src
+*** macros
+#+begin_src shell
+
+function gum-choose-100(){
+    gum choose {1..100}
+}
+#+end_src
+** gum-confirm
+#+begin_src shell
+function gum-confirm(){
+    gum confirm && rm file.txt || echo "File not removed"
+}
+#+end_src
+** gum-file
+#+begin_src shell
+function gum-file(){
+    emacs $(gum file $HOME)
+}
+
+#+end_src
+** gum-spin
+Display a spinner while running a script or command. The spinner will automatically stop after the given command exits.
+Available spinner types include:
+line, dot, minidot, jump, pulse, points, globe, moon, monkey, meter, hamburger.
+#+begin_src shell
+function gum-spin(){
+    gum spin --spinner line --title "Buying Bubble Gum..." -- sleep 5
+}
+#+end_src
+** table
+Select a row from some tabular data.
+#+begin_src shell
+# gum table < flavors.csv | cut -d ',' -f 1
+#+end_src
+** styling
+*** preatty print
+#+begin_src shell
+function gum-preatty-print(){
+    gum style \
+	    --foreground 212 --border-foreground 212 --border double \
+	    --align center --width 50 --margin "1 2" --padding "2 4" \
+	    'Bubble Gum (1¢)' 'So sweet and so fresh!'
+}
+
+#+end_src
+* startwm
+#+begin_src shell
+
+function startwm-eric() {
+    local program_name="$1"
+    local xinitrc_file="/etc/X11/xinit/xinitrc"
+    if sudo sed -i "\$s|^exec.*|exec $program_name|" "$xinitrc_file"; then
+        echo "Last 'exec' line updated in $xinitrc_file"
+    else
+        echo "No 'exec' line found in $xinitrc_file"
+    fi
+}
+#+end_src
+* INSTANT-MENU
+dont really like it
+#+begin_src shell
+
+# Define Color Schemes
+typeset -A color_schemes
+color_schemes=(
+  'dracula' '#282A36 #F8F8F2 #FF79C6 #F8F8F2'
+  'doom-one' '#282c34 #bbc2cf #98be65 #282c34'
+  # Format 'name' 'background foreground selection selected_text'
+)
+
+# ZSH function for Instant Menu
+instant_menu() {
+  # Select the color scheme
+  local -a colors
+  IFS=' ' read -r -A colors <<< "${color_schemes[$1]}"
+
+  # Generate menu
+  programs=$(ls /usr/bin | sort -u)
+  chosen=$(echo -e "$programs" | instantmenu -i -l 20 -h 30 -w 600 \
+      -x $(( ($(xdotool getdisplaygeometry | cut -d ' ' -f1) - 600) / 2 )) \
+      -y $(( ($(xdotool getdisplaygeometry | cut -d ' ' -f2) - 600) / 2 )) \
+      -nb ${colors[1]} -nf ${colors[2]} -sb ${colors[3]} -sf ${colors[4]})
+
+  # Run chosen program
+  [[ -n $chosen ]] && $chosen &
+}
+
+# Usage: instant_menu 'dracula'
+#        instant_menu 'doom-one'
+
+
+
 
 #+end_src

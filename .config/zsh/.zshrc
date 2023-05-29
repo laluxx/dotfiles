@@ -5,6 +5,10 @@ function path() {
 
 export PATH="/home/l/.config/emacs/bin:$PATH"
 
+source /usr/share/zsh/plugins/zsh-syntax-highlighting/zsh-syntax-highlighting.zsh 2>/dev/null
+
+#bash ~/Desktop/xos-0.5/xapps/xpalette/catpuccin.sh
+
 #Enable colors and change prompt:
 autoload -U colors && colors
 PS1="%B%{$fg[red]%}[%{$fg[yellow]%}%n%{$fg[green]%}@%{$fg[blue]%}%M %{$fg[magenta]%}%~%{$fg[red]%}]%{$reset_color%}$%b "
@@ -80,7 +84,6 @@ function _set_cursor() {
 
 
 
-#bash ~/Desktop/xos-0.5/xapps/xpalette/catpuccin.sh
 
 # Load aliases
 [ -f "$ZSHCFG/aliasrc" ] && source "$ZSHCFG/aliasrc"
@@ -114,11 +117,11 @@ export LESS_TERMCAP_mb=$(tput bold; tput setaf 39)
 export LESS_TERMCAP_md=$(tput bold; tput setaf 45)
 export LESS_TERMCAP_me=$(tput sgr0)
 
-uchrome() {
+userchrome() {
   c ~/.mozilla/firefox/exnoy41o.default-release/chrome
 }
 
-dapp() {
+function desktop-apps() {
     c ~/.local/share/applications
 }
 
@@ -1109,7 +1112,7 @@ xgeometry() {
   echo "Height: $height"
 }
 
-xgeometry_focused() {
+function xgeometry_focused() {
 	focused_window_id=$(xdotool getwindowfocus)
 	xwininfo_output=$(xwininfo -id "$focused_window_id")
 	x=$(echo "$xwininfo_output" | awk '/Absolute upper-left X:/ { print $4 }')
@@ -1469,6 +1472,24 @@ function toggle-autologin() {
   fi
 }
 
+#FIXME
+function startwm() {
+    if [ "$#" -ne 1 ]; then
+        echo "Usage: startwm <window_manager>"
+        return 1
+    fi
+
+    # Uncomment these lines if you want to kill any running X server
+    # if pidof Xorg >/dev/null; then
+    #    echo "X server is running. Killing it..."
+    #    pkill Xorg
+    #    sleep 1
+    # fi
+
+    echo "Starting ${1}..."
+    ${1} >/dev/null 2>&1 &
+}
+
 function update-dotfiles() {
     dotfiles_path="$HOME/Desktop/pulls/dotfiles"
 
@@ -1494,20 +1515,134 @@ function xos-update() {
     # want to ovverride ~/.config folder ? y/n #TODO
 }
 
-#FIXME
-function startwm() {
-    if [ "$#" -ne 1 ]; then
-        echo "Usage: startwm <window_manager>"
-        return 1
-    fi
+export GUM_INPUT_CURSOR_FOREGROUND="#FF0"
+export GUM_INPUT_PROMPT_FOREGROUND="#9AEDFE"
+export GUM_INPUT_PLACEHOLDER="What's up?"
+export GUM_INPUT_PROMPT="➜ "
+export GUM_INPUT_WIDTH=80
 
-    # Uncomment these lines if you want to kill any running X server
-    # if pidof Xorg >/dev/null; then
-    #    echo "X server is running. Killing it..."
-    #    pkill Xorg
-    #    sleep 1
-    # fi
+function gum-commit(){
+TYPE=$(gum choose "fix" "feat" "docs" "style" "refactor" "test" "chore" "revert")
+SCOPE=$(gum input --placeholder "scope")
 
-    echo "Starting ${1}..."
-    ${1} >/dev/null 2>&1 &
+# Since the scope is optional, wrap it in parentheses if it has a value.
+test -n "$SCOPE" && SCOPE="($SCOPE)"
+
+# Pre-populate the input with the type(scope): so that the user may change it
+SUMMARY=$(gum input --value "$TYPE$SCOPE: " --placeholder "Summary of this change")
+DESCRIPTION=$(gum write --placeholder "Details of this change (CTRL+D to finish)")
+
+# Commit these changes
+gum confirm "Commit changes?" && git commit -m "$SUMMARY" -m "$DESCRIPTION"
 }
+
+function gum-prompt(){
+    gum input --cursor.foreground "#FF0" --prompt.foreground "#0FF" --prompt "* " \
+        --placeholder "What's up?" --width 80 --value "Not much, hby?"
+}
+
+function gum-input(){
+    gum input > answer.txt
+}
+
+function gum-password(){
+    gum input --password > password.txt
+}
+
+function gum-write(){
+    gum write > story.txt
+}
+
+function gum-filter(){
+    echo Strawberry >> flavors.txt
+    echo Banana >> flavors.txt
+    echo Cherry >> flavors.txt
+    cat flavors.txt | gum filter > selection.txt
+}
+
+function gum-filter-limit(){
+    cat flavors.txt | gum filter --limit 2
+}
+
+function gum-filter-no-limit(){
+    cat flavors.txt | gum filter --no-limit
+}
+
+function gum-choose(){
+    echo "Pick a card, any card..."
+    CARD=$(gum choose --height 15 {{A,K,Q,J},{10..2}}" "{♠,♥,♣,♦})
+    echo "Was your card the $CARD?"
+}
+
+function gum-choose-limit(){
+    echo "Pick your top 5 songs."
+    cat songs.txt | gum choose --limit 5
+}
+
+function gum-choose-no-limit(){
+    echo "What do you need from the grocery store?"
+    cat foods.txt | gum choose --no-limit
+}
+
+function gum-choose-100(){
+    gum choose {1..100}
+}
+
+function gum-confirm(){
+    gum confirm && rm file.txt || echo "File not removed"
+}
+
+function gum-file(){
+    emacs $(gum file $HOME)
+}
+
+function gum-spin(){
+    gum spin --spinner line --title "Buying Bubble Gum..." -- sleep 5
+}
+
+# gum table < flavors.csv | cut -d ',' -f 1
+
+function gum-preatty-print(){
+    gum style \
+	    --foreground 212 --border-foreground 212 --border double \
+	    --align center --width 50 --margin "1 2" --padding "2 4" \
+	    'Bubble Gum (1¢)' 'So sweet and so fresh!'
+}
+
+function startwm-eric() {
+    local program_name="$1"
+    local xinitrc_file="/etc/X11/xinit/xinitrc"
+    if sudo sed -i "\$s|^exec.*|exec $program_name|" "$xinitrc_file"; then
+        echo "Last 'exec' line updated in $xinitrc_file"
+    else
+        echo "No 'exec' line found in $xinitrc_file"
+    fi
+}
+
+# Define Color Schemes
+typeset -A color_schemes
+color_schemes=(
+  'dracula' '#282A36 #F8F8F2 #FF79C6 #F8F8F2'
+  'doom-one' '#282c34 #bbc2cf #98be65 #282c34'
+  # Format 'name' 'background foreground selection selected_text'
+)
+
+# ZSH function for Instant Menu
+instant_menu() {
+  # Select the color scheme
+  local -a colors
+  IFS=' ' read -r -A colors <<< "${color_schemes[$1]}"
+
+  # Generate menu
+  programs=$(ls /usr/bin | sort -u)
+  chosen=$(echo -e "$programs" | instantmenu -i -l 20 -h 30 -w 600 \
+      -x $(( ($(xdotool getdisplaygeometry | cut -d ' ' -f1) - 600) / 2 )) \
+      -y $(( ($(xdotool getdisplaygeometry | cut -d ' ' -f2) - 600) / 2 )) \
+      -nb ${colors[1]} -nf ${colors[2]} -sb ${colors[3]} -sf ${colors[4]})
+
+  # Run chosen program
+  [[ -n $chosen ]] && $chosen &
+}
+
+# Usage: instant_menu 'dracula'
+#        instant_menu 'doom-one'

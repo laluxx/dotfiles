@@ -179,7 +179,7 @@ myStartupHook = do
 #+END_SRC
 
 #+BEGIN_SRC haskell
-  spawnOnce "xrate144"
+  spawnOnce "xrandr --output \"$(xrandr | awk '/ connected/ {print $1; exit}')\" --mode 1920x1080 --rate 144"
   spawnOnce "xset r rate 160 60"
   spawnOnce "lxsession"
   spawnOnce "picom"
@@ -188,6 +188,8 @@ myStartupHook = do
   spawnOnce "notify-log $HOME/.log/notify.log"
   spawn "/usr/bin/emacs --daemon" -- emacs daemon for the emacsclient
 #+END_SRC
+
+#+RESULTS:
 
 We killed any running conky and trayer processes earlier in the autostart, so now we sleep for 2 seconds and then restart conky and trayer.
 #+BEGIN_SRC haskell
