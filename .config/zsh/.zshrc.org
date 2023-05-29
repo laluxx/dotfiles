@@ -1470,21 +1470,66 @@ function edit-keys() {
 #+end_src
 
 * MOTIONS
+** c
+c will replace cd in most shell functions
+#+begin_src shell
+
+function c() {
+    local dir="$1"
+    if [ ! -d "$dir" ]; then
+        mkdir -p "$dir"
+    fi
+    clear && cd "$dir" && exa -la # &&  ls -l -a | wc -l
+}
+
+#+end_src
+
 ** dotfiles
 #+begin_src shell
 
 function dotfiles() {
-  c ~/Desktop/pulls/dotfiles
+  c ~/Desktop/pulls/dotfiles/$1
 }
 
 #+end_src
-** scripts
+*** _dotfiles
+This function is defined to provide autocompletion suggestions.
 #+begin_src shell
-function scripts() {
-    c ~/xos/scripts
+# Define color variables
+typeset -A config
+config=(
+  show_hidden  true
+)
+
+# Autocompletion function
+function _dotfiles() {
+    local curcontext="$curcontext" state line
+    typeset -A opt_args
+
+    _arguments -C \
+        '1: :->files' \
+        '*:: :->other'
+
+    case $state in
+        files)
+            local IFS=$'\n'
+            local -a completions
+            if [[ ${config[show_hidden]} == true ]]; then
+              completions=($(ls -A ~/Desktop/pulls/dotfiles))
+            else
+              completions=($(ls ~/Desktop/pulls/dotfiles))
+            fi
+            _describe 'files' completions
+            ;;
+        other)
+            ;;
+    esac
 }
+
+# Register the function for autocompletion
+compdef _dotfiles dotfiles
 #+end_src
-** quick-acces
+** hard-coded
 *** school
 **** sapo
 #+begin_src shell
@@ -1502,19 +1547,7 @@ function mate() {
 }
 
 #+end_src
-** c
-c will replace cd in most shell functions
-#+begin_src shell
 
-function c() {
-    local dir="$1"
-    if [ ! -d "$dir" ]; then
-        mkdir -p "$dir"
-    fi
-    clear && cd "$dir" && exa -la # &&  ls -l -a | wc -l
-}
-
-#+end_src
 ** conf
 #+begin_src shell
 
@@ -1548,7 +1581,9 @@ lfcd () {
 }
 
 #+end_src
-
+** modular
+motions that let you c even in a directory that does not exist,
+they are probably the most efficent
 ** test
 #+begin_src shell
 
@@ -1557,6 +1592,21 @@ function test() {
 }
 
 #+end_src
+** learn
+#+begin_src shell
+
+function learn() {
+    c ~/xos/learn/$1
+}
+
+#+end_src
+** scripts
+#+begin_src shell
+function scripts() {
+    c ~/xos/scripts/$1
+}
+#+end_src
+
 ** xos
 #+begin_src shell
 

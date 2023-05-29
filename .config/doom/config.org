@@ -8,6 +8,7 @@
 - [[#xos][XOS]]
   - [[#update-dotfiles][update-dotfiles]]
   - [[#keybinds][keybinds]]
+  - [[#functions][functions]]
 - [[#beacon][BEACON]]
 - [[#bookmarks-and-buffers][BOOKMARKS AND BUFFERS]]
   - [[#bookmarks][Bookmarks]]
@@ -64,7 +65,8 @@
 
 * ABOUT THIS CONFIG
 This is my personal Doom Emacs config.
-Doom Emacs is a distribution of Emacs that uses the "evil" keybindings (Vim keybindings) and includes a number of nice extensions and a bit of configuration out of the box.  I am maintaining this config not just for myself, but also for those that want to explore some of what is possible with Emacs.  I will add a lot of examples of plugins and settings, some of them I may not even use personally.  I do this because many people following me on YouTube look at my configs as "documentation".
+Doom Emacs is a distribution of Emacs that uses the "evil" keybindings (Vim keybindings) and includes a number of nice extensions and a bit of configuration out of the box.
+I am maintaining this config not just for myself, but also for those that want to explore some of what is possible with Emacs. I will add a lot of examples of plugins and settings.
 
 * XOS
 ** update-dotfiles
@@ -112,28 +114,48 @@ it will also open dired inside a window
       "t e" #'treemacs)
 
 #+end_src
-*** toolbar
-
+*** look and feel
+**** toolbar
 #+begin_src emacs-lisp
 (tool-bar-mode  -1)
 (scroll-bar-mode  -1)
 (menu-bar-mode  -1)
 #+end_src
-*** look and feel
 **** raibow-delimiters
 #+begin_src emacs-lisp
-
 (use-package rainbow-delimiters
   :hook (prog-mode . rainbow-delimiters-mode))
-
 #+end_src
 **** trasparency
 set trasparency of emacs
 when focused and not focused
 #+begin_src shell
-
 (set-frame-parameter (selected-frame) 'alpha '(90 65))
 (add-to-list 'default-frame-alist '(alpha 90 65))
+#+end_src
+** functions
+*** org
+#+begin_src emacs-lisp
+
+(defun org-insert-header-tags ()
+  "Insert personalized header tags at the beginning of the current Org file."
+  (interactive)
+  (goto-char (point-min)) ; Move to the beginning of the buffer
+  (insert "#+TITLE: \n") ; Insert TITLE tag
+  (insert "#+AUTHOR: laluxx\n") ; Insert AUTHOR tag with your desired value
+  (insert "#+DESCRIPTION: \n") ; Insert DESCRIPTION tag
+  (insert "#+STARTUP: showeverything\n") ; Insert STARTUP tag
+  (insert "#+PROPERTY: header-args :tangle\n") ; Insert TANGLE tag
+  (insert "\n") ; Insert a newline for separation
+  (message "Header tags inserted.")
+  (evil-goto-first-line) ; Move cursor to the top of the buffer
+  (evil-append-line 0)) ; Move cursor to the end of the line (after TITLE) and enter insert mode (Evil)
+#+end_src
+
+#+begin_src emacs-lisp
+(map! :leader
+      :desc "Insert header tags"
+      "i o" #'org-insert-header-tags)
 
 #+end_src
 * BEACON

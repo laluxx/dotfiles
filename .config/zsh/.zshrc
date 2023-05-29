@@ -1126,13 +1126,51 @@ function edit-keys() {
   nvim ~/.config/sxhkd/sxhkdrc
 }
 
-function dotfiles() {
-  c ~/Desktop/pulls/dotfiles
+function c() {
+    local dir="$1"
+    if [ ! -d "$dir" ]; then
+        mkdir -p "$dir"
+    fi
+    clear && cd "$dir" && exa -la # &&  ls -l -a | wc -l
 }
 
-function scripts() {
-    c ~/xos/scripts
+function dotfiles() {
+  c ~/Desktop/pulls/dotfiles/$1
 }
+
+# Define color variables
+typeset -A config
+config=(
+  show_hidden  true
+)
+
+# Autocompletion function
+function _dotfiles() {
+    local curcontext="$curcontext" state line
+    typeset -A opt_args
+
+    _arguments -C \
+        '1: :->files' \
+        '*:: :->other'
+
+    case $state in
+        files)
+            local IFS=$'\n'
+            local -a completions
+            if [[ ${config[show_hidden]} == true ]]; then
+              completions=($(ls -A ~/Desktop/pulls/dotfiles))
+            else
+              completions=($(ls ~/Desktop/pulls/dotfiles))
+            fi
+            _describe 'files' completions
+            ;;
+        other)
+            ;;
+    esac
+}
+
+# Register the function for autocompletion
+compdef _dotfiles dotfiles
 
 function sapo() {
   c ~/Desktop/scuola/sapo
@@ -1140,14 +1178,6 @@ function sapo() {
 
 function mate() {
   c ~/Desktop/scuola/
-}
-
-function c() {
-    local dir="$1"
-    if [ ! -d "$dir" ]; then
-        mkdir -p "$dir"
-    fi
-    clear && cd "$dir" && exa -la # &&  ls -l -a | wc -l
 }
 
 function conf() {
@@ -1177,6 +1207,14 @@ lfcd () {
 
 function test() {
     c ~/Desktop/test/$1
+}
+
+function learn() {
+    c ~/xos/learn/$1
+}
+
+function scripts() {
+    c ~/xos/scripts/$1
 }
 
 function xos() {

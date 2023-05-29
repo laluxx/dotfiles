@@ -125,6 +125,8 @@ myStartupHook = do
   spawn "killall trayer"  -- kill current trayer on each restart
   spawn "killall polybar" -- adding this in case of switching between xmobar and polybar.
 
+  spawnOnce "xrate144"
+  spawnOnce "xset r rate 160 60"
   spawnOnce "lxsession"
   spawnOnce "picom"
   spawnOnce "nm-applet"

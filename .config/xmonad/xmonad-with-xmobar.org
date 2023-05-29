@@ -179,6 +179,8 @@ myStartupHook = do
 #+END_SRC
 
 #+BEGIN_SRC haskell
+  spawnOnce "xrate144"
+  spawnOnce "xset r rate 160 60"
   spawnOnce "lxsession"
   spawnOnce "picom"
   spawnOnce "nm-applet"

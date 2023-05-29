@@ -1,7 +1,27 @@
-;; (map! :leader
-;;       :desc "Toggle treemacs"
-;;       "e"#'treemacs)
+(defun my/update-dotfiles ()
+  "Update dotfiles."
+  (interactive)
+  (let* ((dotfiles-path (expand-file-name "~/Desktop/pulls/dotfiles"))
+         (command (concat "rsync -a " dotfiles-path "/. $HOME/")))
+    (shell-command command)
+    (message "Updated dotfiles")))
 
+(defun my/run-update-dotfiles ()
+  "Run `my/update-dotfiles` if the current file is inside ~/Desktop/pulls/dotfiles or its subdirectories."
+  (when (and buffer-file-name
+             (string-prefix-p (expand-file-name "~/Desktop/pulls/dotfiles") buffer-file-name)
+             (string= (file-name-extension buffer-file-name) "org"))
+    (my/update-dotfiles)))
+
+(add-hook 'after-save-hook 'my/run-update-dotfiles)
+
+(map! :leader
+      :desc "Open dotfiles directory"
+      "f p" (lambda () (interactive) (dired "~/Desktop/pulls/dotfiles/.config/doom")))
+
+(map! :leader
+      :desc "Toggle treemacs"
+      "t e" #'treemacs)
 
 (tool-bar-mode  -1)
 (scroll-bar-mode  -1)
@@ -10,11 +30,42 @@
 (use-package rainbow-delimiters
   :hook (prog-mode . rainbow-delimiters-mode))
 
-;; SET TRASPARENCY OF EMACS
-(set-frame-parameter (selected-frame) 'alpha '(90 65))
-(add-to-list 'default-frame-alist '(alpha 90 65))
+(defun org-insert-header-tags ()
+  "Insert personalized header tags at the beginning of the current Org file."
+  (interactive)
+  (goto-char (point-min)) ; Move to the beginning of the buffer
+  (insert "#+TITLE: \n") ; Insert TITLE tag
+  (insert "#+AUTHOR: laluxx\n") ; Insert AUTHOR tag with your desired value
+  (insert "#+DESCRIPTION: \n") ; Insert DESCRIPTION tag
+  (insert "#+STARTUP: showeverything\n") ; Insert STARTUP tag
+  (insert "#+KEYWORDS: \n") ; Insert KEYWORDS tag
+  (insert "#+PROPERTY: header-args :tangle ./path/to/tangle/file.org\n") ; Insert PROPERTY tag for tangling with a placeholder path
+  (insert "\n") ; Insert a newline for separation
+  (message "Header tags inserted.")
+  (forward-line 1) ; Move cursor to the next line after TITLE tag
+  (end-of-line) ; Move cursor to the end of the line (after TITLE)
+  (evil-insert-state)) ; Enter insert mode (Evil)
 
-(beacon-mode 1)
+
+;; (defun org-insert-header-tags ()
+;;   "Insert header tags at the beginning of the current Org file."
+;;   (interactive)
+;;   (goto-char (point-min)) ; Move to the beginning of the buffer
+;;   (insert "#+TITLE: \n") ; Insert TITLE tag
+;;   (insert "#+AUTHOR: \n") ; Insert AUTHOR tag
+;;   (insert "#+DATE: \n") ; Insert DATE tag
+;;   (insert "#+KEYWORDS: \n") ; Insert KEYWORDS tag
+;;   (insert "#+DESCRIPTION: \n") ; Insert DESCRIPTION tag
+;;   (insert "#+STAFF: \n") ; Insert STAFF tag
+;;   (insert "#+AUTOTANGLE: \n") ; Insert AUTOTANGLE tag
+;;   (insert "\n") ; Insert a newline for separation
+;;   (message "Header tags inserted."))
+
+(map! :leader
+      :desc "Insert header tags"
+      "i o" #'org-insert-header-tags)
+
+(beacon-mode -1)
 
 (setq bookmark-default-file "~/.config/doom/bookmarks")
 
