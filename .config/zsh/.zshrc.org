@@ -2,6 +2,7 @@
 #+PROPERTY: header-args :tangle .zshrc
 #+auto_tangle: t
 
+
 * PATH
 #+begin_src shell
 
@@ -18,6 +19,7 @@ export PATH="/home/l/.config/emacs/bin:$PATH"
 #+end_src
 ** source
 *** plugins
+**** syntax-highlighting
 #+begin_src shell
 source /usr/share/zsh/plugins/zsh-syntax-highlighting/zsh-syntax-highlighting.zsh 2>/dev/null
 #+end_src
@@ -49,22 +51,22 @@ bindkey -v '^?' backward-delete-char
 
 bindkey -s '^r' 'lfcd\n'
 # below opens a new terminal in current dir
-bindkey -s '^t' 't\n'
+bindkey -s '^e' 'pcmanfm\n'
 
-case "$TERM" in (rxvt|rxvt-*|st|st-*|*xterm*|(dt|k|E)term)
-    local term_title () { print -n "\e]0;${(j: :q)@}\a" }
-    precmd () {
-      local DIR="$(print -P '[%c]')"
-      term_title "$DIR" "st"
-    }
-    preexec () {
-      local DIR="$(print -P '[%c]%#')"
-      local CMD="${(j:\n:)${(f)1}}"
-      #term_title "$DIR" "$CMD" use this if you want directory in command, below only prints program name
-	  term_title "$CMD"
-    }
-  ;;
-esac
+# case "$TERM" in (rxvt|rxvt-*|st|st-*|*xterm*|(dt|k|E)term)
+#     local term_title () { print -n "\e]0;${(j: :q)@}\a" }
+#     precmd () {
+#       local DIR="$(print -P '[%c]')"
+#       term_title "$DIR" "st"
+#     }
+#     preexec () {
+#       local DIR="$(print -P '[%c]%#')"
+#       local CMD="${(j:\n:)${(f)1}}"
+#       #term_title "$DIR" "$CMD" use this if you want directory in command, below only prints program name
+# 	  term_title "$CMD"
+#     }
+#   ;;
+# esac
 
 #Set bookmarks dir
 # To add any bookmark, use command below without quotes:
@@ -120,8 +122,8 @@ if [ ! -z $BM_DIR ]; then
 fi
 
 # Edit line in vim with ctrl-e:
-autoload edit-command-line; zle -N edit-command-line
-bindkey '^e' edit-command-line
+# autoload edit-command-line; zle -N edit-command-line
+# bindkey '^e' edit-command-line
 
 
 # Below to change autosuggestion options
@@ -657,7 +659,7 @@ delete all nvim config
 #+begin_src shell
 
 function unvim() {
-  rm -rf ~/.config/nvim
+  # rm -rf ~/.config/nvim
   rm -rf ~/.local/share/nvim
 }
 
@@ -1223,20 +1225,21 @@ function iso-build {
 
 #+end_src
 * PROMPT
+choose your prompt
 #+begin_src shell
 
 eval "$(starship init zsh)"
 # eval "$(oh-my-posh init zsh)"
 
 #+end_src
-* CATPPUCCIN
-** fzf
+* fzf
+** CATPPUCCIN
 #+begin_src shell
 
-export FZF_DEFAULT_OPTS=" \
---color=bg+:#313244,bg:#1e1e2e,spinner:#f5e0dc,hl:#f38ba8 \
---color=fg:#cdd6f4,header:#f38ba8,info:#cba6f7,pointer:#f5e0dc \
---color=marker:#f5e0dc,fg+:#cdd6f4,prompt:#cba6f7,hl+:#f38ba8"
+# export FZF_DEFAULT_OPTS=" \
+# --color=bg+:#313244,bg:#1e1e2e,spinner:#f5e0dc,hl:#f38ba8 \
+# --color=fg:#cdd6f4,header:#f38ba8,info:#cba6f7,pointer:#f5e0dc \
+# --color=marker:#f5e0dc,fg+:#cdd6f4,prompt:#cba6f7,hl+:#f38ba8"
 #+end_src
 * DESKTOP
 ** refresh rate
@@ -1435,6 +1438,45 @@ envycontrol_menu() {
 
 #+end_src
 * XORG-TOOL-BOX
+** SET-WM
+#+begin_src shell
+
+function set-wm() {
+    local program_name="$1"
+    local xinitrc_file="/etc/X11/xinit/xinitrc"
+    if sudo sed -i "\$s|^exec.*|exec $program_name|" "$xinitrc_file"; then
+        echo "Last 'exec' line updated in $xinitrc_file"
+    else
+        echo "No 'exec' line found in $xinitrc_file"
+    fi
+}
+#+end_src
+** start
+#+begin_src shell
+
+function start() {
+  if [[ -z $1 ]]; then
+    startx
+  else
+    set-wm "$1" && startx
+  fi
+}
+
+#+end_src
+dependencie
+#+begin_src shell
+
+function wm-set() {
+    local program_name="$1"
+    local xinitrc_file="/etc/X11/xinit/xinitrc"
+    if sudo sed -i "\$s|^exec.*|exec $program_name|" "$xinitrc_file"; then
+        echo "Last 'exec' line updated in $xinitrc_file"
+    else
+        echo "No 'exec' line found in $xinitrc_file"
+    fi
+}
+
+#+end_src
 ** xgeometry
 interactively click the desired window
 #+begin_src shell
@@ -1621,9 +1663,8 @@ function scripts() {
 
 ** xos
 #+begin_src shell
-
 function xos() {
-    c ~/Desktop/xos/$1
+    c ~/xos/$1
 }
 #+end_src
 
@@ -2023,6 +2064,7 @@ export GUM_INPUT_PLACEHOLDER="What's up?"
 export GUM_INPUT_PROMPT="➜ "
 export GUM_INPUT_WIDTH=80
 #+end_src
+
 ** gum-commit
 #+begin_src shell
 
@@ -2163,21 +2205,7 @@ function gum-preatty-print(){
 }
 
 #+end_src
-* startwm
-#+begin_src shell
-
-function startwm-eric() {
-    local program_name="$1"
-    local xinitrc_file="/etc/X11/xinit/xinitrc"
-    if sudo sed -i "\$s|^exec.*|exec $program_name|" "$xinitrc_file"; then
-        echo "Last 'exec' line updated in $xinitrc_file"
-    else
-        echo "No 'exec' line found in $xinitrc_file"
-    fi
-}
-#+end_src
 * INSTANT-MENU
-dont really like it
 #+begin_src shell
 
 # Define Color Schemes
@@ -2211,4 +2239,24 @@ instant_menu() {
 
 
 
+#+end_src
+
+* ANIMATED-WALLPAPER
+#+begin_src shell
+
+function wallpaper() {
+    # Ensure mpv and gum are installed
+    command -v mpv >/dev/null 2>&1 || { echo >&2 "This script requires mpv but it's not installed."; return 1; }
+    command -v gum >/dev/null 2>&1 || { echo >&2 "This script requires gum but it's not installed."; return 1; }
+
+    # Pick a file from ~/xos directory using gum
+    filepath=$(gum file ~/xos --filter '*.mp4')
+    if [ -z "$filepath" ]
+    then
+        echo "No video file selected"
+        return 1
+    fi
+
+    mpv --no-audio --loop=inf --no-input-default-bindings --no-osc --no-osd-bar --wid=0 "$filepath" &
+}
 #+end_src

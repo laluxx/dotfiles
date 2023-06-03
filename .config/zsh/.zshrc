@@ -31,22 +31,22 @@ bindkey -v '^?' backward-delete-char
 
 bindkey -s '^r' 'lfcd\n'
 # below opens a new terminal in current dir
-bindkey -s '^t' 't\n'
+bindkey -s '^e' 'pcmanfm\n'
 
-case "$TERM" in (rxvt|rxvt-*|st|st-*|*xterm*|(dt|k|E)term)
-    local term_title () { print -n "\e]0;${(j: :q)@}\a" }
-    precmd () {
-      local DIR="$(print -P '[%c]')"
-      term_title "$DIR" "st"
-    }
-    preexec () {
-      local DIR="$(print -P '[%c]%#')"
-      local CMD="${(j:\n:)${(f)1}}"
-      #term_title "$DIR" "$CMD" use this if you want directory in command, below only prints program name
-	  term_title "$CMD"
-    }
-  ;;
-esac
+# case "$TERM" in (rxvt|rxvt-*|st|st-*|*xterm*|(dt|k|E)term)
+#     local term_title () { print -n "\e]0;${(j: :q)@}\a" }
+#     precmd () {
+#       local DIR="$(print -P '[%c]')"
+#       term_title "$DIR" "st"
+#     }
+#     preexec () {
+#       local DIR="$(print -P '[%c]%#')"
+#       local CMD="${(j:\n:)${(f)1}}"
+#       #term_title "$DIR" "$CMD" use this if you want directory in command, below only prints program name
+# 	  term_title "$CMD"
+#     }
+#   ;;
+# esac
 
 #Set bookmarks dir
 # To add any bookmark, use command below without quotes:
@@ -102,8 +102,8 @@ if [ ! -z $BM_DIR ]; then
 fi
 
 # Edit line in vim with ctrl-e:
-autoload edit-command-line; zle -N edit-command-line
-bindkey '^e' edit-command-line
+# autoload edit-command-line; zle -N edit-command-line
+# bindkey '^e' edit-command-line
 
 
 # Below to change autosuggestion options
@@ -498,7 +498,7 @@ function z() {
 }
 
 function unvim() {
-  rm -rf ~/.config/nvim
+  # rm -rf ~/.config/nvim
   rm -rf ~/.local/share/nvim
 }
 
@@ -948,10 +948,10 @@ function iso-build {
 eval "$(starship init zsh)"
 # eval "$(oh-my-posh init zsh)"
 
-export FZF_DEFAULT_OPTS=" \
---color=bg+:#313244,bg:#1e1e2e,spinner:#f5e0dc,hl:#f38ba8 \
---color=fg:#cdd6f4,header:#f38ba8,info:#cba6f7,pointer:#f5e0dc \
---color=marker:#f5e0dc,fg+:#cdd6f4,prompt:#cba6f7,hl+:#f38ba8"
+# export FZF_DEFAULT_OPTS=" \
+# --color=bg+:#313244,bg:#1e1e2e,spinner:#f5e0dc,hl:#f38ba8 \
+# --color=fg:#cdd6f4,header:#f38ba8,info:#cba6f7,pointer:#f5e0dc \
+# --color=marker:#f5e0dc,fg+:#cdd6f4,prompt:#cba6f7,hl+:#f38ba8"
 
 function xrate144() {
   connected_display=$(xrandr | grep ' connected' | awk '{print $1}')
@@ -1099,6 +1099,34 @@ envycontrol_menu() {
   done
 }
 
+function set-wm() {
+    local program_name="$1"
+    local xinitrc_file="/etc/X11/xinit/xinitrc"
+    if sudo sed -i "\$s|^exec.*|exec $program_name|" "$xinitrc_file"; then
+        echo "Last 'exec' line updated in $xinitrc_file"
+    else
+        echo "No 'exec' line found in $xinitrc_file"
+    fi
+}
+
+function start() {
+  if [[ -z $1 ]]; then
+    startx
+  else
+    set-wm "$1" && startx
+  fi
+}
+
+function wm-set() {
+    local program_name="$1"
+    local xinitrc_file="/etc/X11/xinit/xinitrc"
+    if sudo sed -i "\$s|^exec.*|exec $program_name|" "$xinitrc_file"; then
+        echo "Last 'exec' line updated in $xinitrc_file"
+    else
+        echo "No 'exec' line found in $xinitrc_file"
+    fi
+}
+
 xgeometry() {
   xwininfo_output=$(xwininfo -frame)
   x=$(echo "$xwininfo_output" | awk '/Absolute upper-left X:/ { print $4 }')
@@ -1221,7 +1249,7 @@ function scripts() {
 }
 
 function xos() {
-    c ~/Desktop/xos/$1
+    c ~/xos/$1
 }
 
 function gclone() {
@@ -1609,16 +1637,6 @@ function gum-preatty-print(){
 	    'Bubble Gum (1¢)' 'So sweet and so fresh!'
 }
 
-function startwm-eric() {
-    local program_name="$1"
-    local xinitrc_file="/etc/X11/xinit/xinitrc"
-    if sudo sed -i "\$s|^exec.*|exec $program_name|" "$xinitrc_file"; then
-        echo "Last 'exec' line updated in $xinitrc_file"
-    else
-        echo "No 'exec' line found in $xinitrc_file"
-    fi
-}
-
 # Define Color Schemes
 typeset -A color_schemes
 color_schemes=(
@@ -1646,3 +1664,19 @@ instant_menu() {
 
 # Usage: instant_menu 'dracula'
 #        instant_menu 'doom-one'
+
+function wallpaper() {
+    # Ensure mpv and gum are installed
+    command -v mpv >/dev/null 2>&1 || { echo >&2 "This script requires mpv but it's not installed."; return 1; }
+    command -v gum >/dev/null 2>&1 || { echo >&2 "This script requires gum but it's not installed."; return 1; }
+
+    # Pick a file from ~/xos directory using gum
+    filepath=$(gum file ~/xos --filter '*.mp4')
+    if [ -z "$filepath" ]
+    then
+        echo "No video file selected"
+        return 1
+    fi
+
+    mpv --no-audio --loop=inf --no-input-default-bindings --no-osc --no-osd-bar --wid=0 "$filepath" &
+}
