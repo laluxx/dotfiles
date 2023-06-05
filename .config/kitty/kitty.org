@@ -1,13 +1,16 @@
+
+
+* KITTY
+#+begin_src conf
 # BEGIN_KITTY_THEME
 # Rosé Pine
-
 #include Catppuccin.conf
 # include yoru.conf
 
 
 allow_remote_control yes
 # END_KITTY_THEME
-# window_padding_width 100 
+# window_padding_width 100
 
 #15  base
 font_size 12
@@ -29,3 +32,5 @@ enable_audio_bell no
 
 
 include ~/.cache/wal/colors-kitty.conf
+
+#+end_src

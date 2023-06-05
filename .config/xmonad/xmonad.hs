@@ -128,6 +128,7 @@ myStartupHook = do
   spawnOnce "xrandr --output \"$(xrandr | awk '/ connected/ {print $1; exit}')\" --mode 1920x1080 --rate 144"
   spawnOnce "xset r rate 160 60"
   spawnOnce "lxsession"
+  -- spawnonce "/usr/lib/polkit-gnome/polkit-gnome-authentication-agent-1"
   spawnOnce "picom"
   spawnOnce "nm-applet"
   spawnOnce "volumeicon"

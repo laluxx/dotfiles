@@ -139,6 +139,10 @@ alias gpl="git pull"
 alias gpom="git push origin master"
 
 #+end_src
+** ls
+#+begin_src shell
+alias ls="lsd -la"
+#+end_src
 ** default
 Verbosity and settings that you pretty much just always are going to want.
 #+begin_src shell
@@ -151,7 +155,7 @@ alias \
 	ffmpeg="ffmpeg -hide_banner"
 
 # Colorize commands when possible.
-ls="ls -hN --color=auto --group-directories-first" \
+# ls="ls -hN --color=auto --group-directories-first" \
 alias \
 	lt="colorls --tree" \
 	grep="grep --color=auto" \
@@ -161,18 +165,16 @@ alias \
 alias \
 	ka="killall" \
 	g="git" \
-	f="$FILE" \
-	e="$EDITOR" \
 	xcp="xclip -selection clipboard" \
+	# f="$FILE" \
+	# e="$EDITOR" \
 
 # Changing "ls" to "exa"
-# alias l='lsd' # my preferred listing
 alias la='exa -a --color=always --group-directories-first'  # all files and dirs
 alias ll='exa -l --color=always --group-directories-first'  # long format
 # alias ls='exa -l --color=always --group-directories-first'  # long format
 alias lt='exa -aT --color=always --group-directories-first' # tree listing
-alias l='tree' # tree listing
-# alias l.='exa -a | egrep "^\."'
+alias l='lt' # tree listing
 
 
 alias \
@@ -196,5 +198,12 @@ alias \
 #else
 #    alias lf="/usr/bin/lfrun"
 #fi
+
+#+end_src
+* FZF
+#+begin_src shell
+alias fzf='fzf --color=16'
+alias fzf-tmux='fzf-tmux --color=16'
+
 
 #+end_src

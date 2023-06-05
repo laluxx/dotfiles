@@ -21,7 +21,8 @@ export PATH="/home/l/.config/emacs/bin:$PATH"
 *** plugins
 **** syntax-highlighting
 #+begin_src shell
-source /usr/share/zsh/plugins/zsh-syntax-highlighting/zsh-syntax-highlighting.zsh 2>/dev/null
+source /usr/share/zsh/plugins/zsh-syntax-highlighting/zsh-syntax-highlighting.zsh 2>/dev/null # PACMAN path
+# source $HOME/.config/zsh/plug/fzf-keybindings.plugins.zsh
 #+end_src
 * MAIN
 things that run at runtime ? idk im stupid
@@ -1537,7 +1538,6 @@ function c() {
 }
 
 #+end_src
-
 ** dotfiles
 #+begin_src shell
 
@@ -1661,12 +1661,6 @@ function scripts() {
 }
 #+end_src
 
-** xos
-#+begin_src shell
-function xos() {
-    c ~/xos/$1
-}
-#+end_src
 
 * GIT
 ** gclone
@@ -2244,13 +2238,17 @@ instant_menu() {
 * ANIMATED-WALLPAPER
 #+begin_src shell
 
-function wallpaper() {
-    # Ensure mpv and gum are installed
-    command -v mpv >/dev/null 2>&1 || { echo >&2 "This script requires mpv but it's not installed."; return 1; }
-    command -v gum >/dev/null 2>&1 || { echo >&2 "This script requires gum but it's not installed."; return 1; }
+wallpaper() {
+    # Define your variables here
+    VIDEO_DIRECTORY=~/xos/wallpapers/animated
+    FILE_EXTENSIONS='( -iname "*.mp4" -o -iname "*.mkv" )'
 
-    # Pick a file from ~/xos directory using gum
-    filepath=$(gum file ~/xos --filter '*.mp4')
+    # Ensure mpv and fzf are installed
+    command -v mpv >/dev/null 2>&1 || { echo >&2 "This script requires mpv but it's not installed."; return 1; }
+    command -v fzf >/dev/null 2>&1 || { echo >&2 "This script requires fzf but it's not installed."; return 1; }
+
+    # Use find to get all mp4 and mkv files, then use fzf to let user select a file
+    filepath=$(find $VIDEO_DIRECTORY $FILE_EXTENSIONS 2>/dev/null | fzf)
     if [ -z "$filepath" ]
     then
         echo "No video file selected"
@@ -2259,4 +2257,68 @@ function wallpaper() {
 
     mpv --no-audio --loop=inf --no-input-default-bindings --no-osc --no-osd-bar --wid=0 "$filepath" &
 }
+
+#+end_src
+* NEOVIM
+** kitty-font-changer
+#+begin_src shell
+
+# function update_kitty_font_size() {
+#   local num_windows="$1"
+#   if ((num_windows > 2)); then
+#     kitty @ set-font-size 10
+#   elif ((num_windows > 1)); then
+#     kitty @ set-font-size 12
+#   else
+#     kitty @ set-font-size 14
+#   fi
+# }
+
+# export -f update_kitty_font_size
+
+
+#+end_src
+* PYWALL
+#+begin_src shell
+
+function colorset() {
+    local wallpaper_dir="$HOME/.config/awesome/wallpapers/"
+    local current_wallpaper="$(awk -F '"' '/^theme\.wallpaper/ { print $2 }' "$HOME/.config/awesome/themes/dark/theme.lua")"
+    local wallpapers=("${(@f)$(find "$wallpaper_dir" -maxdepth 5 -type f -iregex '.*\.\(jpe?g\|png\)' -not -name "$(basename "$current_wallpaper")")}")
+    if [[ ${#wallpapers[@]} -eq 0 ]]; then
+        echo "No wallpapers found in $wallpaper_dir"
+        return 1
+    fi
+    local selection=$(printf '%s\n' "${wallpapers[@]}" | fzf-tmux --color=16 --height ${FZF_TMUX_HEIGHT:-40%} -m --reverse --ansi --cycle --preview-window=:hidden)
+    if [[ -z "$selection" ]]; then
+        echo "No wallpaper selected."
+        return 1
+    fi
+    local wallpaper_path="$(realpath "$selection")"
+    # local theme_path="$HOME/.config/awesome/themes/dark/theme.lua"
+    # local palette_path="$HOME/.cache/wal/colors"
+    wal -i "$wallpaper_path" -q
+    # local color_values=(
+    #     "fg_focus=$(awk 'NR==6' "$palette_path")"
+    #     "bg_urgent=$(awk 'NR==4' "$palette_path")"
+    #     "taglist_fg_focus=$(awk 'NR==5' "$palette_path")"
+    #     "tasklist_fg_focus=$(awk 'NR==5' "$palette_path")"
+    #     "border_focus=$(awk 'NR==6' "$palette_path")"
+    #     "bg_normal=$(awk 'NR==1' "$palette_path")"
+    #     "bg_focus=$(awk 'NR==1' "$palette_path")"
+    #     "taglist_bg_focus=$(awk 'NR==1' "$palette_path")"
+    #     "tasklist_bg_focus=$(awk 'NR==1' "$palette_path")"
+    #     "border_normal=$(awk 'NR==1' "$palette_path")"
+    # )
+    # local theme_file="$(<"$theme_path")"
+    # for color in "${color_values[@]}"; do
+    #     local color_name="${color%%=*}"
+    #     local color_value="${color#*=}"
+    #     theme_file="$(echo "$theme_file" | sed -E "s/^theme\.$color_name.*$/theme.$color_name = '$color_value'/")"
+    # done
+    echo "$theme_file" > "$theme_path"
+    # sleep 1 && awesome-client 'awesome.restart()' > /dev/null 2>&1
+}
+
+
 #+end_src
