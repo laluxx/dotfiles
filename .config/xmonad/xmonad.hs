@@ -82,7 +82,9 @@ import XMonad.Util.SpawnOnce
       -- SolarizedDark
       -- SolarizedLight
       -- TomorrowNight
-import Colors.Dracula
+-- import Colors.Dracula
+import Colors.Oxoterm
+-- import Colors.Pywal
 
 myFont :: String
 myFont = "xft:SauceCodePro Nerd Font Mono:regular:size=9:antialias=true:hinting=true"
@@ -141,7 +143,8 @@ myStartupHook = do
   -- spawnOnce "xargs xwallpaper --stretch < ~/.cache/wall"
   -- spawnOnce "~/.fehbg &"  -- set last saved feh wallpaper
   -- spawnOnce "feh --randomize --bg-fill /usr/share/backgrounds/dtos-backgrounds/*"  -- feh set random wallpaper
-  spawnOnce "nitrogen --restore &"   -- if you prefer nitrogen to feh
+  -- spawnOnce "nitrogen --restore &"   -- if you prefer nitrogen to feh
+  spawnOnce "wal -R -q"
   setWMName "LG3D"
 
 myNavigation :: TwoD a (Maybe a)

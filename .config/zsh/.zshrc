@@ -5,8 +5,12 @@ function path() {
 
 export PATH="/home/l/.config/emacs/bin:$PATH"
 
+export ROFI_THEME="/home/yourusername/.cache/wal/colors-rofi-dark.rasi"
+
 source /usr/share/zsh/plugins/zsh-syntax-highlighting/zsh-syntax-highlighting.zsh 2>/dev/null # PACMAN path
 # source $HOME/.config/zsh/plug/fzf-keybindings.plugins.zsh
+
+source ~/.cache/wal/colors.sh
 
 #bash ~/Desktop/xos-0.5/xapps/xpalette/catpuccin.sh
 
@@ -1361,10 +1365,6 @@ function pulls(){
   c ~/Desktop/pulls
 }
 
-function clones(){
-  c ~/Desktop/clones
-}
-
 #TODO
 #0.0.0
 function undo_last_command {
@@ -1379,26 +1379,6 @@ function undo_last_command {
     echo "This function only works in zsh."
     return 1
   fi
-}
-
-#TODO
-lower() {
-    # Usage: lower "string"
-    printf '%s\n' "${1,,}"
-}
-
-function set-wallpaper() {
-    if [ -n "$1" ]; then
-        if [ -f "$1" ]; then
-            feh --bg-scale "$1"
-        else
-            echo "File does not exist: $1"
-            return 1
-        fi
-    else
-        echo "Usage: set-wallpaper <filename>"
-        return 1
-    fi
 }
 
 #TODO
@@ -1462,57 +1442,6 @@ function dd_iso() {
 
 function xos() {
     c ~/Desktop/xos/$1
-}
-
-function toggle-autologin() {
-  # Path to the systemd service
-  service_path="/etc/systemd/system/autologin@.service"
-
-  if [[ ! -f $service_path ]]; then
-    echo -e "\e[92mEnabling autologin...\e[0m"
-
-    # Ask for the username interactively
-    read "username?Username: "
-
-    # Copy getty service and modify for autologin
-    sudo sh -c "cp /usr/lib/systemd/system/getty@.service $service_path"
-    sudo sh -c "sed -i 's|ExecStart=-/usr/bin/agetty -o '-p -- \\u' --noclear %I $TERM|ExecStart=-/usr/bin/agetty -a $username --noclear %I 38400|' $service_path"
-
-    # Create the symbolic link for tty1
-    sudo sh -c "ln -sf $service_path /etc/systemd/system/getty.target.wants/getty@tty1.service"
-
-    # Reload systemd daemon and start the service
-    sudo systemctl daemon-reload
-    sudo systemctl restart getty@tty1.service
-  else
-    echo -e "\e[91mDisabling autologin...\e[0m"
-
-    # Remove the autologin service and symbolic link
-    sudo sh -c "rm $service_path"
-    sudo sh -c "ln -sf /usr/lib/systemd/system/getty@.service /etc/systemd/system/getty.target.wants/getty@tty1.service"
-
-    # Reload systemd daemon and start the service
-    sudo systemctl daemon-reload
-    sudo systemctl restart getty@tty1.service
-  fi
-}
-
-#FIXME
-function startwm() {
-    if [ "$#" -ne 1 ]; then
-        echo "Usage: startwm <window_manager>"
-        return 1
-    fi
-
-    # Uncomment these lines if you want to kill any running X server
-    # if pidof Xorg >/dev/null; then
-    #    echo "X server is running. Killing it..."
-    #    pkill Xorg
-    #    sleep 1
-    # fi
-
-    echo "Starting ${1}..."
-    ${1} >/dev/null 2>&1 &
 }
 
 function update-dotfiles() {
@@ -1662,74 +1591,18 @@ instant_menu() {
 # Usage: instant_menu 'dracula'
 #        instant_menu 'doom-one'
 
-wallpaper() {
-    # Define your variables here
-    VIDEO_DIRECTORY=~/xos/wallpapers/animated
-    FILE_EXTENSIONS='( -iname "*.mp4" -o -iname "*.mkv" )'
+function wal-set() {
+  # Directory to search for wallpapers
+  local dir=~/xos/wallpapers/static
 
-    # Ensure mpv and fzf are installed
-    command -v mpv >/dev/null 2>&1 || { echo >&2 "This script requires mpv but it's not installed."; return 1; }
-    command -v fzf >/dev/null 2>&1 || { echo >&2 "This script requires fzf but it's not installed."; return 1; }
+  local wallpaper=$(find "$dir" \( -name "*.png" -o -name "*.jpg" -o -name "*.jpeg" -o -name "*.webp" \) -type f | fzf-tmux --color=16 --height 40% -m --reverse --ansi --cycle)
 
-    # Use find to get all mp4 and mkv files, then use fzf to let user select a file
-    filepath=$(find $VIDEO_DIRECTORY $FILE_EXTENSIONS 2>/dev/null | fzf)
-    if [ -z "$filepath" ]
-    then
-        echo "No video file selected"
-        return 1
-    fi
-
-    mpv --no-audio --loop=inf --no-input-default-bindings --no-osc --no-osd-bar --wid=0 "$filepath" &
-}
-
-# function update_kitty_font_size() {
-#   local num_windows="$1"
-#   if ((num_windows > 2)); then
-#     kitty @ set-font-size 10
-#   elif ((num_windows > 1)); then
-#     kitty @ set-font-size 12
-#   else
-#     kitty @ set-font-size 14
-#   fi
-# }
-
-# export -f update_kitty_font_size
-
-function colorset() {
-    local wallpaper_dir="$HOME/.config/awesome/wallpapers/"
-    local current_wallpaper="$(awk -F '"' '/^theme\.wallpaper/ { print $2 }' "$HOME/.config/awesome/themes/dark/theme.lua")"
-    local wallpapers=("${(@f)$(find "$wallpaper_dir" -maxdepth 5 -type f -iregex '.*\.\(jpe?g\|png\)' -not -name "$(basename "$current_wallpaper")")}")
-    if [[ ${#wallpapers[@]} -eq 0 ]]; then
-        echo "No wallpapers found in $wallpaper_dir"
-        return 1
-    fi
-    local selection=$(printf '%s\n' "${wallpapers[@]}" | fzf-tmux --color=16 --height ${FZF_TMUX_HEIGHT:-40%} -m --reverse --ansi --cycle --preview-window=:hidden)
-    if [[ -z "$selection" ]]; then
-        echo "No wallpaper selected."
-        return 1
-    fi
-    local wallpaper_path="$(realpath "$selection")"
-    # local theme_path="$HOME/.config/awesome/themes/dark/theme.lua"
-    # local palette_path="$HOME/.cache/wal/colors"
-    wal -i "$wallpaper_path" -q
-    # local color_values=(
-    #     "fg_focus=$(awk 'NR==6' "$palette_path")"
-    #     "bg_urgent=$(awk 'NR==4' "$palette_path")"
-    #     "taglist_fg_focus=$(awk 'NR==5' "$palette_path")"
-    #     "tasklist_fg_focus=$(awk 'NR==5' "$palette_path")"
-    #     "border_focus=$(awk 'NR==6' "$palette_path")"
-    #     "bg_normal=$(awk 'NR==1' "$palette_path")"
-    #     "bg_focus=$(awk 'NR==1' "$palette_path")"
-    #     "taglist_bg_focus=$(awk 'NR==1' "$palette_path")"
-    #     "tasklist_bg_focus=$(awk 'NR==1' "$palette_path")"
-    #     "border_normal=$(awk 'NR==1' "$palette_path")"
-    # )
-    # local theme_file="$(<"$theme_path")"
-    # for color in "${color_values[@]}"; do
-    #     local color_name="${color%%=*}"
-    #     local color_value="${color#*=}"
-    #     theme_file="$(echo "$theme_file" | sed -E "s/^theme\.$color_name.*$/theme.$color_name = '$color_value'/")"
-    # done
-    echo "$theme_file" > "$theme_path"
-    # sleep 1 && awesome-client 'awesome.restart()' > /dev/null 2>&1
+  # Check if a file was selected
+  if [[ -n "$wallpaper" ]]; then
+    # Set the wallpaper using wal
+    wal -i "${wallpaper}" -q
+    echo "Wallpaper set to ${wallpaper}"
+  else
+    echo "No wallpaper selected."
+  fi
 }

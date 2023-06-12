@@ -1,0 +1,44 @@
+#+TITLE: XOS Bootstrap
+#+AUTHOR: laluxx
+#+DESCRIPTION:
+#+STARTUP: showeverything
+#+PROPERTY: header-args :tangle
+
+
+
+* PACMAN
+** shells
+
+
+#+begin_src shell
+#!/usr/bin/env sh
+
+
+sudo pacman -S xorg-server xorg-xinit xorg-xinput xorg-xkill
+
+
+sudo pacman -S alacritty acpi archiso bat base-devel base broot btop cmake conky dust dunst emacs feh fzf git glow gpick gum jq jgmenu kitty lemonbar kvantum lf lutris meson mpd mpv neovim ninja nitrogen pcmanfm pavucontrol python-pywal python-pip rofi roswell rsync rust starship sxhkd sxiv tmux trayer ueberzug unclutter vi vim wget xdotool
+
+sudo pacman -S xmobar xmonad xmonad-contrib
+
+
+sudo pacman -S tree exa lsd
+
+sudo pacman -S polkit-gnome
+
+
+sudo pacman -S firefox
+
+sudo pacman -S fish zsh zsh-syntax-highlighting
+
+yay -S awesome-git catppuccin-gtk-theme-mocha dracula-gtk-theme github-cli gnome-disk-utility lxappearance-gtk3
+
+yay -S papirus-icon-theme-git papirus-folders-catpuccin-git
+
+
+yay -S eww
+yay -S termtyper-git
+yay -S pulseaudio
+yay -S polybar-git
+yay -S paru
+#+end_src

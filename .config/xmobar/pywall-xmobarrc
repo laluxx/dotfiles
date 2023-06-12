@@ -1,0 +1,62 @@
+-- Xmobar (http://projects.haskell.org/xmobar/)
+-- This is one of the xmobar configurations for DTOS.
+-- This config is packaged in the DTOS repo as 'dtos-xmobar'
+-- Color scheme: Pywal
+-- Dependencies:
+   -- otf-font-awesome
+   -- ttf-mononoki
+   -- ttf-ubuntu-font-family
+   -- htop
+   -- emacs
+   -- pacman (Arch Linux)
+   -- trayer
+   -- 'dtos-local-bin' (from dtos-core-repo)
+
+Config {
+    font = "Ubuntu Bold 9",
+    additionalFonts = [ "Mononoki 11"
+                      , "Font Awesome 6 Free Solid 12"
+                      , "Font Awesome 6 Brands 12"
+                      ],
+    bgColor = "${xmobar #0 bg}",
+    fgColor = "${xmobar #15 fg}",
+    position = TopSize L 100 24,
+    lowerOnStart = True,
+    hideOnStart = False,
+    allDesktops = True,
+    persistent = True,
+    iconRoot = ".xmonad/xpm/",  -- default: "."
+    commands = [
+        -- Echos a "penguin" icon in front of the kernel output.
+        Run Com "echo" ["<fn=3>\xf17c</fn>"] "penguin" 3600,
+        -- Get kernel version (script found in .local/bin)
+        Run Com ".local/bin/kernel" [] "kernel" 36000,
+        -- Cpu usage in percent
+        Run Cpu ["-t", "<fn=2>\xf108</fn>  cpu: (<total>%)","-H","50","--high","red"] 20,
+        -- Ram used number and percent
+        Run Memory ["-t", "<fn=2>\xf233</fn>  mem: <used>M (<usedratio>%)"] 20,
+        -- Disk space free
+        Run DiskU [("/", "<fn=2>\xf0c7</fn>  hdd: <free> free")] [] 60,
+        -- Echos an "up arrow" icon in front of the uptime output.
+        Run Com "echo" ["<fn=2>\xf0aa</fn>"] "uparrow" 3600,
+        -- Uptime
+        Run Uptime ["-t", "uptime: <days>d <hours>h"] 360,
+        -- Echos a "bell" icon in front of the pacman updates.
+        Run Com "echo" ["<fn=2>\xf0f3</fn>"] "bell" 3600,
+        -- Check for pacman updates (script found in .local/bin)
+        Run Com ".local/bin/pacupdate" [] "pacupdate" 36000,
+        -- Echos a "battery" icon in front of the pacman updates.
+        Run Com "echo" ["<fn=2>\xf242</fn>"] "baticon" 3600,
+        -- Battery
+        Run BatteryP ["BAT0"] ["-t", "<acstatus><watts> (<left>%)"] 360,
+        -- Time and date
+        Run Date "<fn=2>\xf017</fn>  %b %d %Y - (%H:%M) " "date" 50,
+        -- Script that dynamically adjusts xmobar padding depending on the number of trayer icons.
+        Run Com ".config/xmobar/trayer-padding-icon.sh" [] "trayerpad" 20,
+        -- Prints out the left side items such as workspaces, layout, etc.
+        Run UnsafeStdinReader
+    ],
+    sepChar = "%",
+    alignSep = "}{",
+    template = " %UnsafeStdinReader% }{ <box type=Bottom width=2 mb=2 color=${xmobar #bd93f9 bg}><fc=${xmobar #bd93f9 fg}>%penguin%  %kernel%</fc></box>    <box type=Bottom width=2 mb=2 color=${xmobar #f1fa8c bg}><fc=${xmobar #f1fa8c fg}><action=`alacritty -e htop`>%cpu%</action></fc></box>    <box type=Bottom width=2 mb=2 color=${xmobar #ff5555 bg}><fc=${xmobar #ff5555 fg}><action=`alacritty -e htop`>%memory%</action></fc></box>    <box type=Bottom width=2 mb=2 color=${xmobar #5af78e bg}><fc=${xmobar #5af78e fg}>%disku%</fc></box>    <box type=Bottom width=2 mb=2 color=${xmobar #ff79c6 bg}><fc=${xmobar #ff79c6 fg}>%uparrow%  %uptime%</fc></box>    <box type=Bottom width=2 mb=2 color=${xmobar #8be9fd bg}><fc=${xmobar #8be9fd fg}>%bell%  <action=`alacritty -e sudo pacman -Syu`>%pacupdate%</action></fc></box>   <box type=Bottom width=2 mb=2 color=${xmobar #ff6e67 bg}><fc=${xmobar #ff6e67 fg}>%baticon%  %battery%</fc></box>    <box type=Bottom width=2 mb=2 color=${xmobar #caa9fa bg}><fc=${xmobar #caa9fa fg}><action=`emacsclient -c -a 'emacs' --eval '(doom/window-maximize-buffer(dt/year-calendar))'`>%date%</action></fc></box> ${trayerpad}"
+}
