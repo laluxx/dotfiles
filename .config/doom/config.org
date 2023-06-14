@@ -9,6 +9,7 @@
   - [[#update-dotfiles][update-dotfiles]]
   - [[#keybinds][keybinds]]
   - [[#functions][functions]]
+  - [[#smartparens][smartparens]]
 - [[#beacon][BEACON]]
 - [[#bookmarks-and-buffers][BOOKMARKS AND BUFFERS]]
   - [[#bookmarks][Bookmarks]]
@@ -156,6 +157,29 @@ when focused and not focused
 (map! :leader
       :desc "Insert header tags"
       "i o" #'org-insert-header-tags)
+
+#+end_src
+** smartparens
+#+begin_src emacs-lisp
+
+(defun my/delete-empty-pair ()
+  (interactive)
+  (let* ((prev-char (char-before))
+         (next-char (char-after)))
+    (cond ((and (eq prev-char ?\() (eq next-char ?\)))
+           (delete-char 1) (delete-char -1))
+          ((and (eq prev-char ?\[) (eq next-char ?\]))
+           (delete-char 1) (delete-char -1))
+          ((and (eq prev-char ?\{) (eq next-char ?\}))
+           (delete-char 1) (delete-char -1))
+          ((and (eq prev-char ?\") (eq next-char ?\"))
+           (delete-char 1) (delete-char -1))
+          ((and (eq prev-char ?\') (eq next-char ?\'))
+           (delete-char 1) (delete-char -1))
+          (t (call-interactively 'backward-delete-char-untabify)))))
+
+(global-set-key (kbd "<backspace>") 'my/delete-empty-pair)
+
 
 #+end_src
 * BEACON

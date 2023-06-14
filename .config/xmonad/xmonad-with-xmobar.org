@@ -19,6 +19,8 @@
 - [[#system-sounds][System Sounds]]
 - [[#namedactions][NamedActions]]
 - [[#keybindings][Keybindings]]
+- [[#xos][xos]]
+  - [[#jgmenu][jgmenu]]
 - [[#main][Main]]
 
 * About This Config
@@ -124,7 +126,8 @@ import XMonad.Util.SpawnOnce
       -- SolarizedLight
       -- TomorrowNight
 -- import Colors.Dracula
-import Colors.Oxoterm
+-- import Colors.Oxoterm
+import Colors.Mocha
 -- import Colors.Pywal
 #+END_SRC
 
@@ -847,7 +850,14 @@ myKeys c =
           nonEmptyNonNSP  = WSIs (return (\ws -> isJust (W.stack ws) && W.tag ws /= "NSP"))
 
 #+END_SRC
+* xos
+** jgmenu
+#+begin_src haskell
+--  myMouseBindings :: XConfig t -> M.Map (KeyMask, Button) (Window -> X ())
+-- myMouseBindings (XConfig {XMonad.modMask = modm}) = M.fromList
+--     [ ((0, button3), (\_ -> spawn "jgmenu_run")) ] -- Right click spawns jgmenu
 
+#+end_src
 * Main
 This is the "main" of XMonad. This where everything in our configs comes together and works.
 
@@ -859,6 +869,7 @@ main = do
   xmproc1 <- spawnPipe ("xmobar -x 1 $HOME/.config/xmobar/" ++ colorScheme ++ "-xmobarrc")
   xmproc2 <- spawnPipe ("xmobar -x 2 $HOME/.config/xmobar/" ++ colorScheme ++ "-xmobarrc")
   -- the xmonad, ya know...what the WM is named after!
+
   xmonad $ addDescrKeys' ((mod4Mask, xK_F1), showKeybindings) myKeys $ ewmh $ docks $ def
     { manageHook         = myManageHook <+> manageDocks
     , handleEventHook    = windowedFullscreenFixEventHook <> swallowEventHook (className =? "kitty"  <||> className =? "st-256color" <||> className =? "XTerm") (return True) <> trayerPaddingXmobarEventHook

@@ -83,7 +83,8 @@ import XMonad.Util.SpawnOnce
       -- SolarizedLight
       -- TomorrowNight
 -- import Colors.Dracula
-import Colors.Oxoterm
+-- import Colors.Oxoterm
+import Colors.Mocha
 -- import Colors.Pywal
 
 myFont :: String
@@ -701,6 +702,10 @@ myKeys c =
     where nonNSP          = WSIs (return (\ws -> W.tag ws /= "NSP"))
           nonEmptyNonNSP  = WSIs (return (\ws -> isJust (W.stack ws) && W.tag ws /= "NSP"))
 
+--  myMouseBindings :: XConfig t -> M.Map (KeyMask, Button) (Window -> X ())
+-- myMouseBindings (XConfig {XMonad.modMask = modm}) = M.fromList
+--     [ ((0, button3), (\_ -> spawn "jgmenu_run")) ] -- Right click spawns jgmenu
+
 main :: IO ()
 main = do
   -- Launching three instances of xmobar on their monitors.
@@ -708,6 +713,7 @@ main = do
   xmproc1 <- spawnPipe ("xmobar -x 1 $HOME/.config/xmobar/" ++ colorScheme ++ "-xmobarrc")
   xmproc2 <- spawnPipe ("xmobar -x 2 $HOME/.config/xmobar/" ++ colorScheme ++ "-xmobarrc")
   -- the xmonad, ya know...what the WM is named after!
+
   xmonad $ addDescrKeys' ((mod4Mask, xK_F1), showKeybindings) myKeys $ ewmh $ docks $ def
     { manageHook         = myManageHook <+> manageDocks
     , handleEventHook    = windowedFullscreenFixEventHook <> swallowEventHook (className =? "kitty"  <||> className =? "st-256color" <||> className =? "XTerm") (return True) <> trayerPaddingXmobarEventHook
