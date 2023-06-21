@@ -4,41 +4,137 @@
 #+STARTUP: showeverything
 #+PROPERTY: header-args :tangle
 
-
-
-* PACMAN
-** shells
-
-
+* XORG
 #+begin_src shell
-#!/usr/bin/env sh
+sudo pacman -S xorg-server xorg-xinit xorg-xinput xorg-xkill xdotool
+#+end_src
 
+* AUR-HELPER
+#+begin_src shell
+# BUILD YAY
 
-sudo pacman -S xorg-server xorg-xinit xorg-xinput xorg-xkill
+yay -S paru
+#+end_src
 
-
-sudo pacman -S alacritty acpi archiso bat base-devel base broot btop cmake conky dust dunst emacs feh fzf git glow gpick gum jq jgmenu kitty lemonbar kvantum lf lutris meson mpd mpv neovim ninja nitrogen pcmanfm pavucontrol python-pywal python-pip rofi roswell rsync rust starship sxhkd sxiv tmux trayer ueberzug unclutter vi vim wget xdotool
-
-sudo pacman -S xmobar xmonad xmonad-contrib
-
-
-sudo pacman -S tree exa lsd
-
-sudo pacman -S polkit-gnome
-
-
-sudo pacman -S firefox
+* SHELL
+#+begin_src shell
 
 sudo pacman -S fish zsh zsh-syntax-highlighting
+#+end_src
+* PACMAN
+** polkit
+#+begin_src shell
+sudo pacman -S polkit-gnome
+#+end_src
+** wm
+*** awesome
+#+begin_src shell
+# yay -S awesome-git
+sudo pacman -S awesome
+#+end_src
+*** xmonad
+#+begin_src shell
+sudo pacman -S xmobar xmonad xmonad-contrib
+#+end_src
+** list
+#+begin_src shell
+sudo pacman -S tree exa lsd
+#+end_src
+** file manager
+#+begin_src shell
+sudo pacman -S pcmanfm lf
+#+end_src
+** term
+#+begin_src shell
+sudo pacman -S kitty alacritty
+#+end_src
+** www
+#+begin_src shell
+sudo pacman -S firefox
+#+end_src
+** base
+#+begin_src shell
+sudo pacman -S acpi archiso bat base-devel base btop cmake conky dust dunst emacs feh fzf git glow gpick gum jq jgmenu lf lutris meson mpd mpv neovim ninja nitrogen  sxhkd sxiv tmux trayer ueberzug unclutter vi vim wget
+#+end_src
 
-yay -S awesome-git catppuccin-gtk-theme-mocha dracula-gtk-theme github-cli gnome-disk-utility lxappearance-gtk3
+** languages
+installation and conf
+*** c
+#+begin_src shell
+# sudo pacman -S aspell
 
+#+end_src
+*** rust
+#+begin_src shell
+sudo pacman -S rust
+#+end_src
+*** python
+#+begin_src shell
+sudo pacman -S python-pywal python-pip rofi  rsync rust
+#+end_src
+*** haskell
+#+begin_src sh
+# sudo pacman -S hlint
+
+#+end_src
+*** lisp
+#+begin_src shell
+# sudo pacman -S roswell
+#+end_src
+* YAY
+** ui
+*** apps
+**** lxappearance
+#+begin_src shell
+yay -S lxappearance-gtk3
+#+end_src
+**** kvantum
+#+begin_src shell
+sudo pacman -S kvantum
+#+end_src
+*** bars
+#+begin_src shell
+yay -S polybar-git eww lemonbar
+#+end_src
+*** icons
+#+begin_src shell
 yay -S papirus-icon-theme-git papirus-folders-catpuccin-git
+#+end_src
+*** gtk-themes
+#+begin_src shell
+yay -S catppuccin-gtk-theme-mocha dracula-gtk-theme
 
-
-yay -S eww
-yay -S termtyper-git
+#+end_src
+** audio
+#+begin_src shell
+sudo pacman -S pavucontrol
 yay -S pulseaudio
-yay -S polybar-git
-yay -S paru
+#+end_src
+
+** personal-apps
+#+begin_src shell
+yay -S github-cli gnome-disk-utility termtyper-git
+#+end_src
+*** RUST
+#+begin_src shell
+yay -S code-minimap
+#+end_src
+* XOS
+** etc
+IDEA: https://github.com/laluxx/etc will be rsync into /etc only adding no deleting
+#+begin_src shell
+
+
+#+end_src
+** dotfiles
+#+begin_src shell
+mkdir ~/xos
+cd ~/xos
+git clone https://github.com/laluxx/dotfiles
+rsync -avh dotfiles/ ~/
+#+end_src
+** wallpapers
+#+begin_src shell
+mkdir ~/xos/wallpapers
+# git clone...
 #+end_src

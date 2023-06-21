@@ -5,11 +5,16 @@
 
 * TABLE OF CONTENTS :toc:
 - [[#about-this-config][ABOUT THIS CONFIG]]
+- [[#todo][TODO]]
+  - [[#org][org]]
 - [[#xos][XOS]]
   - [[#update-dotfiles][update-dotfiles]]
+  - [[#gptel][gptel]]
   - [[#keybinds][keybinds]]
+  - [[#resize-window][resize-window]]
+  - [[#look-and-feel][look and feel]]
   - [[#functions][functions]]
-  - [[#smartparens][smartparens]]
+  - [[#editing][editing]]
 - [[#beacon][BEACON]]
 - [[#bookmarks-and-buffers][BOOKMARKS AND BUFFERS]]
   - [[#bookmarks][Bookmarks]]
@@ -69,14 +74,15 @@ This is my personal Doom Emacs config.
 Doom Emacs is a distribution of Emacs that uses the "evil" keybindings (Vim keybindings) and includes a number of nice extensions and a bit of configuration out of the box.
 I am maintaining this config not just for myself, but also for those that want to explore some of what is possible with Emacs. I will add a lot of examples of plugins and settings.
 
+* TODO
+** org
+understand lsp work inside org documents too
 * XOS
 ** update-dotfiles
-whenever you save a file inside "~/Desktop/pulls/dotfiles" or one of its subdirectories && if that file is a org file
-it basicly runs the update-dotfile function inside xos shell, try "explain update-dotfiles"
-
+whenever you save a file inside "~/Desktop/pulls/dotfiles"
+or one of its subdirectories && if that file is a org file
 #+begin_src emacs-lisp
-
-(defun my/update-dotfiles ()
+(defun laluxx/update-dotfiles ()
   "Update dotfiles."
   (interactive)
   (let* ((dotfiles-path (expand-file-name "~/Desktop/pulls/dotfiles"))
@@ -84,55 +90,137 @@ it basicly runs the update-dotfile function inside xos shell, try "explain updat
     (shell-command command)
     (message "Updated dotfiles")))
 
-(defun my/run-update-dotfiles ()
-  "Run `my/update-dotfiles` if the current file is inside ~/Desktop/pulls/dotfiles or its subdirectories."
+#+end_src
+*** run-update-dotfiles
+#+begin_src emacs-lisp
+(defun laluxx/run-update-dotfiles ()
+  "Run `laluxx/update-dotfiles` if the current file is inside ~/Desktop/pulls/dotfiles or its subdirectories."
   (when (and buffer-file-name
              (string-prefix-p (expand-file-name "~/Desktop/pulls/dotfiles") buffer-file-name)
              (string= (file-name-extension buffer-file-name) "org"))
-    (my/update-dotfiles)))
+    (laluxx/update-dotfiles)))
 
-(add-hook 'after-save-hook 'my/run-update-dotfiles)
-
-
+(add-hook 'after-save-hook 'laluxx/run-update-dotfiles)
 #+end_src
-
+** gptel
+#+begin_src emacs-lisp
+(use-package! gptel
+ :config
+ (setq! gptel-api-key "your key"))
+#+end_src
 ** keybinds
 this will overwrite the default doom emacs SPC f p keybind
 it will also open dired inside a window
+*** movement
+**** lfcd
 #+begin_src emacs-lisp
+(defun vterm-toggle-cd-lfcd ()
+  "Open a vterm buffer in the bottom window running zsh, cd to current directory, execute 'lfcd', and focus it."
+  (interactive)
+  (let ((buffer-name "lfcd-vterm")
+        (current-directory default-directory)
+        (shell-file-name "/bin/zsh")
+        (window-height-fraction 0.3)) ; Adjust this value for desired height
+    (if (get-buffer buffer-name)
+        (if (get-buffer-window buffer-name)
+            (progn
+              (delete-window (get-buffer-window buffer-name))
+              (other-window -1))
+          (let ((new-window (display-buffer-in-side-window (get-buffer buffer-name) '((side . bottom)))))
+            (set-window-text-height new-window (round (* (frame-height) window-height-fraction)))
+            (select-window new-window)
+            (vterm-send-string (concat "cd " (shell-quote-argument current-directory) " && lfcd"))
+            (vterm-send-return)))
+      (progn
+        (split-window-below (round (* (frame-height) (- 1 window-height-fraction))))
+        (other-window 1)
+        (vterm buffer-name)
+        (vterm-send-string (concat "cd " (shell-quote-argument current-directory) " && lfcd"))
+        (vterm-send-return)))))
 
+(map! :leader
+      (:prefix ("d" . "custom")
+       :desc "Toggle vterm with lfcd" "l" #'vterm-toggle-cd-lfcd))
+
+
+;;0.0.0
+;; (defun vterm-toggle-cd-lfcd ()
+;;   "Open a vterm buffer in the bottom window running zsh and execute 'lfcd'."
+;;   (interactive)
+;;   (let ((buffer-name "lfcd-vterm")
+;;         (default-directory default-directory)
+;;         (shell-file-name "/bin/zsh"))
+;;     (if (get-buffer buffer-name)
+;;         (if (get-buffer-window buffer-name)
+;;             (delete-window (get-buffer-window buffer-name))
+;;           (display-buffer-in-side-window (get-buffer buffer-name) '((side . bottom))))
+;;       (progn
+;;         (split-window-below)
+;;         (other-window 1)
+;;         (vterm buffer-name)
+;;         (vterm-send-string "lfcd")
+;;         (vterm-send-return)))))
+
+;; (map! :leader
+;;       (:prefix ("d" . "custom")
+;;        :desc "Open vterm with lfcd" "l" #'vterm-toggle-cd-lfcd))
+#+end_src
+**** perosnal config
+#+begin_src emacs-lisp
 (map! :leader
       :desc "Open dotfiles directory"
       "f p" (lambda () (interactive) (dired "~/Desktop/pulls/dotfiles/.config/doom")))
 
 #+end_src
-*** toggle treemacs
-
+**** test
 #+begin_src emacs-lisp
-
+(map! :leader
+      :desc "Open dotfiles directory"
+      "f t" (lambda () (interactive) (dired "~/Desktop/test")))
+#+end_src
+*** dmenu
+#+begin_src emacs-lisp
+(global-set-key (kbd "M-p") 'dmenu)
+#+end_src
+*** toggle
+**** treemacs
+#+begin_src emacs-lisp
 (map! :leader
       :desc "Toggle treemacs"
       "t e" #'treemacs)
-
 #+end_src
-*** look and feel
-**** toolbar
+** resize-window
+#TODO
+#+begin_src emacs-lisp
+;; (after! resize-window
+;;   (map! :map resize-window-mode-map
+;;         "h" nil
+;;         "j" nil
+;;         "k" nil
+;;         "l" nil
+;;         "h" (lambda () (interactive) (resize-window--enlarge-horizontally -1))
+;;         "l" (lambda () (interactive) (resize-window--enlarge-horizontally 1))
+;;         "j" (lambda () (interactive) (resize-window--enlarge-vertically 1))
+;;         "k" (lambda () (interactive) (resize-window--enlarge-vertically -1))))
+#+end_src
+** look and feel
+*** toolbar
 #+begin_src emacs-lisp
 (tool-bar-mode  -1)
 (scroll-bar-mode  -1)
 (menu-bar-mode  -1)
 #+end_src
-**** raibow-delimiters
+*** raibow-delimiters
 #+begin_src emacs-lisp
 (use-package rainbow-delimiters
   :hook (prog-mode . rainbow-delimiters-mode))
 #+end_src
-**** trasparency
+*** trasparency
 set trasparency of emacs
 when focused and not focused
-#+begin_src shell
-(set-frame-parameter (selected-frame) 'alpha '(90 65))
-(add-to-list 'default-frame-alist '(alpha 90 65))
+#+begin_src emacs-lisp
+;; (set-frame-parameter (selected-frame) 'alpha '(90 65))
+;; (add-to-list 'default-frame-alist '(alpha 90 65))
 #+end_src
 ** functions
 *** org
@@ -157,12 +245,12 @@ when focused and not focused
 (map! :leader
       :desc "Insert header tags"
       "i o" #'org-insert-header-tags)
-
 #+end_src
-** smartparens
+** editing
+*** smartparents
+**** delete-empty-pair
 #+begin_src emacs-lisp
-
-(defun my/delete-empty-pair ()
+(defun laluxx/delete-empty-pair ()
   (interactive)
   (let* ((prev-char (char-before))
          (next-char (char-after)))
@@ -178,10 +266,38 @@ when focused and not focused
            (delete-char 1) (delete-char -1))
           (t (call-interactively 'backward-delete-char-untabify)))))
 
-(global-set-key (kbd "<backspace>") 'my/delete-empty-pair)
+(global-set-key (kbd "<backspace>") 'laluxx/delete-empty-pair)
+#+end_src
+**** wrap
+#+begin_src emacs-lisp
+;; (defun wrap (delimiter)
+;;   "Wrap region with DELIMITER if region is active."
+;;   (interactive "cEnter a character to wrap with: ")
+;;   (if (region-active-p)
+;;       (let ((beg (region-beginning))
+;;             (end (region-end)))
+;;         (goto-char beg)
+;;         (insert-char delimiter)
+;;         (goto-char (1+ end))
+;;         (insert-char delimiter))
+;;     (message "No region selected!")))
 
+;; (map! :leader
+;;       "i w" #'wrap)
 
 #+end_src
+*** INSERT
+**** noob-mode
+#+begin_src emacs-lisp
+(after! evil
+  (define-key evil-insert-state-map (kbd "C-v") 'yank)
+  (define-key evil-insert-state-map (kbd "C-s") 'save-buffer)
+  (define-key evil-insert-state-map (kbd "C-c") 'kill-ring-save)
+  (define-key evil-insert-state-map (kbd "C-x") 'kill-region)
+  (define-key evil-insert-state-map (kbd "C-z") 'undo)
+  (define-key evil-insert-state-map (kbd "C-y") 'redo))
+#+end_src
+
 * BEACON
 Never lose your cursor.  When you scroll, your cursor will shine!  This is a global minor-mode. Turn it on everywhere with:
 
@@ -502,12 +618,10 @@ ln -s ~/.local/share/Trash .
 #+end_example
 
 * DOOM THEME
-Setting the theme to doom-one.  To try out new themes, I set a keybinding for counsel-load-theme with 'SPC h t'.
-
 #+BEGIN_SRC emacs-lisp
-(setq doom-theme 'doom-dracula)
-(map! :leader
-      :desc "Load new theme" "h t" #'counsel-load-theme)
+(setq doom-theme 'doom-palenight)
+;; (map! :leader
+;;       :desc "Load new theme" "h t" #'counsel-load-theme)
 #+END_SRC
 
 * EDNC (Notifications)

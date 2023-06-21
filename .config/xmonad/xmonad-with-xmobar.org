@@ -7,6 +7,7 @@
 * Table Of Contents :toc:
 - [[#about-this-config][About This Config]]
 - [[#imports][Imports]]
+- [[#colorscheme][Colorscheme]]
 - [[#variables][Variables]]
 - [[#autostart-the-startup-hook][Autostart (The Startup Hook)]]
 - [[#gridselect][Gridselect]]
@@ -112,7 +113,9 @@ import XMonad.Util.NamedActions
 import XMonad.Util.NamedScratchpad
 import XMonad.Util.Run (runProcessWithInput, safeSpawn, spawnPipe)
 import XMonad.Util.SpawnOnce
-
+#+END_SRC
+* Colorscheme
+#+begin_src haskell
    -- ColorScheme module (SET ONLY ONE!)
       -- Possible choice are:
       -- DoomOne
@@ -126,10 +129,11 @@ import XMonad.Util.SpawnOnce
       -- SolarizedLight
       -- TomorrowNight
 -- import Colors.Dracula
+import Colors.Palenight
 -- import Colors.Oxoterm
-import Colors.Mocha
+-- import Colors.Mocha
 -- import Colors.Pywal
-#+END_SRC
+#+end_src
 
 * Variables
 It's nice to assign values to stuff that you will use more than once in the config. Setting values for things like font, terminal and editor means you only have to change the value here to make changes globally.
@@ -145,7 +149,7 @@ myTerminal :: String
 myTerminal = "kitty"    -- Sets default terminal
 
 myBrowser :: String
-myBrowser = ""  -- Sets qutebrowser as browser
+myBrowser = "firefox"  -- Sets qutebrowser as browser
 
 myEmacs :: String
 myEmacs = "emacsclient -c -a 'emacs' "  -- Makes emacs keybindings easier to type
@@ -210,7 +214,7 @@ Select only =ONE= of the following four ways to set the wallpaper.
   -- spawnOnce "~/.fehbg &"  -- set last saved feh wallpaper
   -- spawnOnce "feh --randomize --bg-fill /usr/share/backgrounds/dtos-backgrounds/*"  -- feh set random wallpaper
   -- spawnOnce "nitrogen --restore &"   -- if you prefer nitrogen to feh
-  spawnOnce "wal -R -q"
+  spawnOnce "wal -R -q" --pywall
   setWMName "LG3D"
 #+END_SRC
 

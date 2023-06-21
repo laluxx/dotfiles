@@ -83,8 +83,9 @@ import XMonad.Util.SpawnOnce
       -- SolarizedLight
       -- TomorrowNight
 -- import Colors.Dracula
+import Colors.Palenight
 -- import Colors.Oxoterm
-import Colors.Mocha
+-- import Colors.Mocha
 -- import Colors.Pywal
 
 myFont :: String
@@ -97,7 +98,7 @@ myTerminal :: String
 myTerminal = "kitty"    -- Sets default terminal
 
 myBrowser :: String
-myBrowser = ""  -- Sets qutebrowser as browser
+myBrowser = "firefox"  -- Sets qutebrowser as browser
 
 myEmacs :: String
 myEmacs = "emacsclient -c -a 'emacs' "  -- Makes emacs keybindings easier to type
@@ -145,7 +146,7 @@ myStartupHook = do
   -- spawnOnce "~/.fehbg &"  -- set last saved feh wallpaper
   -- spawnOnce "feh --randomize --bg-fill /usr/share/backgrounds/dtos-backgrounds/*"  -- feh set random wallpaper
   -- spawnOnce "nitrogen --restore &"   -- if you prefer nitrogen to feh
-  spawnOnce "wal -R -q"
+  spawnOnce "wal -R -q" --pywall
   setWMName "LG3D"
 
 myNavigation :: TwoD a (Maybe a)

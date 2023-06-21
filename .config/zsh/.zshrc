@@ -1,3 +1,4 @@
+#TODO make it look cooler
 function path() {
   local dir_list=$(echo $PATH | sed "s/:/\\n/g")
   printf "EnvPath([\n" && printf "'%s',\n" $dir_list | sed "s|^ |/|; s|^|  |" && printf "])\n"
@@ -7,14 +8,14 @@ export PATH="/home/l/.config/emacs/bin:$PATH"
 
 export ROFI_THEME="/home/yourusername/.cache/wal/colors-rofi-dark.rasi"
 
+source ~/xos/.env_secrets
+
 source /usr/share/zsh/plugins/zsh-syntax-highlighting/zsh-syntax-highlighting.zsh 2>/dev/null # PACMAN path
 # source $HOME/.config/zsh/plug/fzf-keybindings.plugins.zsh
 
 source ~/.cache/wal/colors.sh
 
-#bash ~/Desktop/xos-0.5/xapps/xpalette/catpuccin.sh
-
-#Enable colors and change prompt:
+#Enable colors and change fallback prompt:
 autoload -U colors && colors
 PS1="%B%{$fg[red]%}[%{$fg[yellow]%}%n%{$fg[green]%}@%{$fg[blue]%}%M %{$fg[magenta]%}%~%{$fg[red]%}]%{$reset_color%}$%b "
 
@@ -472,20 +473,6 @@ function ex()
   fi
 }
 
-unrar() {
-    if [ -z "$1" ]; then
-        echo "Please provide a RAR file to extract."
-        return 1
-    fi
-
-    if [ ! -f "$1" ]; then
-        echo "The provided file does not exist."
-        return 1
-    fi
-
-    unrar x "$1"
-}
-
 function untar() {
   if [ -f "$1" ]; then
     tar -xvf "$1" && c
@@ -851,12 +838,6 @@ function rmall () {
 
 here=$PWD
 
-function delete_all_ssh_keys() {
-    echo "Deleting all local SSH keys..."
-    rm -rf ~/.ssh/*
-    echo "All local SSH keys have been deleted."
-}
-
 function key() {
   case "$1" in
     list)
@@ -878,7 +859,13 @@ function key() {
   esac
 }
 
-generate_ssh_key_interactive() {
+function delete_all_ssh_keys() {
+    echo "Deleting all local SSH keys..."
+    rm -rf ~/.ssh/*
+    echo "All local SSH keys have been deleted."
+}
+
+function generate_ssh_key_interactive() {
     local email
     local key_name
 
@@ -978,22 +965,51 @@ function pullpkg() {
   done
 }
 
-function pac-analizer() {
-	echo -n "All Packages: "
-	pacman -Q | wc -l
-	echo -n "  Packages: "
-	pacman -Qe | wc -l
-	echo -n "    Official Packages: "
-	pacman -Qen | wc -l
-	echo -n "    AUR Packages: "
-	pacman -Qem | wc -l
-	echo -n "  Dependent Packages: "
-	pacman -Qd | wc -l
-	echo -n "    Official Dependent Packages: "
-	pacman -Qdn | wc -l
-	echo -n "    AUR Dependent Packages: "
-	pacman -Qdm | wc -l
+analyze_packages() {
+    # Fetch package data
+    local all=$(pacman -Q | wc -l)
+    local pkg=$(pacman -Qe | wc -l)
+    local official_pkg=$(pacman -Qen | wc -l)
+    local aur_pkg=$(pacman -Qem | wc -l)
+    local dep_pkg=$(pacman -Qd | wc -l)
+    local official_dep_pkg=$(pacman -Qdn | wc -l)
+    local aur_dep_pkg=$(pacman -Qdm | wc -l)
+
+    # Show spinner
+    gum spin --title="Analyzing packages 🚀" -- sleep 2
+
+    # Display the data with styling
+    gum style --bold "All Packages: $all"
+    gum style "  Packages: $pkg"
+    gum style "    Official Packages: $official_pkg"
+    gum style "    AUR Packages: $aur_pkg"
+    gum style "  Dependent Packages: $dep_pkg"
+    gum style "    Official Dependent Packages: $official_dep_pkg"
+    gum style "    AUR Dependent Packages: $aur_dep_pkg"
 }
+
+
+
+
+
+
+
+# function pac-analizer() {
+# 	echo -n "All Packages: "
+# 	pacman -Q | wc -l
+# 	echo -n "  Packages: "
+# 	pacman -Qe | wc -l
+# 	echo -n "    Official Packages: "
+# 	pacman -Qen | wc -l
+# 	echo -n "    AUR Packages: "
+# 	pacman -Qem | wc -l
+# 	echo -n "  Dependent Packages: "
+# 	pacman -Qd | wc -l
+# 	echo -n "    Official Dependent Packages: "
+# 	pacman -Qdn | wc -l
+# 	echo -n "    AUR Dependent Packages: "
+# 	pacman -Qdm | wc -l
+# }
 
 sbus_executed=false
 
@@ -1469,11 +1485,9 @@ function xos-update() {
     # want to ovverride ~/.config folder ? y/n #TODO
 }
 
-export GUM_INPUT_CURSOR_FOREGROUND="#FF0"
-export GUM_INPUT_PROMPT_FOREGROUND="#9AEDFE"
-export GUM_INPUT_PLACEHOLDER="What's up?"
-export GUM_INPUT_PROMPT="➜ "
-export GUM_INPUT_WIDTH=80
+function xos-doctor() {
+    sudo lynis audit system
+}
 
 function gum-commit(){
 TYPE=$(gum choose "fix" "feat" "docs" "style" "refactor" "test" "chore" "revert")
@@ -1488,79 +1502,6 @@ DESCRIPTION=$(gum write --placeholder "Details of this change (CTRL+D to finish)
 
 # Commit these changes
 gum confirm "Commit changes?" && git commit -m "$SUMMARY" -m "$DESCRIPTION"
-}
-
-function gum-prompt(){
-    gum input --cursor.foreground "#FF0" --prompt.foreground "#0FF" --prompt "* " \
-        --placeholder "What's up?" --width 80 --value "Not much, hby?"
-}
-
-function gum-input(){
-    gum input > answer.txt
-}
-
-function gum-password(){
-    gum input --password > password.txt
-}
-
-function gum-write(){
-    gum write > story.txt
-}
-
-function gum-filter(){
-    echo Strawberry >> flavors.txt
-    echo Banana >> flavors.txt
-    echo Cherry >> flavors.txt
-    cat flavors.txt | gum filter > selection.txt
-}
-
-function gum-filter-limit(){
-    cat flavors.txt | gum filter --limit 2
-}
-
-function gum-filter-no-limit(){
-    cat flavors.txt | gum filter --no-limit
-}
-
-function gum-choose(){
-    echo "Pick a card, any card..."
-    CARD=$(gum choose --height 15 {{A,K,Q,J},{10..2}}" "{♠,♥,♣,♦})
-    echo "Was your card the $CARD?"
-}
-
-function gum-choose-limit(){
-    echo "Pick your top 5 songs."
-    cat songs.txt | gum choose --limit 5
-}
-
-function gum-choose-no-limit(){
-    echo "What do you need from the grocery store?"
-    cat foods.txt | gum choose --no-limit
-}
-
-function gum-choose-100(){
-    gum choose {1..100}
-}
-
-function gum-confirm(){
-    gum confirm && rm file.txt || echo "File not removed"
-}
-
-function gum-file(){
-    emacs $(gum file $HOME)
-}
-
-function gum-spin(){
-    gum spin --spinner line --title "Buying Bubble Gum..." -- sleep 5
-}
-
-# gum table < flavors.csv | cut -d ',' -f 1
-
-function gum-preatty-print(){
-    gum style \
-	    --foreground 212 --border-foreground 212 --border double \
-	    --align center --width 50 --margin "1 2" --padding "2 4" \
-	    'Bubble Gum (1¢)' 'So sweet and so fresh!'
 }
 
 # Define Color Schemes
@@ -1591,18 +1532,37 @@ instant_menu() {
 # Usage: instant_menu 'dracula'
 #        instant_menu 'doom-one'
 
-function wal-set() {
-  # Directory to search for wallpapers
-  local dir=~/xos/wallpapers/static
+#0.0.0
+# function wal-set() {
+#   # Directory to search for wallpapers
+#   local dir=~/xos/wallpapers/static
 
-  local wallpaper=$(find "$dir" \( -name "*.png" -o -name "*.jpg" -o -name "*.jpeg" -o -name "*.webp" \) -type f | fzf-tmux --color=16 --height 40% -m --reverse --ansi --cycle)
+#   local wallpaper=$(find "$dir" \( -name "*.png" -o -name "*.jpg" -o -name "*.jpeg" -o -name "*.webp" \) -type f | fzf-tmux --color=16 --height 40% -m --reverse --ansi --cycle)
 
-  # Check if a file was selected
-  if [[ -n "$wallpaper" ]]; then
-    # Set the wallpaper using wal
-    wal -i "${wallpaper}" -q
-    echo "Wallpaper set to ${wallpaper}"
-  else
-    echo "No wallpaper selected."
-  fi
+#   # Check if a file was selected
+#   if [[ -n "$wallpaper" ]]; then
+#     # Set the wallpaper using wal
+#     wal -i "${wallpaper}" -q
+#     echo "Wallpaper set to ${wallpaper}"
+#   else
+#     echo "No wallpaper selected."
+#   fi
+# }
+
+
+
+wal-set () {
+    local dir=~/xos/wallpapers/static
+    local wallpaper=$(find "$dir" \( -name "*.png" -o -name "*.jpg" -o -name "*.jpeg" -o -name "*.webp" \) -type f | fzf --height 40% -m --reverse --ansi --cycle)
+    if [[ -n "$wallpaper" ]]
+    then
+        wal -i "${wallpaper}" -q
+        echo "Wallpaper set to ${wallpaper}"
+
+        # Open a new horizontally split window and display the selected image using kitty icat
+        kitty @ new-window --layout horizontal kitty +kitten icat "${wallpaper}"
+
+    else
+        echo "No wallpaper selected."
+    fi
 }
