@@ -28,6 +28,5 @@
 (package! minimap)
 (package! olivetti)
 
-;; (use-package org-roam
-;;   :ensure t)
 (package! gptel) ;; GPT
+(package! lsp-treemacs)

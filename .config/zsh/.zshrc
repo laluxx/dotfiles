@@ -4,16 +4,29 @@ function path() {
   printf "EnvPath([\n" && printf "'%s',\n" $dir_list | sed "s|^ |/|; s|^|  |" && printf "])\n"
 }
 
-export PATH="/home/l/.config/emacs/bin:$PATH"
+# export PATH="/home/l/.config/emacs/bin:$PATH"
+# export PATH="$PATH:/home/l/.config/emacs/bin"
 
-export ROFI_THEME="/home/yourusername/.cache/wal/colors-rofi-dark.rasi"
+# export PATH="$PATH:/home/l/.cargo/bin"
+
+
+export PATH="$PATH:$HOME/.config/emacs/bin"
+export PATH="$PATH:$HOME/.cargo/bin"
+
+ if [[ -n $SSH_CONNECTION ]]; then
+   export EDITOR='nvim'
+ else
+   export EDITOR='nvim'
+ fi
+
+export ROFI_THEME="/home/l/.cache/wal/colors-rofi-dark.rasi"
 
 source ~/xos/.env_secrets
 
 source /usr/share/zsh/plugins/zsh-syntax-highlighting/zsh-syntax-highlighting.zsh 2>/dev/null # PACMAN path
 # source $HOME/.config/zsh/plug/fzf-keybindings.plugins.zsh
 
-source ~/.cache/wal/colors.sh
+# source ~/.cache/wal/colors.sh
 
 #Enable colors and change fallback prompt:
 autoload -U colors && colors
@@ -107,11 +120,6 @@ if [ ! -z $BM_DIR ]; then
     export BM_DIR=""
 fi
 
-# Edit line in vim with ctrl-e:
-# autoload edit-command-line; zle -N edit-command-line
-# bindkey '^e' edit-command-line
-
-
 # Below to change autosuggestion options
 #ZSH_AUTOSUGGEST_HIGHLIGHT_STYLE="fg=#ff00ff,bg=cyan,bold,underline"	# To get colored completion text
 bindkey '^[[Z' autosuggest-accept   # shift tab to accept ghost text
@@ -122,6 +130,17 @@ ZSH_AUTOSUGGEST_USE_ASYNC=true
 export LESS_TERMCAP_mb=$(tput bold; tput setaf 39)
 export LESS_TERMCAP_md=$(tput bold; tput setaf 45)
 export LESS_TERMCAP_me=$(tput sgr0)
+
+function mdl() {
+    local original_dir=$(pwd)
+    cd ~/Music
+
+    for url in "$@"; do
+        yt-dlp --extract-audio --audio-format mp3 -i --ignore-config  --no-part --no-warnings -w -c -R 15 --output "%(title)s.%(ext)s" "$url"
+    done
+
+    cd "$original_dir"
+}
 
 userchrome() {
   c ~/.mozilla/firefox/exnoy41o.default-release/chrome
@@ -151,11 +170,9 @@ declare -A image_map=(
   ["debian"]="$HOME/Desktop/xos/xicons/debian.png"
   ["head"]="$HOME/Desktop/xos/xicons/head.png"
   ["docker"]="$HOME/Desktop/xos/xicons/docker.png"
-  ["md"]="$HOME/Desktop/xos/xicons/md.png"
   ["web"]="$HOME/Desktop/xos/xicons/md.png"
   ["react"]="$HOME/Desktop/xos/xicons/react256x256.png"
   ["cutefish"]="$HOME/Desktop/xos/xicons/cutefish.png"
-  ["ubuntu"]="$HOME/Desktop/xos/xicons/ubuntu.png"
   ["awesome"]="$HOME/Desktop/xos/xicons/awesome.png"
   ["xos"]="$HOME/Desktop/xos/xicons/xos.png"
  # ["ai"]="$HOME/Desktop/xos/xicons/head.png"
@@ -164,7 +181,6 @@ declare -A image_map=(
  ["default"]="$HOME/Desktop/xos/xicons/default.png"
 )
 
-#chpwd dependencie
 function display_image() {
   local image_path="${image_map[$1]}"
   if [[ -z "$image_path" ]]; then
@@ -191,29 +207,9 @@ function chpwd() {
   fi
 }
 
-chpwd
+chpwd # run once
 
-function xcargo init() {
-  local project_name="$1"
-  # Create a new directory with the specified project name
-  mkdir "$project_name"
-  cd "$project_name"
-
-  # Initialize a new Cargo project
-  cargo init --bin .
-
-  # Build and run the project
-  cargo run &
-  sleep 2
-
-  # Open the project directory in neovim
-  nvim .
-
-  # Clean up the built files
-  cargo clean
-}
-
-function nte() {
+function t() {
     if [[ $# -eq 0 ]]; then
         echo "Usage: n <filename>"
         return 1
@@ -439,8 +435,8 @@ function xup() {
   chmod +x "$1" && c
 }
 
-function mdir () {
-  command mkdir -p "$@" && c "${@: -1}" && c
+function xdown() {
+  chmod -x "$1" && c
 }
 
 function hown() {
@@ -481,14 +477,6 @@ function untar() {
   fi
 }
 
-function z() {
-    local dir="$1"
-    if [ ! -d "$dir" ]; then
-        mkdir -p "$dir"
-    fi
-    clear && cd "$dir"
-}
-
 function unvim() {
   # rm -rf ~/.config/nvim
   rm -rf ~/.local/share/nvim
@@ -505,7 +493,6 @@ function ungo() {
 }
 
 function uncargo() {
-  # Check if a Cargo.toml file exists in the current directory
   if [ ! -f "Cargo.toml" ]; then
     echo "No Cargo.toml file found in the current directory."
     return 1
@@ -532,16 +519,6 @@ function gen () {
     touch "${prefix}${count}.${2#*.}"
     count=$(( count + 1 ))
   done
-}
-
-function ltree() {
-  local dir="$1"
-  local prompt="${2:-}"
-  if [ -z "$prompt" ]; then
-    lt "$dir" | less --prompt="e[1me[5mTHIS IS A BIG BOLD MESSAGEe[0m"
-  else
-    lt "$dir" | less --prompt="$prompt"
-  fi
 }
 
 function explain() {
@@ -581,25 +558,6 @@ function explain() {
       return 1
     fi
   fi
-}
-
-function forx() {
-  local n=$1
-  shift
-  for i in $(seq 1 $n); do
-    eval "$@"
-  done
-}
-
-function whilex() {
-  i=$1
-  max=$2
-  cmd=$3
-
-  while [ $i -le $max ]; do
-    eval "$cmd"
-    i=$((i+1))
-  done
 }
 
 color() {
@@ -791,6 +749,10 @@ function render() {
   kitty +kitten icat "$1"
 }
 
+function mdir () {
+  command mkdir -p "$@" && c "${@: -1}" && c
+}
+
 rmdir() {
   if [ -d "$1" ]; then
     rm -rf "$1"
@@ -965,7 +927,7 @@ function pullpkg() {
   done
 }
 
-analyze_packages() {
+function pacanalize() {
     # Fetch package data
     local all=$(pacman -Q | wc -l)
     local pkg=$(pacman -Qe | wc -l)
@@ -988,28 +950,78 @@ analyze_packages() {
     gum style "    AUR Dependent Packages: $aur_dep_pkg"
 }
 
+pacinfo() {
+    if [ $# -eq 0 ]; then
+        echo "Error: Please provide at least one package name." | color red
+        return 1
+    fi
 
+    for pkg in "$@"; do
+        local info=$(pacman -Qi $pkg)
 
+        if [ -z "$info" ]; then
+            echo "Error: Package '$pkg' not found." | color red
+            continue
+        fi
 
+        echo -e "\n═══════════════════════════════════════" | color blue
+        echo " Package Information for $pkg " | color blue
+        echo -e "═══════════════════════════════════════\n" | color blue
 
+        echo "$info" | while read -r line; do
+            case "$line" in
+                Name*)
+                    echo "$line" | color green;;
+                Version*)
+                    echo "$line" | color purple;;
+                Description*)
+                    echo "$line" | color yellow;;
+                Architecture*)
+                    echo "$line" | color cyan;;
+                URL*)
+                    echo "$line" | color blue;;
+                Licenses*)
+                    echo "$line" | color green;;
+                Groups*)
+                    echo "$line" | color yellow;;
+                Provides*)
+                    echo "$line" | color cyan;;
+                Depends*)
+                    echo "$line" | color purple;;
+                Optional*)
+                    echo "$line" | color red;;
+                Conflicts*)
+                    echo "$line" | color red;;
+                Installed*)
+                    echo "$line" | color cyan;;
+                *)
+                    echo "$line" | color white;;
+            esac
+        done
+    done
+}
 
+_pacinfo() {
+    local state line
+    typeset -A opt_args
 
-# function pac-analizer() {
-# 	echo -n "All Packages: "
-# 	pacman -Q | wc -l
-# 	echo -n "  Packages: "
-# 	pacman -Qe | wc -l
-# 	echo -n "    Official Packages: "
-# 	pacman -Qen | wc -l
-# 	echo -n "    AUR Packages: "
-# 	pacman -Qem | wc -l
-# 	echo -n "  Dependent Packages: "
-# 	pacman -Qd | wc -l
-# 	echo -n "    Official Dependent Packages: "
-# 	pacman -Qdn | wc -l
-# 	echo -n "    AUR Dependent Packages: "
-# 	pacman -Qdm | wc -l
-# }
+    _arguments -C \
+        '1: :->packages' \
+        '*:: :->other'
+
+    case $state in
+        packages)
+            local -a completions
+            completions=($(pacman -Qq))
+            _describe 'packages' completions
+            ;;
+        other)
+            ;;
+    esac
+}
+
+# Register the _pacinfo function for autocompletion with pacinfo
+compdef _pacinfo pacinfo
 
 sbus_executed=false
 
@@ -1018,9 +1030,7 @@ function sbus () {
     echo "You just did that... zzzZZzzZZZ"
     :
   else
-    # Add your sbus code here
     echo "Function sbus executed"
-    # Set the flag variable to true
     sbus_executed=true
   fi
 }
@@ -1034,89 +1044,6 @@ function freedom() {
     else
       echo -e "${package}\t\e[31mPROPRIETARY\e[0m"
     fi
-  done
-}
-
-function allfree() {
-  for package in $(pacman -Qq); do
-    is_free=$(pacman -Qi $package | grep "License" | grep -q "custom:..free")
-    if [[ $is_free -eq 0 ]]; then
-      echo -e "${package}\t\e[32mFREE\e[0m"
-    else
-      echo -e "${package}\t\e[31mPROPRIETARY\e[0m"
-    fi
-  done
-}
-
-function nofree() {
-  for package in $(pacman -Qq); do
-    license=$(pacman -Qi $package | awk '/License/ { print $3 }')
-    if [[ $license =~ "custom:..free" ]]; then
-      echo -e "${package}\t\e[32mFREE\e[0m"
-    else
-      echo -e "${package}\t\e[31mPROPRIETARY\e[0m"
-    fi
-  done
-}
-
-#HACK
-envycontrol_menu() {
-  local choice
-  echo "Select an option:"
-  select choice in \
-    "Switch to Integrated graphics mode" \
-    "Switch to Hybrid graphics mode" \
-    "Switch to Nvidia graphics mode" \
-    "Enable ForceCompositionPipeline on Nvidia mode" \
-    "Enable Coolbits on Nvidia mode" \
-    "Setup PCI-Express Runtime D3 (RTD3) Power Management on Hybrid mode" \
-    "Restore default Xsetup file" \
-    "Revert changes made by EnvyControl" \
-    "Quit"
-  do
-    case $choice in
-      "Switch to Integrated graphics mode")
-        sudo envycontrol -s integrated
-        break
-        ;;
-      "Switch to Hybrid graphics mode")
-        sudo envycontrol -s hybrid
-        break
-        ;;
-      "Switch to Nvidia graphics mode")
-        read -p "Enter your Display Manager (gdm, gdm3, sddm, lightdm): " dm
-        sudo envycontrol --dm $dm -s nvidia
-        break
-        ;;
-      "Enable ForceCompositionPipeline on Nvidia mode")
-        sudo envycontrol --force-comp -s nvidia
-        break
-        ;;
-      "Enable Coolbits on Nvidia mode")
-        read -p "Enter Coolbits value (default: 28): " coolbits
-        sudo envycontrol --coolbits ${coolbits:-28} -s nvidia
-        break
-        ;;
-      "Setup PCI-Express Runtime D3 (RTD3) Power Management on Hybrid mode")
-        read -p "Enter RTD3 value (0-3, default: 2): " rtd3
-        sudo envycontrol --rtd3 ${rtd3:-2} -s hybrid
-        break
-        ;;
-      "Restore default Xsetup file")
-        sudo envycontrol --reset-sddm
-        break
-        ;;
-      "Revert changes made by EnvyControl")
-        sudo envycontrol --reset
-        break
-        ;;
-      "Quit")
-        break
-        ;;
-      *)
-        echo "Invalid option $REPLY"
-        ;;
-    esac
   done
 }
 
@@ -1138,16 +1065,6 @@ function start() {
   fi
 }
 
-function wm-set() {
-    local program_name="$1"
-    local xinitrc_file="/etc/X11/xinit/xinitrc"
-    if sudo sed -i "\$s|^exec.*|exec $program_name|" "$xinitrc_file"; then
-        echo "Last 'exec' line updated in $xinitrc_file"
-    else
-        echo "No 'exec' line found in $xinitrc_file"
-    fi
-}
-
 xgeometry() {
   xwininfo_output=$(xwininfo -frame)
   x=$(echo "$xwininfo_output" | awk '/Absolute upper-left X:/ { print $4 }')
@@ -1161,7 +1078,7 @@ xgeometry() {
   echo "Height: $height"
 }
 
-function xgeometry_focused() {
+function xgeometry-focus() {
 	focused_window_id=$(xdotool getwindowfocus)
 	xwininfo_output=$(xwininfo -id "$focused_window_id")
 	x=$(echo "$xwininfo_output" | awk '/Absolute upper-left X:/ { print $4 }')
@@ -1172,10 +1089,6 @@ function xgeometry_focused() {
 	echo "Y: $y"
 	echo "Width: $width"
 	echo "Height: $height"
-}
-
-function edit-keys() {
-  nvim ~/.config/sxhkd/sxhkdrc
 }
 
 function c() {
@@ -1224,14 +1137,6 @@ function _dotfiles() {
 # Register the function for autocompletion
 compdef _dotfiles dotfiles
 
-function sapo() {
-  c ~/Desktop/scuola/sapo
-}
-
-function mate() {
-  c ~/Desktop/scuola/
-}
-
 function conf() {
     local config_folder="$HOME/.config"
 
@@ -1261,12 +1166,8 @@ function test() {
     c ~/Desktop/test/$1
 }
 
-function learn() {
-    c ~/xos/learn/$1
-}
-
-function scripts() {
-    c ~/xos/scripts/$1
+function script() {
+    c ~/xos/script/$1
 }
 
 function gclone() {
@@ -1378,7 +1279,7 @@ function origin() {
 }
 
 function pulls(){
-  c ~/Desktop/pulls
+  c ~/Desktop/pulls/$1
 }
 
 #TODO
@@ -1531,25 +1432,6 @@ instant_menu() {
 
 # Usage: instant_menu 'dracula'
 #        instant_menu 'doom-one'
-
-#0.0.0
-# function wal-set() {
-#   # Directory to search for wallpapers
-#   local dir=~/xos/wallpapers/static
-
-#   local wallpaper=$(find "$dir" \( -name "*.png" -o -name "*.jpg" -o -name "*.jpeg" -o -name "*.webp" \) -type f | fzf-tmux --color=16 --height 40% -m --reverse --ansi --cycle)
-
-#   # Check if a file was selected
-#   if [[ -n "$wallpaper" ]]; then
-#     # Set the wallpaper using wal
-#     wal -i "${wallpaper}" -q
-#     echo "Wallpaper set to ${wallpaper}"
-#   else
-#     echo "No wallpaper selected."
-#   fi
-# }
-
-
 
 wal-set () {
     local dir=~/xos/wallpapers/static

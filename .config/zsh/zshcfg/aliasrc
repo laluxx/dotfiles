@@ -1,5 +1,7 @@
 #!/bin/sh
 
+alias cp='cp -r'
+
 alias get='sudo pacman -S'
 alias up='sudo pacman -Syyu'
 alias y='yay -Sua'
@@ -7,8 +9,6 @@ alias pacbat='pacman -Qe | bat'
 alias sbu="sudo pacman -Rns"
 alias databases="sudo pacman -Syy"
 alias pacup='kitty +kitten icat  && sudo pacman -Syu'
-
-alias paclog="sudo tail -f /var/log/pacman.log"
 
 alias em="/usr/bin/emacs -nw"
 alias emacs="emacsclient -c -a 'emacs'"
@@ -23,10 +23,6 @@ alias npm="sudo npm"
 
 alias luarocks="sudo luarocks"
 
-alias cr="cargo run"
-alias ca="cargo add"
-alias cs="cargo search"
-
 alias benchmark='hyperfine'
 
 alias open='xdg-open'
@@ -36,24 +32,21 @@ alias shutdown="systemctl poweroff"
 alias xprocess="ps -eo pid,comm,%cpu --sort=-%cpu | head"
 alias xmem="ps -eo pid,comm,%mem --sort=-%mem | head"
 alias showport="ss -ltnp"
-alias remind="notify-send "Reminder" "Time to take a break""
-
-alias todo='nvim ~/taskx'
 alias xtop='zfxtop'
 
-alias compress="tar -czvf"
-alias extract="tar -xzvf"
+alias dotar="tar -czvf"
 
-alias invisible='picom-trans -w $(xdotool getactivewindow) 0'
 alias trans='wid=$(xdotool selectwindow); picom-trans -w $wid'
 
-alias x='clear && xonsh'
 alias .="c"
 alias c..="c .."
+alias cd..="c .."
 alias ..="c .."
 
 
 alias modules='xos modules'
+
+alias wallpapers='c ~/xos/wallpapers/static'
 
 
 

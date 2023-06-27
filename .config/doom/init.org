@@ -85,6 +85,7 @@ NOTE Move your cursor over a module's name (or its flags) and press 'K' (or
        ;;grammar           ; tasing grammar mistake every you make
 
        :tools
+       ;; (pdf)            ; TODO have no idea if this work
        ;;ansible
        ;;debugger          ; FIXME stepping through code, to help you add bugs
        ;;direnv

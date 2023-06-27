@@ -8,9 +8,6 @@ whichkey inside zsh
 evil keybinds to split panes (maybe inside kitty conf)
 **  easy
 kyeinind to fzf aur packages
-** picom
-round corner based on tag or window class
-animation based on class or tag
 
 * PATH
 #+begin_src shell
@@ -23,11 +20,27 @@ function path() {
 #+end_src
 ** exports
 #+begin_src shell
-export PATH="/home/l/.config/emacs/bin:$PATH"
+# export PATH="/home/l/.config/emacs/bin:$PATH"
+# export PATH="$PATH:/home/l/.config/emacs/bin"
+
+# export PATH="$PATH:/home/l/.cargo/bin"
+
+
+export PATH="$PATH:$HOME/.config/emacs/bin"
+export PATH="$PATH:$HOME/.cargo/bin"
+
+ if [[ -n $SSH_CONNECTION ]]; then
+   export EDITOR='nvim'
+ else
+   export EDITOR='nvim'
+ fi
+
+
+
 #+end_src
 *** rofi
 #+begin_src shell
-export ROFI_THEME="/home/yourusername/.cache/wal/colors-rofi-dark.rasi"
+export ROFI_THEME="/home/l/.cache/wal/colors-rofi-dark.rasi"
 #+end_src
 ** source
 *** env-secrets
@@ -43,10 +56,10 @@ source /usr/share/zsh/plugins/zsh-syntax-highlighting/zsh-syntax-highlighting.zs
 #+end_src
 **** wal
 #+begin_src shell
-source ~/.cache/wal/colors.sh
+# source ~/.cache/wal/colors.sh
 #+end_src
 
-* MAIN
+* DEFAULT
 #+begin_src shell
 #Enable colors and change fallback prompt:
 autoload -U colors && colors
@@ -140,11 +153,6 @@ if [ ! -z $BM_DIR ]; then
     export BM_DIR=""
 fi
 
-# Edit line in vim with ctrl-e:
-# autoload edit-command-line; zle -N edit-command-line
-# bindkey '^e' edit-command-line
-
-
 # Below to change autosuggestion options
 #ZSH_AUTOSUGGEST_HIGHLIGHT_STYLE="fg=#ff00ff,bg=cyan,bold,underline"	# To get colored completion text
 bindkey '^[[Z' autosuggest-accept   # shift tab to accept ghost text
@@ -156,10 +164,23 @@ export LESS_TERMCAP_mb=$(tput bold; tput setaf 39)
 export LESS_TERMCAP_md=$(tput bold; tput setaf 45)
 export LESS_TERMCAP_me=$(tput sgr0)
 #+end_src
+* MDL
+Music download optional flags : --yes-playlist
+#+begin_src shell
+function mdl() {
+    local original_dir=$(pwd)
+    cd ~/Music
+
+    for url in "$@"; do
+        yt-dlp --extract-audio --audio-format mp3 -i --ignore-config  --no-part --no-warnings -w -c -R 15 --output "%(title)s.%(ext)s" "$url"
+    done
+
+    cd "$original_dir"
+}
+#+end_src
 
 * QUICK-ACCESS
 ** userchrome
-cd into userchrome folder
 #+begin_src shell
 
 userchrome() {
@@ -201,11 +222,9 @@ declare -A image_map=(
   ["debian"]="$HOME/Desktop/xos/xicons/debian.png"
   ["head"]="$HOME/Desktop/xos/xicons/head.png"
   ["docker"]="$HOME/Desktop/xos/xicons/docker.png"
-  ["md"]="$HOME/Desktop/xos/xicons/md.png"
   ["web"]="$HOME/Desktop/xos/xicons/md.png"
   ["react"]="$HOME/Desktop/xos/xicons/react256x256.png"
   ["cutefish"]="$HOME/Desktop/xos/xicons/cutefish.png"
-  ["ubuntu"]="$HOME/Desktop/xos/xicons/ubuntu.png"
   ["awesome"]="$HOME/Desktop/xos/xicons/awesome.png"
   ["xos"]="$HOME/Desktop/xos/xicons/xos.png"
  # ["ai"]="$HOME/Desktop/xos/xicons/head.png"
@@ -217,9 +236,8 @@ declare -A image_map=(
 #+end_src
 
 ** display_image
+chpwd dependency
 #+begin_src shell
-
-#chpwd dependencie
 function display_image() {
   local image_path="${image_map[$1]}"
   if [[ -z "$image_path" ]]; then
@@ -233,7 +251,6 @@ function display_image() {
 #+end_src
 ** chpwd
 #+begin_src shell
-
 function chpwd() {
   local path_parts=("${(@s:/:)PWD}") # Split the current path into an array
   local dir=""
@@ -250,43 +267,15 @@ function chpwd() {
   fi
 }
 
-chpwd
-
+chpwd # run once
 #+end_src
 
 * DEV-TOOLS
-** rust
-*** xcargo
+** t
+better touch
 #+begin_src shell
 
-function xcargo init() {
-  local project_name="$1"
-  # Create a new directory with the specified project name
-  mkdir "$project_name"
-  cd "$project_name"
-
-  # Initialize a new Cargo project
-  cargo init --bin .
-
-  # Build and run the project
-  cargo run &
-  sleep 2
-
-  # Open the project directory in neovim
-  nvim .
-
-  # Clean up the built files
-  cargo clean
-}
-
-#+end_src
-** file-creation
-*** nte
-better version of n
-#HACK #TODO
-#+begin_src shell
-
-function nte() {
+function t() {
     if [[ $# -eq 0 ]]; then
         echo "Usage: n <filename>"
         return 1
@@ -559,7 +548,6 @@ function screenshot() {
   fi
 }
 #+end_src
-** discord
 ** xshellrp
 i lost the config file :)
 #+begin_src shell
@@ -573,37 +561,29 @@ function xshellrp() {
 ** commons
 *** xup
 #+begin_src shell
-
 function xup() {
   chmod +x "$1" && c
 }
-
 #+end_src
-*** mdir
+*** xdown
 #+begin_src shell
-
-function mdir () {
-  command mkdir -p "$@" && c "${@: -1}" && c
+function xdown() {
+  chmod -x "$1" && c
 }
-
 #+end_src
-
 *** hown
 #+begin_src shell
-
 function hown() {
     for file in $@
     do
         cp $file ~/.local/bin/
     done
 }
-
 #+end_src
 ** file-extraction
 *** ex
 exctract anything
 #+begin_src shell
-
 function ex()
 {
   if [ -f $1 ] ; then
@@ -626,12 +606,10 @@ function ex()
     echo "'$1' is not a valid file"
   fi
 }
-
 #+end_src
-
+** un-section
 *** untar
 #+begin_src shell
-
 function untar() {
   if [ -f "$1" ]; then
     tar -xvf "$1" && c
@@ -639,56 +617,32 @@ function untar() {
     echo "$1 is not a valid tar archive"
   fi
 }
-
 #+end_src
-** z
-refresh the terminal
-#+begin_src shell
-
-function z() {
-    local dir="$1"
-    if [ ! -d "$dir" ]; then
-        mkdir -p "$dir"
-    fi
-    clear && cd "$dir"
-}
-
-#+end_src
-** user
-** un-section
 *** unvim
-delete all nvim config
 #+begin_src shell
-
 function unvim() {
   # rm -rf ~/.config/nvim
   rm -rf ~/.local/share/nvim
 }
-
 #+end_src
 *** ungit
 #+begin_src shell
-
 function ungit() {
   rmdir .git
   echo "WHAT ARE YOU DOING ?" && sleep 1 && rm .gitignore && c
 }
-
 #+end_src
 *** ungo
 #+begin_src shell
-
 function ungo() {
   rm go.mod
   echo "WHAT ARE YOU DOING ?" && sleep 1 && c
 }
-
 #+end_src
 *** uncargo
+Check if a Cargo.toml file exists in the current directory
 #+begin_src shell
-
 function uncargo() {
-  # Check if a Cargo.toml file exists in the current directory
   if [ ! -f "Cargo.toml" ]; then
     echo "No Cargo.toml file found in the current directory."
     return 1
@@ -706,7 +660,6 @@ function uncargo() {
   fi
   c
 }
-
 #+end_src
 ** lifehacks
 *** gen
@@ -724,26 +677,9 @@ function gen () {
 }
 
 #+end_src
-** ltree
-ltree ~/.config/zsh
-#+begin_src shell
-
-function ltree() {
-  local dir="$1"
-  local prompt="${2:-}"
-  if [ -z "$prompt" ]; then
-    lt "$dir" | less --prompt="e[1me[5mTHIS IS A BIG BOLD MESSAGEe[0m"
-  else
-    lt "$dir" | less --prompt="$prompt"
-  fi
-}
-
-#+end_src
 ** explain
 "explain" any shell function, alias, variable..
-
 #+begin_src shell
-
 function explain() {
   local name=$1
   local def=$(declare -f $name 2>/dev/null)
@@ -781,34 +717,6 @@ function explain() {
       return 1
     fi
   fi
-}
-
-#+end_src
-** logic
-*** forx
-#+begin_src shell
-
-function forx() {
-  local n=$1
-  shift
-  for i in $(seq 1 $n); do
-    eval "$@"
-  done
-}
-
-#+end_src
-*** whilex
-#+begin_src shell
-
-function whilex() {
-  i=$1
-  max=$2
-  cmd=$3
-
-  while [ $i -le $max ]; do
-    eval "$cmd"
-    i=$((i+1))
-  done
 }
 
 #+end_src
@@ -981,7 +889,6 @@ function compile() {
 ** terminal-image-manipulation
 *** img-resize
 #+begin_src shell
-
 function img-resize() {
     if [ $# -ne 3 ]; then
         echo "Usage: xresize <input-file> <width> <height>"
@@ -1003,13 +910,10 @@ function img-resize() {
         return 1
     fi
 }
-
 #+end_src
 *** render
 render an image in the terminal
-WORKS ONLY WITH KITTY!
 #+begin_src shell
-
 function render() {
   if [[ -z "$1" ]]; then
     echo "Usage: display <image_file>"
@@ -1036,6 +940,13 @@ function render() {
 
 #+end_src
 ** admin
+*** mdir
+#+begin_src shell
+function mdir () {
+  command mkdir -p "$@" && c "${@: -1}" && c
+}
+#+end_src
+
 *** rmdir
 #+begin_src shell
 
@@ -1100,11 +1011,8 @@ function rmall () {
 * enviroment
 ** variables
 #+begin_src shell
-
 here=$PWD
-
 #+end_src
-
 * SSH
 ** key
 #+begin_src shell
@@ -1132,7 +1040,6 @@ function key() {
 #+end_src
 ** delete all keys
 #+begin_src shell
-
 function delete_all_ssh_keys() {
     echo "Deleting all local SSH keys..."
     rm -rf ~/.ssh/*
@@ -1176,7 +1083,6 @@ function generate_ssh_key_interactive() {
 * ARCHISO-UTILS
 ** iso-init
 #+begin_src shell
-
 function iso-init() {
   # Check if archiso package is installed
   if ! command -v mkarchiso &>/dev/null; then
@@ -1272,11 +1178,9 @@ function pullpkg() {
   done
 }
 #+end_src
-*** pac-analizer
-so ugly
+*** pacanalize
 #+begin_src shell
-
-analyze_packages() {
+function pacanalize() {
     # Fetch package data
     local all=$(pacman -Q | wc -l)
     local pkg=$(pacman -Qe | wc -l)
@@ -1298,30 +1202,83 @@ analyze_packages() {
     gum style "    Official Dependent Packages: $official_dep_pkg"
     gum style "    AUR Dependent Packages: $aur_dep_pkg"
 }
+#+end_src
+*** pacinfo
+#+begin_src shell
+pacinfo() {
+    if [ $# -eq 0 ]; then
+        echo "Error: Please provide at least one package name." | color red
+        return 1
+    fi
 
+    for pkg in "$@"; do
+        local info=$(pacman -Qi $pkg)
 
+        if [ -z "$info" ]; then
+            echo "Error: Package '$pkg' not found." | color red
+            continue
+        fi
 
+        echo -e "\n═══════════════════════════════════════" | color blue
+        echo " Package Information for $pkg " | color blue
+        echo -e "═══════════════════════════════════════\n" | color blue
 
+        echo "$info" | while read -r line; do
+            case "$line" in
+                Name*)
+                    echo "$line" | color green;;
+                Version*)
+                    echo "$line" | color purple;;
+                Description*)
+                    echo "$line" | color yellow;;
+                Architecture*)
+                    echo "$line" | color cyan;;
+                URL*)
+                    echo "$line" | color blue;;
+                Licenses*)
+                    echo "$line" | color green;;
+                Groups*)
+                    echo "$line" | color yellow;;
+                Provides*)
+                    echo "$line" | color cyan;;
+                Depends*)
+                    echo "$line" | color purple;;
+                Optional*)
+                    echo "$line" | color red;;
+                Conflicts*)
+                    echo "$line" | color red;;
+                Installed*)
+                    echo "$line" | color cyan;;
+                *)
+                    echo "$line" | color white;;
+            esac
+        done
+    done
+}
+#+end_src
+**** _pacinfo
+#+begin_src shell
+_pacinfo() {
+    local state line
+    typeset -A opt_args
 
+    _arguments -C \
+        '1: :->packages' \
+        '*:: :->other'
 
+    case $state in
+        packages)
+            local -a completions
+            completions=($(pacman -Qq))
+            _describe 'packages' completions
+            ;;
+        other)
+            ;;
+    esac
+}
 
-# function pac-analizer() {
-# 	echo -n "All Packages: "
-# 	pacman -Q | wc -l
-# 	echo -n "  Packages: "
-# 	pacman -Qe | wc -l
-# 	echo -n "    Official Packages: "
-# 	pacman -Qen | wc -l
-# 	echo -n "    AUR Packages: "
-# 	pacman -Qem | wc -l
-# 	echo -n "  Dependent Packages: "
-# 	pacman -Qd | wc -l
-# 	echo -n "    Official Dependent Packages: "
-# 	pacman -Qdn | wc -l
-# 	echo -n "    AUR Dependent Packages: "
-# 	pacman -Qdm | wc -l
-# }
-
+# Register the _pacinfo function for autocompletion with pacinfo
+compdef _pacinfo pacinfo
 #+end_src
 
 * my-useless-creations
@@ -1336,9 +1293,7 @@ function sbus () {
     echo "You just did that... zzzZZzzZZZ"
     :
   else
-    # Add your sbus code here
     echo "Function sbus executed"
-    # Set the flag variable to true
     sbus_executed=true
   fi
 }
@@ -1357,104 +1312,6 @@ function freedom() {
     else
       echo -e "${package}\t\e[31mPROPRIETARY\e[0m"
     fi
-  done
-}
-
-#+end_src
-*** allfree
-even more useless
-#+begin_src shell
-
-function allfree() {
-  for package in $(pacman -Qq); do
-    is_free=$(pacman -Qi $package | grep "License" | grep -q "custom:..free")
-    if [[ $is_free -eq 0 ]]; then
-      echo -e "${package}\t\e[32mFREE\e[0m"
-    else
-      echo -e "${package}\t\e[31mPROPRIETARY\e[0m"
-    fi
-  done
-}
-
-#+end_src
-*** nofree
-even more useless
-#+begin_src shell
-
-function nofree() {
-  for package in $(pacman -Qq); do
-    license=$(pacman -Qi $package | awk '/License/ { print $3 }')
-    if [[ $license =~ "custom:..free" ]]; then
-      echo -e "${package}\t\e[32mFREE\e[0m"
-    else
-      echo -e "${package}\t\e[31mPROPRIETARY\e[0m"
-    fi
-  done
-}
-
-#+end_src
-** envycontrol menu
-use at your own risk!
-#+begin_src shell
-
-#HACK
-envycontrol_menu() {
-  local choice
-  echo "Select an option:"
-  select choice in \
-    "Switch to Integrated graphics mode" \
-    "Switch to Hybrid graphics mode" \
-    "Switch to Nvidia graphics mode" \
-    "Enable ForceCompositionPipeline on Nvidia mode" \
-    "Enable Coolbits on Nvidia mode" \
-    "Setup PCI-Express Runtime D3 (RTD3) Power Management on Hybrid mode" \
-    "Restore default Xsetup file" \
-    "Revert changes made by EnvyControl" \
-    "Quit"
-  do
-    case $choice in
-      "Switch to Integrated graphics mode")
-        sudo envycontrol -s integrated
-        break
-        ;;
-      "Switch to Hybrid graphics mode")
-        sudo envycontrol -s hybrid
-        break
-        ;;
-      "Switch to Nvidia graphics mode")
-        read -p "Enter your Display Manager (gdm, gdm3, sddm, lightdm): " dm
-        sudo envycontrol --dm $dm -s nvidia
-        break
-        ;;
-      "Enable ForceCompositionPipeline on Nvidia mode")
-        sudo envycontrol --force-comp -s nvidia
-        break
-        ;;
-      "Enable Coolbits on Nvidia mode")
-        read -p "Enter Coolbits value (default: 28): " coolbits
-        sudo envycontrol --coolbits ${coolbits:-28} -s nvidia
-        break
-        ;;
-      "Setup PCI-Express Runtime D3 (RTD3) Power Management on Hybrid mode")
-        read -p "Enter RTD3 value (0-3, default: 2): " rtd3
-        sudo envycontrol --rtd3 ${rtd3:-2} -s hybrid
-        break
-        ;;
-      "Restore default Xsetup file")
-        sudo envycontrol --reset-sddm
-        break
-        ;;
-      "Revert changes made by EnvyControl")
-        sudo envycontrol --reset
-        break
-        ;;
-      "Quit")
-        break
-        ;;
-      *)
-        echo "Invalid option $REPLY"
-        ;;
-    esac
   done
 }
 
@@ -1485,24 +1342,9 @@ function start() {
 }
 
 #+end_src
-dependencie
-#+begin_src shell
-
-function wm-set() {
-    local program_name="$1"
-    local xinitrc_file="/etc/X11/xinit/xinitrc"
-    if sudo sed -i "\$s|^exec.*|exec $program_name|" "$xinitrc_file"; then
-        echo "Last 'exec' line updated in $xinitrc_file"
-    else
-        echo "No 'exec' line found in $xinitrc_file"
-    fi
-}
-
-#+end_src
 ** xgeometry
 interactively click the desired window
 #+begin_src shell
-
 xgeometry() {
   xwininfo_output=$(xwininfo -frame)
   x=$(echo "$xwininfo_output" | awk '/Absolute upper-left X:/ { print $4 }')
@@ -1515,12 +1357,11 @@ xgeometry() {
   echo "Width: $width"
   echo "Height: $height"
 }
-
 #+end_src
 ** xgeometry_focused
 output x, y, width, height about the currently focused window, WORKS WITH ANY WM
 #+begin_src shell
-function xgeometry_focused() {
+function xgeometry-focus() {
 	focused_window_id=$(xdotool getwindowfocus)
 	xwininfo_output=$(xwininfo -id "$focused_window_id")
 	x=$(echo "$xwininfo_output" | awk '/Absolute upper-left X:/ { print $4 }')
@@ -1532,24 +1373,11 @@ function xgeometry_focused() {
 	echo "Width: $width"
 	echo "Height: $height"
 }
-
-
 #+end_src
-* HACK
-** edit keys
-#+begin_src shell
-
-function edit-keys() {
-  nvim ~/.config/sxhkd/sxhkdrc
-}
-
-#+end_src
-
 * MOTIONS
 ** c
 c will replace cd in most shell functions
 #+begin_src shell
-
 function c() {
     local dir="$1"
     if [ ! -d "$dir" ]; then
@@ -1557,15 +1385,12 @@ function c() {
     fi
     clear && cd "$dir" && exa -la # &&  ls -l -a | wc -l
 }
-
 #+end_src
 ** dotfiles
 #+begin_src shell
-
 function dotfiles() {
   c ~/Desktop/pulls/dotfiles/$1
 }
-
 #+end_src
 *** _dotfiles
 This function is defined to provide autocompletion suggestions.
@@ -1604,28 +1429,8 @@ function _dotfiles() {
 # Register the function for autocompletion
 compdef _dotfiles dotfiles
 #+end_src
-** hard-coded
-*** school
-**** sapo
-#+begin_src shell
-
-function sapo() {
-  c ~/Desktop/scuola/sapo
-}
-
-#+end_src
-**** mate
-#+begin_src shell
-
-function mate() {
-  c ~/Desktop/scuola/
-}
-
-#+end_src
-
 ** conf
 #+begin_src shell
-
 function conf() {
     local config_folder="$HOME/.config"
 
@@ -1640,7 +1445,6 @@ function conf() {
         fi
     fi
 }
-
 #+end_src
 ** lfcd
 #+begin_src shell
@@ -1656,38 +1460,22 @@ lfcd () {
 }
 
 #+end_src
-** modular
-motions that let you c even in a directory that does not exist,
-they are probably the most efficent
 ** test
 #+begin_src shell
-
 function test() {
     c ~/Desktop/test/$1
 }
-
 #+end_src
-** learn
+** script
 #+begin_src shell
-
-function learn() {
-    c ~/xos/learn/$1
-}
-
-#+end_src
-** scripts
-#+begin_src shell
-function scripts() {
-    c ~/xos/scripts/$1
+function script() {
+    c ~/xos/script/$1
 }
 #+end_src
-
-
 * GIT
 ** gclone
-git clone, but you can display a custom image (super usefull if you like images!1!1!1!1!)
+git clone, but you can display a custom image
 #+begin_src shell
-
 function gclone() {
   clear
   if [ $# -lt 1 ]; then
@@ -1710,7 +1498,6 @@ function gclone() {
   # Clone the repository into the specified directory and change into the cloned directory
   git clone "$repo" "$dir" && c "$dir"
 }
-
 #+end_src
 ** ginit
 inizialize a and push an entire repo to github
@@ -1779,7 +1566,6 @@ ginit() {
 This will check a repo on your gh account
 USAGE : clone dotfiles
 #+begin_src shell
-
 #FIXME
 function clone() {
     src_file="$1"
@@ -1787,7 +1573,6 @@ function clone() {
     cp -r "$src_file" "$dest_dir"
     c "$dest_dir" && echo "Your files have been cloned! 🚀"
 }
-
 #+end_src
 ** fork
 #+begin_src shell
@@ -1820,7 +1605,7 @@ function origin() {
 #+begin_src shell
 
 function pulls(){
-  c ~/Desktop/pulls
+  c ~/Desktop/pulls/$1
 }
 
 #+end_src
@@ -2027,27 +1812,8 @@ instant_menu() {
 
 * WAL
 ** wal-set
-Find all .png, .jpg, .jpeg, and .webp files in the directory, pipe into fzf
+Find all .png, .jpg, .jpeg,  files in the directory, pipe into fzf
 #+begin_src shell
-#0.0.0
-# function wal-set() {
-#   # Directory to search for wallpapers
-#   local dir=~/xos/wallpapers/static
-
-#   local wallpaper=$(find "$dir" \( -name "*.png" -o -name "*.jpg" -o -name "*.jpeg" -o -name "*.webp" \) -type f | fzf-tmux --color=16 --height 40% -m --reverse --ansi --cycle)
-
-#   # Check if a file was selected
-#   if [[ -n "$wallpaper" ]]; then
-#     # Set the wallpaper using wal
-#     wal -i "${wallpaper}" -q
-#     echo "Wallpaper set to ${wallpaper}"
-#   else
-#     echo "No wallpaper selected."
-#   fi
-# }
-
-
-
 wal-set () {
     local dir=~/xos/wallpapers/static
     local wallpaper=$(find "$dir" \( -name "*.png" -o -name "*.jpg" -o -name "*.jpeg" -o -name "*.webp" \) -type f | fzf --height 40% -m --reverse --ansi --cycle)

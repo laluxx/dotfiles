@@ -59,6 +59,10 @@ sudo pacman -S acpi archiso bat base-devel base btop cmake conky dust dunst emac
 
 ** languages
 installation and conf
+*** latex
+#+begin_src shell
+sudo pacman -S texlive-core texlive-latexextra texlive-fontsextra texlive-formatsextra texlive-humanities texlive-pictures texlive-publishers texlive-science
+#+end_src
 *** c
 #+begin_src shell
 # sudo pacman -S aspell

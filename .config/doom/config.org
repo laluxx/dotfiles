@@ -4,7 +4,6 @@
 #+STARTUP: showeverything
 
 * TABLE OF CONTENTS :toc:
-- [[#about-this-config][ABOUT THIS CONFIG]]
 - [[#todo][TODO]]
   - [[#org][org]]
 - [[#xos][XOS]]
@@ -69,14 +68,9 @@
 - [[#winner-mode][WINNER MODE]]
 - [[#zap-to-char][ZAP TO CHAR]]
 
-* ABOUT THIS CONFIG
-This is my personal Doom Emacs config.
-Doom Emacs is a distribution of Emacs that uses the "evil" keybindings (Vim keybindings) and includes a number of nice extensions and a bit of configuration out of the box.
-I am maintaining this config not just for myself, but also for those that want to explore some of what is possible with Emacs. I will add a lot of examples of plugins and settings.
-
 * TODO
 ** org
-understand lsp work inside org documents too
+make lsp work inside org documents too
 * XOS
 ** update-dotfiles
 whenever you save a file inside "~/Desktop/pulls/dotfiles"
@@ -105,12 +99,36 @@ or one of its subdirectories && if that file is a org file
 ** gptel
 #+begin_src emacs-lisp
 (use-package! gptel
- :config
- (setq! gptel-api-key "your key"))
+  :config
+  (setq! gptel-api-key (getenv "OPENAI_API_KEY")))
 #+end_src
+
 ** keybinds
-this will overwrite the default doom emacs SPC f p keybind
-it will also open dired inside a window
+*** dmenu
+#+begin_src emacs-lisp
+(global-set-key (kbd "M-p") 'dmenu)
+#+end_src
+*** help-hooks
+#+begin_src emacs-lisp
+(defun my-list-hooks ()
+  "List all hooks in a completing-read interface."
+  (interactive)
+  (let* ((hook-symbols (sort
+                        (seq-filter (lambda (sym)
+                                      (and (symbolp sym)
+                                           (string-suffix-p "-hook" (symbol-name sym))))
+                                    (append obarray nil))
+                        #'string-lessp))
+         (hooks (mapcar #'symbol-name hook-symbols))
+         (selected-hook (completing-read "Hooks: " hooks)))
+    (when selected-hook
+      (describe-variable (intern selected-hook)))))
+
+(map! :leader
+      :desc "Show all hooks"
+      "hh" #'my-list-hooks)
+#+end_src
+
 *** movement
 **** lfcd
 #+begin_src emacs-lisp
@@ -141,31 +159,10 @@ it will also open dired inside a window
 (map! :leader
       (:prefix ("d" . "custom")
        :desc "Toggle vterm with lfcd" "l" #'vterm-toggle-cd-lfcd))
-
-
-;;0.0.0
-;; (defun vterm-toggle-cd-lfcd ()
-;;   "Open a vterm buffer in the bottom window running zsh and execute 'lfcd'."
-;;   (interactive)
-;;   (let ((buffer-name "lfcd-vterm")
-;;         (default-directory default-directory)
-;;         (shell-file-name "/bin/zsh"))
-;;     (if (get-buffer buffer-name)
-;;         (if (get-buffer-window buffer-name)
-;;             (delete-window (get-buffer-window buffer-name))
-;;           (display-buffer-in-side-window (get-buffer buffer-name) '((side . bottom))))
-;;       (progn
-;;         (split-window-below)
-;;         (other-window 1)
-;;         (vterm buffer-name)
-;;         (vterm-send-string "lfcd")
-;;         (vterm-send-return)))))
-
-;; (map! :leader
-;;       (:prefix ("d" . "custom")
-;;        :desc "Open vterm with lfcd" "l" #'vterm-toggle-cd-lfcd))
 #+end_src
 **** perosnal config
+this will overwrite the default doom emacs SPC f p keybind
+it will also open dired inside a window
 #+begin_src emacs-lisp
 (map! :leader
       :desc "Open dotfiles directory"
@@ -177,10 +174,6 @@ it will also open dired inside a window
 (map! :leader
       :desc "Open dotfiles directory"
       "f t" (lambda () (interactive) (dired "~/Desktop/test")))
-#+end_src
-*** dmenu
-#+begin_src emacs-lisp
-(global-set-key (kbd "M-p") 'dmenu)
 #+end_src
 *** toggle
 **** treemacs
@@ -210,6 +203,20 @@ it will also open dired inside a window
 (scroll-bar-mode  -1)
 (menu-bar-mode  -1)
 #+end_src
+*** smooth-scrolling
+#+begin_src emacs-lisp
+(setq mouse-wheel-scroll-amount '(1 ((shift) . 1))) ;; one line at a time
+(setq mouse-wheel-progressive-speed nil) ;; don"t accelerate scrolling
+(setq mouse-wheel-follow-mouse 't) ;; scroll window under mouse
+(setq scroll-step 1) ;; keyboard scroll one line at a time
+(setq scroll-conservatively 10000)
+(setq auto-window-vscroll nil)
+#+end_src
+
+*** scrollbar
+#+begin_src emacs-lisp
+(toggle-scroll-bar -1)
+#+end_src
 *** raibow-delimiters
 #+begin_src emacs-lisp
 (use-package rainbow-delimiters
@@ -225,7 +232,6 @@ when focused and not focused
 ** functions
 *** org
 #+begin_src emacs-lisp
-
 (defun org-insert-header-tags ()
   "Insert personalized header tags at the beginning of the current Org file."
   (interactive)
@@ -247,10 +253,10 @@ when focused and not focused
       "i o" #'org-insert-header-tags)
 #+end_src
 ** editing
-*** smartparents
-**** delete-empty-pair
+*** smart-delimiters
+**** delete-empty-delimiters
 #+begin_src emacs-lisp
-(defun laluxx/delete-empty-pair ()
+(defun laluxx/delete-empty-delimiters ()
   (interactive)
   (let* ((prev-char (char-before))
          (next-char (char-after)))
@@ -266,25 +272,77 @@ when focused and not focused
            (delete-char 1) (delete-char -1))
           (t (call-interactively 'backward-delete-char-untabify)))))
 
-(global-set-key (kbd "<backspace>") 'laluxx/delete-empty-pair)
+(global-set-key (kbd "<backspace>") 'laluxx/delete-empty-delimiters)
+#+end_src
+**** tab-out-delimiters
+#+begin_src emacs-lisp
+(defun laluxx/tab-out-of-delimiters-or-indent (orig-fun &rest args)
+  (if (and (eq evil-state 'insert)
+           (or (member (char-before) '(?\( ?\" ?\' ?\[ ?\{))
+               (member (char-after) '(?\) ?\" ?\' ?\] ?\}))))
+      (progn
+        (when (member (char-before) '(?\( ?\" ?\' ?\[ ?\{))
+          (while (not (member (char-after) '(?\) ?\" ?\' ?\] ?\})))
+            (forward-char 1)))
+        (when (member (char-after) '(?\) ?\" ?\' ?\] ?\}))
+          (forward-char 1)))
+    (apply orig-fun args)))
+
+(advice-add 'indent-for-tab-command :around #'laluxx/tab-out-of-delimiters-or-indent)
 #+end_src
 **** wrap
+# first we test visual mode
+[cacapupu
+{cacapupu
+(cacapupu
+)
+# it made an hole here
+'cacapupu
+'
+# it made an hole here
+"cacapupu
+"
+# it made an hole here
+# now we test visual line
+[cacapupu # also [ { should complete }]
+{cacapupu
+(cacapupu
+) # it should be here but at the end of upper line same for all other
+# it made an hole here
+'cacapupu
+'
+# it made an hole here
+
 #+begin_src emacs-lisp
-;; (defun wrap (delimiter)
-;;   "Wrap region with DELIMITER if region is active."
-;;   (interactive "cEnter a character to wrap with: ")
-;;   (if (region-active-p)
-;;       (let ((beg (region-beginning))
-;;             (end (region-end)))
-;;         (goto-char beg)
-;;         (insert-char delimiter)
-;;         (goto-char (1+ end))
-;;         (insert-char delimiter))
-;;     (message "No region selected!")))
+(defun wrap (delimiter)
+  "Wrap region with DELIMITER if region is active."
+  (interactive
+   (list (read-char "Enter a character to wrap with: ")))
+  (if (region-active-p)
+      (let ((beg (region-beginning))
+            (end (region-end))
+            (selected-text (buffer-substring-no-properties (region-beginning) (region-end))))
+        (goto-char beg)
+        (insert-char delimiter)
+        (goto-char (1+ end))
+        (insert-char (get-matching-delimiter delimiter))
+        (when (or (and (string-match-p "\n" selected-text)
+                       (not (eq (char-after end) ?\n)))
+                  (eq (char-before beg) ?\n))
+          (newline-and-indent)
+          (goto-char (1+ end))
+          (newline-and-indent)))
+    (message "No region selected!")))
 
-;; (map! :leader
-;;       "i w" #'wrap)
+(defun get-matching-delimiter (delimiter)
+  "Return the matching delimiter for DELIMITER."
+  (pcase delimiter
+    (?\( ?\))
+    (?\" ?\")
+    (?\' ?\')))
 
+(map! :leader
+      :nv "i w" #'wrap)
 #+end_src
 *** INSERT
 **** noob-mode
@@ -713,7 +771,7 @@ One of the media players available for Emacs is emms, which stands for Emacs Mul
 
 * EMOJIS
 Emojify is an Emacs extension to display emojis. It can display github style emojis like :smile: or plain ascii ones like :).
-
+:smile:
 #+begin_src emacs-lisp
 (use-package emojify
   :hook (after-init . global-emojify-mode))
@@ -1437,7 +1495,7 @@ We need ox-man for "Org eXporting" to manpage format and ox-gemini for exporting
 #+begin_src emacs-lisp
 (after! org
   (setq org-roam-directory "~/nc/Org/roam/"
-        org-roam-graph-viewer "/usr/bin/brave"))
+        org-roam-graph-viewer "/usr/bin/firefox"))
 
 (map! :leader
       (:prefix ("n r" . "org-roam")

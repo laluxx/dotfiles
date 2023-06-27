@@ -7,9 +7,12 @@
 #+begin_src shell
 #!/bin/sh
 #+end_src
+** basics
+#+begin_src shell
+alias cp='cp -r'
+#+end_src
 ** pacman
 #+begin_src shell
-
 alias get='sudo pacman -S'
 alias up='sudo pacman -Syyu'
 alias y='yay -Sua'
@@ -17,20 +20,15 @@ alias pacbat='pacman -Qe | bat'
 alias sbu="sudo pacman -Rns"
 alias databases="sudo pacman -Syy"
 alias pacup='kitty +kitten icat  && sudo pacman -Syu'
-
-alias paclog="sudo tail -f /var/log/pacman.log"
 #+end_src
 ** emacs
-#TODO
 #+begin_src shell
-
 alias em="/usr/bin/emacs -nw"
 alias emacs="emacsclient -c -a 'emacs'"
 alias doomsync="~/.emacs.d/bin/doom sync"
 alias doomdoctor="~/.emacs.d/bin/doom doctor"
 alias doomupgrade="~/.emacs.d/bin/doom upgrade"
 alias doompurge="~/.emacs.d/bin/doom purge"
-
 #+end_src
 ** neovim
 #+begin_src shell
@@ -45,21 +43,10 @@ alias npm="sudo npm"
 #+begin_src shell
 alias luarocks="sudo luarocks"
 #+end_src
-*** cargo
-#+begin_src shell
-
-alias cr="cargo run"
-alias ca="cargo add"
-alias cs="cargo search"
-
-#+end_src
-
 ** xos
 *** benchmark
 #+begin_src shell
-
 alias benchmark='hyperfine'
-
 #+end_src
 *** open
 #+begin_src shell
@@ -72,38 +59,30 @@ alias shutdown="systemctl poweroff"
 #+end_src
 *** xtesting
 #+begin_src shell
-
 alias xprocess="ps -eo pid,comm,%cpu --sort=-%cpu | head"
 alias xmem="ps -eo pid,comm,%mem --sort=-%mem | head"
 alias showport="ss -ltnp"
-alias remind="notify-send "Reminder" "Time to take a break""
-
-alias todo='nvim ~/taskx'
 alias xtop='zfxtop'
 #+end_src
 ** compression
 #+begin_src shell
-
-alias compress="tar -czvf"
-alias extract="tar -xzvf"
-
+alias dotar="tar -czvf"
 #+end_src
 ** picom
 #+begin_src shell
-
-alias invisible='picom-trans -w $(xdotool getactivewindow) 0'
 alias trans='wid=$(xdotool selectwindow); picom-trans -w $wid'
-
 #+end_src
-** motions
+** navigation
 #+begin_src shell
-alias x='clear && xonsh'
 alias .="c"
 alias c..="c .."
+alias cd..="c .."
 alias ..="c .."
 
 
 alias modules='xos modules'
+
+alias wallpapers='c ~/xos/wallpapers/static'
 
 
 
@@ -113,7 +92,7 @@ alias xapps='c ~/Desktop/xapps/'
 
 alias glo="frogmouth"
 #+end_src
-** pip
+** python
 #+begin_src shell
 alias pipbat="pip list --format=columns | bat"
 alias p="python3"

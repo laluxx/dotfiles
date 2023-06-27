@@ -99,8 +99,6 @@
 #+end_src
 ** xos
 #+begin_src emacs-lisp
-
-;; (use-package org-roam
-;;   :ensure t)
 (package! gptel) ;; GPT
+(package! lsp-treemacs)
 #+end_src
