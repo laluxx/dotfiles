@@ -4,12 +4,6 @@ function path() {
   printf "EnvPath([\n" && printf "'%s',\n" $dir_list | sed "s|^ |/|; s|^|  |" && printf "])\n"
 }
 
-# export PATH="/home/l/.config/emacs/bin:$PATH"
-# export PATH="$PATH:/home/l/.config/emacs/bin"
-
-# export PATH="$PATH:/home/l/.cargo/bin"
-
-
 export PATH="$PATH:$HOME/.config/emacs/bin"
 export PATH="$PATH:$HOME/.cargo/bin"
 
@@ -49,9 +43,9 @@ bindkey -M menuselect 'j' vi-down-line-or-history
 bindkey -v '^?' backward-delete-char
 
 bindkey -s '^r' 'lfcd\n'
-# below opens a new terminal in current dir
 bindkey -s '^e' 'pcmanfm\n'
 
+# below opens a new terminal in current dir
 # case "$TERM" in (rxvt|rxvt-*|st|st-*|*xterm*|(dt|k|E)term)
 #     local term_title () { print -n "\e]0;${(j: :q)@}\a" }
 #     precmd () {
@@ -121,7 +115,7 @@ if [ ! -z $BM_DIR ]; then
 fi
 
 # Below to change autosuggestion options
-#ZSH_AUTOSUGGEST_HIGHLIGHT_STYLE="fg=#ff00ff,bg=cyan,bold,underline"	# To get colored completion text
+# ZSH_AUTOSUGGEST_HIGHLIGHT_STYLE="fg=blue,bg=#292D3E,bold,underline"	# To get colored completion text
 bindkey '^[[Z' autosuggest-accept   # shift tab to accept ghost text
 ZSH_AUTOSUGGEST_CLEAR_WIDGETS+=(buffer-empty bracketed-paste accept-line push-line-or-edit)
 ZSH_AUTOSUGGEST_STRATEGY=(history completion)
@@ -907,14 +901,16 @@ eval "$(starship init zsh)"
 # --color=fg:#cdd6f4,header:#f38ba8,info:#cba6f7,pointer:#f5e0dc \
 # --color=marker:#f5e0dc,fg+:#cdd6f4,prompt:#cba6f7,hl+:#f38ba8"
 
-function xrate144() {
-  connected_display=$(xrandr | grep ' connected' | awk '{print $1}')
-  xrandr --output "$connected_display" --mode 1920x1080 --rate 144
-}
+function xrate() {
+  if [ "$#" -ne 1 ] || ! [[ "$1" =~ ^[0-9]+$ ]]; then
+    echo "Usage: xrate [refresh rate]"
+    return 1
+  fi
 
-function xrate60() {
-  local display=$(xrandr | grep ' connected' | awk '{print $1}')
-  xrandr --output "$display" --mode 1920x1080 --rate 60
+  local refresh_rate=$1
+  local connected_display=$(xrandr | grep ' connected' | awk '{print $1}')
+
+  xrandr --output "$connected_display" --mode 1920x1080 --rate "$refresh_rate"
 }
 
 function pullpkg() {
@@ -925,6 +921,19 @@ function pullpkg() {
     "$HELPER" --downloadonly --noredownload --noconfirm
     cd ..
   done
+}
+
+function get() {
+    if sudo pacman -S "$@"; then
+        echo "Package installed successfully with pacman."
+    else
+        echo "Pacman could not find the package. Trying with yay..."
+        if yay -S "$@"; then
+            echo "Package installed successfully with yay."
+        else
+            echo "yay could not find the package either."
+        fi
+    fi
 }
 
 function pacanalize() {
@@ -938,7 +947,7 @@ function pacanalize() {
     local aur_dep_pkg=$(pacman -Qdm | wc -l)
 
     # Show spinner
-    gum spin --title="Analyzing packages 🚀" -- sleep 2
+    gum spin --title="Analyzing packages 🚀" -- sleep 1
 
     # Display the data with styling
     gum style --bold "All Packages: $all"
@@ -1023,19 +1032,6 @@ _pacinfo() {
 # Register the _pacinfo function for autocompletion with pacinfo
 compdef _pacinfo pacinfo
 
-sbus_executed=false
-
-function sbus () {
-  if [ "$sbus_executed" = true ]; then
-    echo "You just did that... zzzZZzzZZZ"
-    :
-  else
-    echo "Function sbus executed"
-    sbus_executed=true
-  fi
-}
-
-#FIXME
 function freedom() {
   for package in $(pacman -Qq); do
     license=$(pacman -Qi $package | awk '/License/ { print $3 }')
@@ -1045,6 +1041,14 @@ function freedom() {
       echo -e "${package}\t\e[31mPROPRIETARY\e[0m"
     fi
   done
+}
+
+function start() {
+  if [[ -z $1 ]]; then
+    startx
+  else
+    set-wm "$1" && startx
+  fi
 }
 
 function set-wm() {
@@ -1057,13 +1061,36 @@ function set-wm() {
     fi
 }
 
-function start() {
-  if [[ -z $1 ]]; then
-    startx
-  else
-    set-wm "$1" && startx
-  fi
-}
+function autologin() {
+        if [[ "$1" == "info" ]]; then
+            local tty_number="1"
+            local service_file="/etc/systemd/system/getty@tty${tty_number}.service.d/autologin.conf"
+            if [[ -f "$service_file" ]]; then
+                echo "Auto-login enabled"
+            else
+                echo "Auto-login disabled"
+            fi
+        else
+            local tty_number="1"
+            local service_dir="/etc/systemd/system/getty@tty${tty_number}.service.d"
+            local service_file="$service_dir/autologin.conf"
+            local current_user=$(whoami)
+            if [[ -f "$service_file" ]]; then
+                sudo rm "$service_file" && \
+                sudo systemctl daemon-reload && \
+                echo "Auto-login disabled for tty${tty_number}"
+            else
+                if [[ ! -d "$service_dir" ]]; then
+                    sudo mkdir -p "$service_dir"
+                fi
+                echo "[Service]
+    ExecStart=
+    ExecStart=-/sbin/agetty --autologin $current_user --noclear %I $TERM" | sudo tee "$service_file" > /dev/null
+                sudo systemctl daemon-reload && \
+                echo "Auto-login enabled for tty${tty_number} with user $current_user"
+            fi
+        fi
+    }
 
 xgeometry() {
   xwininfo_output=$(xwininfo -frame)
@@ -1099,8 +1126,12 @@ function c() {
     clear && cd "$dir" && exa -la # &&  ls -l -a | wc -l
 }
 
+function xos() {
+    c ~/xos/$1/$2/$3
+}
+
 function dotfiles() {
-  c ~/Desktop/pulls/dotfiles/$1
+  c ~/Desktop/pulls/dotfiles/$1/$2/$3
 }
 
 # Define color variables
@@ -1138,19 +1169,23 @@ function _dotfiles() {
 compdef _dotfiles dotfiles
 
 function conf() {
-    local config_folder="$HOME/.config"
-
-    if [ -z "$1" ]; then
-        cd "$config_folder"
-    else
-        local target_folder="$config_folder/$1"
-        if [ -d "$target_folder" ]; then
-            cd "$target_folder"
-        else
-            echo -e "\e[1;31mError: Directory '$1' does not exist in '$config_folder'.\e[0m"
-        fi
-    fi
+  local x=~/.config
+  for arg in $@; do
+    x+="/$arg"
+  done
+  if [ -d "$x" ]; then
+    cd "$x"
+  else
+    echo "Directory not found: $x"
+  fi
 }
+
+_conf() {
+  local curcontext="$curcontext" state line
+  _path_files -W "$HOME/.config/" && return
+  return 1
+}
+compdef _conf conf
 
 lfcd () {
     tmp="$(mktemp)"
@@ -1163,11 +1198,11 @@ lfcd () {
 }
 
 function test() {
-    c ~/Desktop/test/$1
+    c ~/Desktop/test/$1/$2/$3
 }
 
 function script() {
-    c ~/xos/script/$1
+    c ~/xos/script/$1/$2/$3
 }
 
 function gclone() {
@@ -1251,35 +1286,23 @@ ginit() {
   echo "Done!"
 }
 
-#FIXME
 function clone() {
-    src_file="$1"
-    dest_dir="$2"
-    cp -r "$src_file" "$dest_dir"
-    c "$dest_dir" && echo "Your files have been cloned! 🚀"
-}
-
-function fork() {
-  repo_url=$1
-
-  # Extract the repository name from the URL
-  repo_name=${repo_url##*/}
-
-  # Remove the ".git" extension if present
-  repo_name=${repo_name%.git}
-
-  # Fork the repository using the gh CLI
-  gh repo fork $repo_url
-
-  echo "Forked $repo_name"
+    local github_account="laluxx"
+    git clone "https://github.com/${github_account}/$1.git"
 }
 
 function origin() {
   gh repo set-default
 }
 
+#TODO
+function rmrepo() {
+  repo_name="$1"
+  gh repo delete "$repo_name" --yes
+}
+
 function pulls(){
-  c ~/Desktop/pulls/$1
+  c ~/Desktop/pulls/$1/$2/$3
 }
 
 #TODO
@@ -1296,12 +1319,6 @@ function undo_last_command {
     echo "This function only works in zsh."
     return 1
   fi
-}
-
-#TODO
-function rmrepo() {
-  repo_name="$1"
-  gh repo delete "$repo_name" --yes
 }
 
 #TODO
@@ -1357,8 +1374,27 @@ function dd_iso() {
   echo "Done!"
 }
 
-function xos() {
-    c ~/Desktop/xos/$1
+function xos-update() {
+    local xos_path="$HOME/xos"
+    local dotfiles_repo="https://github.com/laluxx/dotfiles.git"
+    local destination_dir="$HOME/Desktop/pulls/dotfiles"
+
+    # Silently change to the xos directory
+    cd "$xos_path" || return 1
+
+    # Remove the existing dotfiles directory if it exists
+    [[ -d dotfiles ]] && rm -rf dotfiles
+
+    # Clone the dotfiles repository
+    git clone --quiet "$dotfiles_repo" dotfiles || return 1
+
+    # Rsync the dotfiles directory to your local repository
+    rsync -a "$xos_path/dotfiles/" "$destination_dir/"
+
+    echo "XOS updated"
+
+    # Call the update-dotfiles function to sync to home directory
+    update-dotfiles
 }
 
 function update-dotfiles() {
@@ -1368,27 +1404,15 @@ function update-dotfiles() {
     echo "Updated dotfiles"
 }
 
-function xos-update() {
-    xos_path="$HOME/xos"
-    dotfiles_repo="https://github.com/laluxx/dotfiles.git"
-    destination_dir="$HOME/Desktop/pulls/dotfiles"
-
-    c "$xos_path"
-
-    # Remove the existing dotfiles directory if it exists
-    [[ -d dotfiles ]] && rm -rf dotfiles
-
-    gclone "$dotfiles_repo" && cd dotfiles
-
-    # Update destination directory to match the cloned dotfiles
-    rsync -a . "$destination_dir"/
-    echo "XOS updated"
-    # want to ovverride ~/.config folder ? y/n #TODO
-}
-
 function xos-doctor() {
     sudo lynis audit system
 }
+
+# export GUM_INPUT_CURSOR_FOREGROUND=""
+export GUM_INPUT_PROMPT_FOREGROUND="#A3F7FF"
+export GUM_INPUT_PLACEHOLDER="What's up?"
+export GUM_INPUT_PROMPT="➜ "
+export GUM_INPUT_WIDTH=80
 
 function gum-commit(){
 TYPE=$(gum choose "fix" "feat" "docs" "style" "refactor" "test" "chore" "revert")

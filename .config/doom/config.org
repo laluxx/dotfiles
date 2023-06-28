@@ -253,6 +253,12 @@ when focused and not focused
       "i o" #'org-insert-header-tags)
 #+end_src
 ** editing
+*** jump-definition
+#+begin_src emacs-lisp
+(map! :leader
+      (:prefix "j"
+       :desc "Jump to definition" "d" #'xref-find-definitions))
+#+end_src
 *** smart-delimiters
 **** delete-empty-delimiters
 #+begin_src emacs-lisp
@@ -290,7 +296,7 @@ when focused and not focused
 
 (advice-add 'indent-for-tab-command :around #'laluxx/tab-out-of-delimiters-or-indent)
 #+end_src
-**** wrap
+**** TODO wrap
 # first we test visual mode
 [cacapupu
 {cacapupu

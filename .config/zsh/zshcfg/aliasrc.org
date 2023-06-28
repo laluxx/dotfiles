@@ -13,7 +13,7 @@ alias cp='cp -r'
 #+end_src
 ** pacman
 #+begin_src shell
-alias get='sudo pacman -S'
+# alias get='sudo pacman -S'
 alias up='sudo pacman -Syyu'
 alias y='yay -Sua'
 alias pacbat='pacman -Qe | bat'

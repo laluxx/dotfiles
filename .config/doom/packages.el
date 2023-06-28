@@ -30,3 +30,5 @@
 
 (package! gptel) ;; GPT
 (package! lsp-treemacs)
+(package! ef-themes)
+(package! notmuch)

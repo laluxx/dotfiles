@@ -2,7 +2,7 @@
 
 alias cp='cp -r'
 
-alias get='sudo pacman -S'
+# alias get='sudo pacman -S'
 alias up='sudo pacman -Syyu'
 alias y='yay -Sua'
 alias pacbat='pacman -Qe | bat'
