@@ -1,3 +1,14 @@
+#+TITLE: Lfrc.org
+#+AUTHOR: laluxx
+#+DESCRIPTION: lfrc
+#+STARTUP: showeverything
+#+PROPERTY: header-args :tangle lfrc
+#+auto_tangle: t
+
+# Basic vars
+
+* Set
+#+begin_src shell
 set shell zsh
 set shellopts '-eu'
 set ifs "\n"
@@ -14,7 +25,10 @@ set cleaner ctpvclear
 #set cleaner ~/.config/lf/cleaner
 &ctpv -s $id
 &ctpvquit $id
-
+#+end_src
+* Cmds
+** open
+#+begin_src shell
 cmd open ${{
     case $(file --mime-type $f -b) in
 	image/vnd.djvu|application/pdf|application/octet-stream) setsid -f zathura $fx >/dev/null 2>&1 ;;
@@ -27,9 +41,13 @@ cmd open ${{
     *) for f in $fx; do xdg-open $f > /dev/null 2> /dev/null & done;;
     esac
 }}
-
+#+end_src
+** mkdir
+#+begin_src shell
 cmd mkdir $mkdir -p "$(echo $* | tr ' ' '\ ')"
-
+#+end_src
+** delete
+#+begin_src shell
 cmd delete ${{
 	clear; tput cup $(($(tput lines)/3)); tput bold
 	set -f
@@ -38,7 +56,9 @@ cmd delete ${{
 	read ans
 	[ $ans = "y" ] && rm -rf $fx
 }}
-
+#+end_src
+** moveto
+#+begin_src shell
 cmd moveto ${{
 	clear; tput cup $(($(tput lines)/3)); tput bold
 	set -f
@@ -49,7 +69,9 @@ cmd moveto ${{
 	done &&
 	notify-send "🚚 File(s) moved." "File(s) moved to $dest."
 }}
-
+#+end_src
+** copyto
+#+begin_src shell
 cmd copyto ${{
 	clear; tput cup $(($(tput lines)/3)); tput bold
 	set -f
@@ -60,11 +82,17 @@ cmd copyto ${{
 	done &&
 	notify-send "📋 File(s) copied." "File(s) copies to $dest."
 }}
-
+#+end_src
+** setbg
+#+begin_src shell
 cmd setbg "$1"
-
+#+end_src
+** bulkrename
+#+begin_src shell
 cmd bulkrename $vidir
-
+#+end_src
+* Keybinds
+#+begin_src shell
 map <c-f> $lf -remote "send $id select '$(fzf)'"
 
 
@@ -111,3 +139,4 @@ cmd quitcd ${{
 # mime ^image/*,video/*,audio/*,application/pdf,inode/x-empty {
 #     \  echo %f | grep -iE '\.(jpg|jpeg|png|gif|bmp|webp|svg|tiff|ico|xcf|mp4|webm|ogv|ogg|mp3|flac|wav|m4a|pdf)$' >/dev/null 2>&1 && kitty +kitten icat %f
 # }
+#+end_src

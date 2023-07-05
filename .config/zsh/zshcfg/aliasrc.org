@@ -3,25 +3,19 @@
 #+auto_tangle: t
 
 
-* ALIAS
+* pacman
 #+begin_src shell
 #!/bin/sh
-#+end_src
-** basics
-#+begin_src shell
-alias cp='cp -r'
-#+end_src
-** pacman
-#+begin_src shell
 # alias get='sudo pacman -S'
 alias up='sudo pacman -Syyu'
+alias update='sudo pacman -Syyu'
 alias y='yay -Sua'
 alias pacbat='pacman -Qe | bat'
 alias sbu="sudo pacman -Rns"
 alias databases="sudo pacman -Syy"
 alias pacup='kitty +kitten icat  && sudo pacman -Syu'
 #+end_src
-** emacs
+* emacs
 #+begin_src shell
 alias em="/usr/bin/emacs -nw"
 alias emacs="emacsclient -c -a 'emacs'"
@@ -30,99 +24,89 @@ alias doomdoctor="~/.emacs.d/bin/doom doctor"
 alias doomupgrade="~/.emacs.d/bin/doom upgrade"
 alias doompurge="~/.emacs.d/bin/doom purge"
 #+end_src
-** neovim
+* Listing
+#+begin_src shell
+alias ls="lsd"
+# alias ls='exa -l --color=always --group-directories-first'  # long format
+alias la='exa -a --color=always --group-directories-first'  # all files and dirs
+alias ll='exa -l --color=always --group-directories-first'  # long format
+alias l='lsd --tree' # tree listing
+#+end_src
+* Highlight
+#+begin_src shell
+alias highlight="highlight -O ansi --force"
+alias hcat="cat | highlight"
+#+end_src
+* neovim
 #+begin_src shell
 alias v="nvim"
 #+end_src
-** dev
-*** npm
+* dev
+** npm
 #+begin_src shell
 alias npm="sudo npm"
 #+end_src
-*** luarocks
+** luarocks
 #+begin_src shell
 alias luarocks="sudo luarocks"
 #+end_src
-** xos
-*** benchmark
+* xos
+** benchmark
 #+begin_src shell
 alias benchmark='hyperfine'
 #+end_src
-*** open
+** open
 #+begin_src shell
 alias open='xdg-open'
 #+end_src
-*** system
+** system
 #+begin_src shell
 alias shutdown="systemctl poweroff"
-
 #+end_src
-*** xtesting
+** xtests
 #+begin_src shell
 alias xprocess="ps -eo pid,comm,%cpu --sort=-%cpu | head"
 alias xmem="ps -eo pid,comm,%mem --sort=-%mem | head"
 alias showport="ss -ltnp"
 alias xtop='zfxtop'
 #+end_src
-** compression
+* compression
 #+begin_src shell
 alias dotar="tar -czvf"
 #+end_src
-** picom
+* picom
 #+begin_src shell
 alias trans='wid=$(xdotool selectwindow); picom-trans -w $wid'
 #+end_src
-** navigation
+* navigation
 #+begin_src shell
 alias .="c"
 alias c..="c .."
 alias cd..="c .."
 alias ..="c .."
 
-
-alias modules='xos modules'
-
 alias wallpapers='c ~/xos/wallpapers/static'
-
-
-
-alias mate='c ~/Desktop/scuola/mate/'
-alias scuola='c ~/Desktop/scuola/'
-alias xapps='c ~/Desktop/xapps/'
-
-alias glo="frogmouth"
 #+end_src
-** python
+* python
 #+begin_src shell
 alias pipbat="pip list --format=columns | bat"
 alias p="python3"
 #+end_src
-
-** ssh
+* ssh
 #+begin_src shell
 alias meteo="curl wttr.in"
 alias xconfetty="ssh -p 2222 ssh.caarlos0.dev"
 alias xfireworks="ssh -p 2223 ssh.caarlos0.dev"
 #+end_src
-** kitty
+* kitty
 #+begin_src shell
 alias icat="kitty +kitten icat"
 #+end_src
-** git
+* Virtualization
 #+begin_src shell
-
-alias gs="git status"
-alias gc="git commit"
-alias gp="git push"
-alias gpl="git pull"
-alias gpom="git push origin master"
-
+alias enable-libv="sudo systemctl enable --now libvirtd"
 #+end_src
-** ls
-#+begin_src shell
-alias ls="lsd -la"
-#+end_src
-** default
+* default
 Verbosity and settings that you pretty much just always are going to want.
 #+begin_src shell
 
@@ -136,7 +120,6 @@ alias \
 # Colorize commands when possible.
 # ls="ls -hN --color=auto --group-directories-first" \
 alias \
-	lt="colorls --tree" \
 	grep="grep --color=auto" \
 	diff="diff --color=auto" \
 	ccat="highlight --out-format=ansi"
@@ -145,23 +128,9 @@ alias \
 	ka="killall" \
 	g="git" \
 	xcp="xclip -selection clipboard" \
+	e="$EDITOR" \
 	# f="$FILE" \
-	# e="$EDITOR" \
 
-# Changing "ls" to "exa"
-alias la='exa -a --color=always --group-directories-first'  # all files and dirs
-alias ll='exa -l --color=always --group-directories-first'  # long format
-# alias ls='exa -l --color=always --group-directories-first'  # long format
-alias lt='exa -aT --color=always --group-directories-first' # tree listing
-alias l='lt' # tree listing
-
-
-alias \
-	weath="less -S ${XDG_DATA_HOME:-$HOME/.local/share}/weatherreport" \
-    vm="/usr/bin/vim" \
-	wp="whatsapp-for-linux &>/dev/null & disown" \
-	dc="discord &>/dev/null & disown" \
-	tg="telegram-desktop &>/dev/null & disown"
 
 # alias \
 # 	t="st &>/dev/null & disown" \
@@ -177,12 +146,5 @@ alias \
 #else
 #    alias lf="/usr/bin/lfrun"
 #fi
-
-#+end_src
-* FZF
-#+begin_src shell
-alias fzf='fzf --color=16'
-alias fzf-tmux='fzf-tmux --color=16'
-
 
 #+end_src

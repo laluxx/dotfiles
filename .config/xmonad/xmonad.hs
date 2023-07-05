@@ -70,6 +70,8 @@ import XMonad.Util.NamedScratchpad
 import XMonad.Util.Run (runProcessWithInput, safeSpawn, spawnPipe)
 import XMonad.Util.SpawnOnce
 
+import XMonad.Layout.PerWorkspace (onWorkspace)
+
    -- ColorScheme module (SET ONLY ONE!)
       -- Possible choice are:
       -- DoomOne
@@ -104,8 +106,8 @@ myEmacs :: String
 myEmacs = "emacsclient -c -a 'emacs' "  -- Makes emacs keybindings easier to type
 
 myEditor :: String
-myEditor = "emacsclient -c -a 'emacs' "  -- Sets emacs as editor
--- myEditor = myTerminal ++ " -e vim "    -- Sets vim as editor
+-- myEditor = "emacsclient -c -a 'emacs' "  -- Sets emacs as editor
+myEditor = myTerminal ++ " -e nvim "    -- Sets vim as editor
 
 myBorderWidth :: Dimension
 myBorderWidth = 2           -- Sets border width for windows
@@ -133,11 +135,15 @@ myStartupHook = do
   spawnOnce "xset r rate 160 60"
   spawnOnce "lxsession"
   -- spawnonce "/usr/lib/polkit-gnome/polkit-gnome-authentication-agent-1"
-  spawnOnce "picom"
+  -- spawnOnce "picom"   --Compositor
   spawnOnce "nm-applet"
   spawnOnce "volumeicon"
   spawnOnce "notify-log $HOME/.log/notify.log"
+
+  spawn "doom sync"
+  spawn "doom sync" -- Double doom sync cuz yes
   spawn "/usr/bin/emacs --daemon" -- emacs daemon for the emacsclient
+  spawn "emacsclient -c -a 'emacs'" -- emacs client
 
   spawn ("sleep 2 && conky -c $HOME/.config/conky/xmonad/" ++ colorScheme ++ "-01.conkyrc")
   spawn ("sleep 2 && trayer --edge top --align right --widthtype request --padding 6 --SetDockType true --SetPartialStrut true --expand true --monitor 1 --transparent true --alpha 0 " ++ colorTrayer ++ " --height 22")

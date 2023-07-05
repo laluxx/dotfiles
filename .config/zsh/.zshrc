@@ -24,12 +24,13 @@ source /usr/share/zsh/plugins/zsh-syntax-highlighting/zsh-syntax-highlighting.zs
 
 #Enable colors and change fallback prompt:
 autoload -U colors && colors
-PS1="%B%{$fg[red]%}[%{$fg[yellow]%}%n%{$fg[green]%}@%{$fg[blue]%}%M %{$fg[magenta]%}%~%{$fg[red]%}]%{$reset_color%}$%b "
+
+# PS1="%B%{$fg[red]%}[%{$fg[yellow]%}%n%{$fg[green]%}@%{$fg[blue]%}%M %{$fg[magenta]%}%~%{$fg[red]%}]%{$reset_color%}$%b "
+PS1="%{$fg[red]%}[%{$fg_bold[white]%}ERROR%{$fg[red]%}]%{$reset_color%} "
 
 # Fetch all plugins in dir
 plugins=(`echo $(ls $ZSH/plugins | sed -z 's/\n/ /g')`)
 
-# Basic auto/tab complete:
 autoload -U compinit
 zstyle ':completion:*' menu select
 zmodload zsh/complist
@@ -74,7 +75,6 @@ HISTSIZE=10000
 SAVEHIST=10000
 setopt appendhistory
 
-
 # Change cursor shape for different vi modes.
 function zle-keymap-select {
   if [[ ${KEYMAP} == vicmd ]] ||
@@ -94,9 +94,6 @@ function _set_cursor() {
       echo -ne "\ePtmux;\e\e$1\e\\"
     fi
 }
-
-
-
 
 # Load aliases
 [ -f "$ZSHCFG/aliasrc" ] && source "$ZSHCFG/aliasrc"
@@ -203,43 +200,96 @@ function chpwd() {
 
 chpwd # run once
 
+#HACK custo function and aliases should work
+diffrun() {
+        [ -z "$1" ] && { echo "Usage: drun <command> [file/directory]"; return 1; }
+        local cmd="$1"
+        local target="${2:-$PWD}"
+        [ ! -e "$target" ] && { echo "Error: File or directory '$target' not found."; return 1; }
+        echo "Monitoring size of '$target' for changes..."
+        local prev_size=$(du -sb "$target" | awk '{print $1}')
+        while sleep 1; do
+            local size=$(du -sb "$target" | awk '{print $1}')
+            if [ "$prev_size" -ne "$size" ]; then
+            prev_size="$size"
+            zsh -c $cmd
+            fi
+        done
+    }
+
 function t() {
     if [[ $# -eq 0 ]]; then
-        echo "Usage: n <filename>"
+        echo "Usage: t <filename>"
         return 1
     fi
 
     # Get file extension
-    ext="${1##*.}"
+    local ext="${1##*.}"
 
     # Define templates for each file type
+    local template=""
     case "$ext" in
         "cpp")
-            template="#include <iostream>\n\nusing namespace std;\n\nint main() {\n    // your code goes here\n    return 0;\n}"
+            template="#include <iostream>
+
+using namespace std;
+
+int main() {
+    // your code goes here
+    return 0;
+}"
             ;;
         "html")
-            template="td;\n\nint main() {\n    // your code goes here\n    return 0;\n}"
+            template='<!DOCTYPE html>
+<html>
+<head>
+    <title>Title</title>
+</head>
+<body>
+
+    <!-- your code goes here -->
+
+</body>
+</html>'
             ;;
         "py")
-            template="#!/usr/bin/env python3\n\n# your code goes here"
+            template="#!/usr/bin/env python3
+
+# your code goes here"
             ;;
         "sh")
-            template="#!/bin/bash\n\n# your code goes here"
+            template="#!/bin/bash
+
+# your code goes here"
             ;;
         "lua")
             template="-- your code goes here"
             ;;
         "rs")
-            template="fn main() {\n    // your code goes here\n}"
+            template="fn main() {
+    // your code goes here
+}"
             ;;
         "go")
-            template="package main\n\nimport \"fmt\"\n\nfunc main() {\n    // your code goes here\n}"
+            template='package main
+
+import "fmt"
+
+func main() {
+    // your code goes here
+}'
             ;;
         "zig")
-            template="const std = @import(\"std\");\n\npub fn main() !void {\n    // your code goes here\n}"
+            template='const std = @import("std");
+
+pub fn main() !void {
+    // your code goes here
+}'
             ;;
         "hs")
-            template="main = do\n    -- your code goes here\n    return ()"
+            template="main = do
+    -- your code goes here
+    return ()"
             ;;
         *)
             echo "Unsupported file type: $ext"
@@ -247,19 +297,12 @@ function t() {
             ;;
     esac
 
-    # Generate file with timestamp and template (if available)
-    ts=$(date +"%Y%m%d_%H%M%S")
+    # Generate file with the template (if available)
     if [[ -n "$template" ]]; then
-        echo -e "$template" > "$ts.$1"
+        echo "$template" > "$1"
     else
-        touch "$ts.$1"
+        touch "$1"
     fi
-
-    # Open file with emacs in the background
-    nohup emacs "$ts.$1" >/dev/null 2>&1 &
-
-    # Exit the terminal
-    exit
 }
 
 function hex() {
@@ -400,7 +443,7 @@ function compile() {
     fi
 }
 
-pull-web-site() {
+pull-website() {
   wget --recursive --no-clobber --page-requisites --html-extension --convert-links --restrict-file-names=windows --no-parent $1
 }
 
@@ -602,55 +645,6 @@ backup () {
     bat "$backup_dir"
 }
 
-function lsc() {
-  local -A icons=(
-    ["rust"]="\033[38;5;214;1m\033[0m"
-    ["python"]="\033[38;5;108;1m\033[0m"
-    ["haskel"]="\033[38;5;220;1m\033[0m"
-    ["cpp"]="\033[38;5;33;1m\033[0m"
-  )
-
-  ls -1 --color=auto "$@" | awk '{print length, $0}' | sort -rn | awk -v icons="${icons[*]}" '
-    BEGIN {
-      split(icons, icon_arr, " ")
-      for (i=1; i<=length(icon_arr); i+=2) {
-        icon[icon_arr[i]] = icon_arr[i+1]
-      }
-      default_icon = "\033[38;5;245;1m\033[0m" # Default icon for other directories
-      max_len = 0 # initialize variable for longest file name length
-    }
-    {
-      # Get the icon for the current directory (if any)
-      if ($0 in icon) {
-        current_icon = icon[$0]
-      } else {
-        current_icon = default_icon
-      }
-
-      # Track the length of the longest file or directory name
-      if (length($0) > max_len) {
-        max_len = length($0)
-      }
-
-      # Print the output with the icon
-      printf("%s %s\n", current_icon, $0)
-    }
-    END {
-      # Calculate the amount of padding needed to center the text
-      padding = int((term_cols - max_len) / 2)
-      OFS = ""
-      # Print the output with the icon, aligned to the center
-      for (i=1; i<=NR; i++) {
-        printf("%s %*s\n", $i, padding - length($i), "")
-      }
-    }
-  ' | sed "s/\./🐱/g;s/\//🐾/g" | awk -v term_cols="$(tput cols)" '
-    {
-      print $0
-    }
-  '
-}
-
 #HACK cd into the clicked dir
 function ccx() {
     local dir="$1"
@@ -719,29 +713,120 @@ function img-resize() {
     fi
 }
 
-function render() {
-  if [[ -z "$1" ]]; then
-    echo "Usage: display <image_file>"
-    return 1
-  fi
+render () {
+	if [[ $# -eq 0 ]]
+	then
+		echo "Usage: render <image_file1> [<image_file2> ...]"
+		return 1
+	fi
+	if ! command -v kitty > /dev/null
+	then
+		echo "Error: 'kitty' terminal emulator is not installed or not in PATH."
+		return 1
+	fi
+	if ! command -v icat > /dev/null
+	then
+		echo "Error: 'icat' feature is not enabled in 'kitty'."
+		return 1
+	fi
 
-  if ! command -v kitty >/dev/null; then
-    echo "Error: 'kitty' terminal emulator is not installed or not in PATH."
-    return 1
-  fi
-
-  if ! command -v icat >/dev/null; then
-    echo "Error: 'icat' feature is not enabled in 'kitty'."
-    return 1
-  fi
-
-  if [[ ! -f "$1" ]]; then
-    echo "Error: File '$1' not found."
-    return 1
-  fi
-
-  kitty +kitten icat "$1"
+	for image_file in "$@"
+	do
+		if [[ ! -f "$image_file" ]]
+		then
+			echo "Error: File '$image_file' not found."
+			return 1
+		fi
+		kitty +kitten icat "$image_file"
+	done
 }
+
+ copied=()
+ copy() { # copy dir/file to paste in other dir
+  if [[ $# -eq 0 ]]; then
+    copy $PWD
+    return 1
+  fi
+  if [[ "${1:-}" == "-l" ]]; then
+    if [[ ${#copied[@]} -eq 0 ]]; then
+      echo "No items have been copied yet."
+    else
+      echo "Previously copied items:"
+      printf '%s\n' "${copied[@]}"
+    fi
+  elif [[ "${1:-}" == "-c" ]]; then
+    copied=()
+    echo "Cleared the list of copied items."
+  else
+    while [[ $# -gt 0 ]]; do
+      local source=$(realpath "$1") # Convert to absolute path
+
+      if [[ ! -e $source ]]; then
+        echo "The specified path does not exist: $source"
+      else
+        copied+=("$source")
+        echo "Copied: $source"
+        echo -n "$source" | xclip -selection clipboard # Copy the path to clipboard
+      fi
+      shift
+    done
+  fi
+ }
+
+ paste() { # paste copied dirs/files in other dir
+  local destination=$PWD
+  local move=false
+  if ! command -v fzf &> /dev/null; then
+    echo "fzf is required but not installed. Aborting."
+    exit 1
+  fi
+  while getopts ":mh" opt; do
+    case $opt in
+      m)
+        move=true
+        ;;
+      h)
+        echo "Usage: paste [-m] [-h] (move)"
+        exit 0
+        ;;
+      \?)
+        echo "Invalid option: -$OPTARG"
+        exit 1
+        ;;
+    esac
+  done
+  if [[ ${#copied[@]} -eq 0 ]]; then
+    echo "No items have been copied yet."
+    exit 1
+  fi
+  selected_items=$(printf "%s\n" "${copied[@]}" | splittedfzf --multi)
+  if [[ -z "$selected_items" ]]; then
+    echo "No items selected. Aborting."
+    exit 1
+  fi
+  if [[ $# -gt 0 ]]; then
+    destination="$1"
+    shift
+  fi
+  if [[ ! -d $destination ]]; then
+    echo "The destination path is not a valid directory: $destination"
+    exit 1
+  fi
+  while read -r item; do
+    if $move; then
+      if [[ -e $item ]]; then
+        mv -f "$item" "$destination" 2>/dev/null
+        echo "Moved: $item to $destination"
+      fi
+    else
+      if [[ -e $item ]]; then
+        cp -rf "$item" "$destination" 2>/dev/null
+        echo "Copied: $item to $destination"
+      fi
+    fi
+  done <<< "$selected_items"
+ }
+alias splittedfzf='fzf-tmux -x --height ${FZF_TMUX_HEIGHT:-40%} -m --reverse --ansi'
 
 function mdir () {
   command mkdir -p "$@" && c "${@: -1}" && c
@@ -815,13 +900,13 @@ function key() {
   esac
 }
 
-function delete_all_ssh_keys() {
+function ssh-delete-all-keys() {
     echo "Deleting all local SSH keys..."
     rm -rf ~/.ssh/*
     echo "All local SSH keys have been deleted."
 }
 
-function generate_ssh_key_interactive() {
+function ssh-key-generate-interactive() {
     local email
     local key_name
 
@@ -893,8 +978,19 @@ function iso-build {
   echo -e "\033[32mSuccess! ISO image has been built in $output_dir/\033[0m"
 }
 
-eval "$(starship init zsh)"
+# eval "$(starship init zsh)"
 # eval "$(oh-my-posh init zsh)"
+
+export FZF_DEFAULT_OPTS=" \
+--color=bg+:#292D3E,bg:#292D3E,spinner:#C792EA,hl:#82AAFF \
+--color=fg:#EEFFFF,header:#82AAFF,info:#89DDFF,pointer:#C792EA \
+--color=marker:#C792EA,fg+:#EEFFFF,prompt:#89DDFF,hl+:#82AAFF"
+
+# TODO
+# export FZF_DEFAULT_OPTS=" \
+# --color=bg+:#282a36,bg:#1e1e2e,spinner:#f8f8f2,hl:#ff79c6 \
+# --color=fg:#f8f8f2,header:#ff79c6,info:#8be9fd,pointer:#50fa7b \
+# --color=marker:#50fa7b,fg+:#f8f8f2,prompt:#8be9fd,hl+:#ff79c6"
 
 # export FZF_DEFAULT_OPTS=" \
 # --color=bg+:#313244,bg:#1e1e2e,spinner:#f5e0dc,hl:#f38ba8 \
@@ -1228,6 +1324,26 @@ function gclone() {
   git clone "$repo" "$dir" && c "$dir"
 }
 
+gitgo() {
+    # Check if inside a git repository
+    if git rev-parse --is-inside-work-tree >/dev/null 2>&1; then
+        # Extract the remote repository URL
+        remote_url=$(git config --get remote.origin.url)
+        # Convert git URL to HTTPS URL if needed
+        if [[ "$remote_url" == git@github.com:* ]]; then
+            remote_url=${remote_url/git@github.com:/https://github.com/}
+            remote_url=${remote_url%.git}
+        fi
+        # Open the remote URL in the default web browser
+        xdg-open "$remote_url"
+    else
+        # If not inside a git repository, open the GitHub homepage
+        xdg-open "https://github.com"
+    fi
+}
+
+alias ggo='gitgo'
+
 ginit() {
   # Check if `gh` and `git` commands are installed
   command -v gh >/dev/null 2>&1 || { echo >&2 "The 'gh' command is required. Please install it before running this function."; return 1; }
@@ -1303,22 +1419,6 @@ function rmrepo() {
 
 function pulls(){
   c ~/Desktop/pulls/$1/$2/$3
-}
-
-#TODO
-#0.0.0
-function undo_last_command {
-  # Check if we're running zsh
-  if [[ -n "$ZSH_VERSION" ]]; then
-    # Use fc command to access the command history in zsh.
-    # The -ln options specify that we want to access the last command in the history list
-    # (where "n" is the number of the command you want to access, and "-1" means the last command).
-    eval $(fc -ln -1)
-  else
-    # If we're not running zsh, print an error message and exit.
-    echo "This function only works in zsh."
-    return 1
-  fi
 }
 
 #TODO
@@ -1470,5 +1570,192 @@ wal-set () {
 
     else
         echo "No wallpaper selected."
+    fi
+}
+
+ch() { # Comunity driven cheatsheet for linux commands
+        for arg in "$@"; do
+        if [[ ! "$@" = /* ]]; then
+            arg="/$@"
+        else
+            arg="$@"
+        fi
+        curl -sS cheat.sh$arg | sed 's/\x1b[[0-9;]*m//g' | bat --style=plain --color=always --theme ansi --file-name $@
+        done
+    }
+
+qr-gen() {       if [ -z "$1" ]; then
+        echo "Usage: qrgen <text_or_url>"
+        return 1
+      fi
+      local input="$1"
+      local api_url="https://qrenco.de/$input"
+      curl -s $api_url || echo "Failed to generate QR Code."
+    }
+
+qr-scan() {
+    # Create a temporary file to store the screenshot
+    tmpfile=$(mktemp /tmp/qr-scan.XXXXXX.png)
+
+    # Take a screenshot of a selected region and save it to the temporary file
+    maim -s "$tmpfile"
+
+    # Scan the QR code in the screenshot
+    url=$(zbarimg --raw --quiet "$tmpfile")
+
+    # Remove the temporary file
+    rm "$tmpfile"
+
+    # Open the URL in the default web browser
+    if [ -n "$url" ]; then
+        xdg-open "$url"
+    else
+        echo "No QR code found"
+    fi
+}
+
+osu-cpkeys () {
+	if [ "$#" -ne 1 ]
+	then
+		echo "Usage: osu-cpkeys <theme_name>"
+		return 1
+	fi
+
+	theme_name=$1
+	destination_directory="$HOME/xos/keyboard-sounds/switches/$theme_name"
+	mkdir -p "$destination_directory"
+
+	file_types=("ogg" "wav")
+
+	for file_type in "${file_types[@]}"
+	do
+		cp -iv key-delete.${file_type} key-press-1.${file_type} key-press-2.${file_type} key-press-3.${file_type} key-press-4.${file_type} key-press.${file_type} "$destination_directory"
+	done
+}
+
+pal-gen() {
+  # Get the list of palettes
+  local palettes="$(lutgen -p 2>&1)"
+
+  # Allow the user to select palettes using fzf (multiple selections allowed).
+  local selected_palettes=$(echo "$palettes" | tr ',' '\n' | fzf --multi)
+
+  # Check if the user made a selection
+  if [ -z "$selected_palettes" ]; then
+    echo "No palette selected"
+    return
+  fi
+
+  # Generate a LUT image for each selected palette
+  # Here we use a while loop to read through newline-separated values
+  while read -r palette; do
+    if [ -n "$palette" ]; then
+      local trimmed_palette=$(echo $palette | xargs) # Remove leading/trailing whitespaces
+      echo "Generating LUT for $trimmed_palette"
+      lutgen -p $trimmed_palette -o "${trimmed_palette}_lut.png"
+    fi
+  done <<< "$selected_palettes"
+}
+
+# pal-apply() {
+#     local palette selected_images
+
+#     # Predefined palettes list (trimmed down for simplicity; you can use the entire list)
+#     local palettes=("catppuccin-frappe" "catppuccin-latte" "catppuccin-macchiato" "catppuccin-mocha" "catppuccin-oled" "adventuretime")
+
+#     # Select a palette from the predefined list
+#     palette=$(echo "${palettes[@]}" | tr ' ' '\n' | fzf --prompt='Choose a palette: ')
+
+#     if [ -z "$palette" ]; then
+#         echo "No palette selected. Exiting."
+#         return 1
+#     fi
+
+#     # Select one or more images from the current directory
+#     selected_images=$(find . -maxdepth 1 -type f \( -iname \*.jpg -o -iname \*.png -o -iname \*.jpeg \) | fzf --multi --prompt='Choose images to modify: ')
+
+#     if [ -z "$selected_images" ]; then
+#         echo "No images selected. Exiting."
+#         return 1
+#     fi
+
+#     # Loop through the selected images
+#     for image in ${(f)selected_images}; do
+#         local output_image="modified_${palette}_$(basename "$image")"
+
+#         # Render the original image
+#         echo "Rendering original image: $image"
+#         render "$image"
+
+#         # Apply the selected palette using lutgen
+#         lutgen -p "$palette" apply "$image" -o "$output_image"
+#         echo "Modified image saved as $output_image"
+
+#         # Render the modified image
+#         echo "Rendering modified image: $output_image"
+#         render "$output_image"
+#     done
+# }
+
+pal-apply() {
+    local palette selected_images apply_wallpaper=false
+
+    # Predefined palettes list (trimmed down for simplicity; you can use the entire list)
+    local palettes=("catppuccin-frappe" "catppuccin-latte" "catppuccin-macchiato" "catppuccin-mocha" "catppuccin-oled" "adventuretime")
+
+    # Parse command-line options
+    while getopts "w" opt; do
+        case $opt in
+            w)
+                apply_wallpaper=true
+                ;;
+            \?)
+                echo "Invalid option: -$OPTARG"
+                echo "Usage: pal-apply [-w]"
+                return 1
+                ;;
+        esac
+    done
+
+    # Remove the parsed options from the argument list
+    shift $((OPTIND - 1))
+
+    # Select a palette from the predefined list
+    palette=$(echo "${palettes[@]}" | tr ' ' '\n' | fzf --prompt='Choose a palette: ')
+
+    if [ -z "$palette" ]; then
+        echo "No palette selected. Exiting."
+        return 1
+    fi
+
+    # Select one or more images from the current directory
+    selected_images=$(find . -maxdepth 1 -type f \( -iname \*.jpg -o -iname \*.png -o -iname \*.jpeg \) | fzf --multi --prompt='Choose images to modify: ')
+
+    if [ -z "$selected_images" ]; then
+        echo "No images selected. Exiting."
+        return 1
+    fi
+
+    # Loop through the selected images
+    for image in ${(f)selected_images}; do
+        local output_image="modified_${palette}_$(basename "$image")"
+
+        # Render the original image
+        echo "Rendering original image: $image"
+        render "$image"
+
+        # Apply the selected palette using lutgen
+        lutgen -p "$palette" apply "$image" -o "$output_image"
+        echo "Modified image saved as $output_image"
+
+        # Render the modified image
+        echo "Rendering modified image: $output_image"
+        render "$output_image"
+    done
+
+    if [ "$apply_wallpaper" = true ]; then
+        # Set the modified image as wallpaper using wal
+        echo "Setting modified image as wallpaper"
+        wal -i "$output_image"
     fi
 }

@@ -5,8 +5,10 @@
 #+STARTUP: showeverything
 
 * Table Of Contents :toc:
+- [[#testing-some-org][Testing some org]]
 - [[#about-this-config][About This Config]]
 - [[#imports][Imports]]
+  - [[#xos-imports][xos-imports]]
 - [[#colorscheme][Colorscheme]]
 - [[#variables][Variables]]
 - [[#autostart-the-startup-hook][Autostart (The Startup Hook)]]
@@ -23,6 +25,13 @@
 - [[#xos][xos]]
   - [[#jgmenu][jgmenu]]
 - [[#main][Main]]
+
+* Testing some org
+*BOLD*
+=code=  /Verbatim
+~code~
+italic/
+_Underline_
 
 * About This Config
 #+CAPTION: XMonad Scrot
@@ -114,6 +123,10 @@ import XMonad.Util.NamedScratchpad
 import XMonad.Util.Run (runProcessWithInput, safeSpawn, spawnPipe)
 import XMonad.Util.SpawnOnce
 #+END_SRC
+** xos-imports
+#+begin_src haskell
+import XMonad.Layout.PerWorkspace (onWorkspace)
+#+end_src
 * Colorscheme
 #+begin_src haskell
    -- ColorScheme module (SET ONLY ONE!)
@@ -155,8 +168,8 @@ myEmacs :: String
 myEmacs = "emacsclient -c -a 'emacs' "  -- Makes emacs keybindings easier to type
 
 myEditor :: String
-myEditor = "emacsclient -c -a 'emacs' "  -- Sets emacs as editor
--- myEditor = myTerminal ++ " -e vim "    -- Sets vim as editor
+-- myEditor = "emacsclient -c -a 'emacs' "  -- Sets emacs as editor
+myEditor = myTerminal ++ " -e nvim "    -- Sets vim as editor
 
 myBorderWidth :: Dimension
 myBorderWidth = 2           -- Sets border width for windows
@@ -192,11 +205,15 @@ myStartupHook = do
   spawnOnce "xset r rate 160 60"
   spawnOnce "lxsession"
   -- spawnonce "/usr/lib/polkit-gnome/polkit-gnome-authentication-agent-1"
-  spawnOnce "picom"
+  -- spawnOnce "picom"   --Compositor
   spawnOnce "nm-applet"
   spawnOnce "volumeicon"
   spawnOnce "notify-log $HOME/.log/notify.log"
+
+  spawn "doom sync"
+  spawn "doom sync" -- Double doom sync cuz yes
   spawn "/usr/bin/emacs --daemon" -- emacs daemon for the emacsclient
+  spawn "emacsclient -c -a 'emacs'" -- emacs client
 #+END_SRC
 
 #+RESULTS:
