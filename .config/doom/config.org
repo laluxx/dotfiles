@@ -7,7 +7,9 @@
 - [[#todo][TODO]]
   - [[#org][org]]
 - [[#xos][XOS]]
+  - [[#ewal][Ewal]]
   - [[#update-dotfiles][update-dotfiles]]
+- [[#pywall][PYWALL]]
   - [[#gptel][gptel]]
   - [[#keybinds][keybinds]]
   - [[#resize-window][resize-window]]
@@ -72,6 +74,46 @@
 ** org
 make lsp work inside org documents too
 * XOS
+** Ewal
+#+begin_src emacs-lisp
+(setq ewal-use-built-in-always-p nil
+      ewal-use-built-in-on-failure-p t
+      ewal-built-in-palette "sexy-material")
+
+;; Enable ewal-spacemacs-theme
+(after! ewal-spacemacs-themes
+  (setq spacemacs-theme-underline-parens t)
+  (load-theme 'ewal-spacemacs-modern t)
+  (enable-theme 'ewal-spacemacs-modern))
+
+;; Ewal Evil Cursors Configuration
+(after! ewal-evil-cursors
+  (ewal-evil-cursors-get-colors :apply t :spaceline t))
+
+;; Enable show-paren-mode
+(show-paren-mode +1)
+
+;; Enable global-hl-line-mode
+(global-hl-line-mode)
+
+;; Doom modeline settings, Doom Emacs uses doom-modeline by default, let's configure it.
+(setq doom-modeline-height 25)
+(setq doom-modeline-bar-width 3)
+(setq doom-modeline-lsp t)
+(setq doom-modeline-github nil)
+(setq doom-modeline-mu4e nil)
+(setq doom-modeline-irc nil)
+(setq doom-modeline-icon t)
+(setq doom-modeline-major-mode-icon nil)
+(setq doom-modeline-major-mode-color-icon t)
+(setq doom-modeline-persp-name t)
+(setq doom-modeline-buffer-state-icon t)
+(setq doom-modeline-buffer-modification-icon t)
+(setq doom-modeline-modal-icon nil)
+
+;; Additional customization can be added below
+
+#+end_src
 ** update-dotfiles
 whenever you save a file inside "~/Desktop/pulls/dotfiles"
 or one of its subdirectories && if that file is a org file
@@ -95,6 +137,17 @@ or one of its subdirectories && if that file is a org file
     (laluxx/update-dotfiles)))
 
 (add-hook 'after-save-hook 'laluxx/run-update-dotfiles)
+#+end_src
+* PYWALL
+#+begin_src emacs-lisp
+(defun load-pywal-theme ()
+  "Load the Pywal colors into the current theme."
+  (interactive)
+  (when (f-exists? "~/.cache/wal/colors.el")
+    (load-file "~/.cache/wal/colors.el")
+    (doom/reload-theme)))
+
+(add-hook 'window-setup-hook #'load-pywal-theme)
 #+end_src
 ** gptel
 #+begin_src emacs-lisp
@@ -684,8 +737,28 @@ ln -s ~/.local/share/Trash .
 * DOOM THEME
 #+BEGIN_SRC emacs-lisp
 (setq doom-theme 'doom-palenight)
-;; (map! :leader
-;;       :desc "Load new theme" "h t" #'counsel-load-theme)
+
+;; TODO
+;; Set ewal options
+;; (setq ewal-use-built-in-on-failure-p t
+;;       ewal-use-built-in-always-p nil)
+
+;; ;; Load the ewal-doom-themes
+;; (require 'ewal-doom-themes)
+
+;; ;; Set the doom theme to use the ewal doom theme
+;; (setq doom-theme 'ewal-doom-one)
+
+;; ;; Set up the theme after loading doom-themes
+;; (after! doom-themes
+;;   (ewal-doom-themes-get-spaceline-faces)
+;;   (ewal-doom-themes-get-unicode-fonts)
+;;   (setq ewal-doom-themes t))
+
+;; ;; Load the theme
+;; (load-theme 'ewal-doom-one t)
+
+
 #+END_SRC
 
 * EDNC (Notifications)

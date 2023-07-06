@@ -45,7 +45,7 @@ source ~/xos/.env_secrets
 source /usr/share/zsh/plugins/zsh-syntax-highlighting/zsh-syntax-highlighting.zsh 2>/dev/null # PACMAN path
 # source $HOME/.config/zsh/plug/fzf-keybindings.plugins.zsh
 #+end_src
-**** pywal
+**** wal
 #+begin_src shell
 # source ~/.cache/wal/colors.sh
 #+end_src
@@ -2021,80 +2021,32 @@ pal-gen() {
 #+end_src
 ** pal-apply
 #+begin_src shell
-# pal-apply() {
-#     local palette selected_images
+pal-apply () {
+    local palettes=("catppuccin-frappe" "catppuccin-latte" "catppuccin-macchiato" "catppuccin-mocha" "catppuccin-oled" "adventuretime" "material-palenight-base16" "palenighthc" "tokyonight-moon" "tokyonight-night")
+    local selected_palettes selected_images apply_wallpaper=false
 
-#     # Predefined palettes list (trimmed down for simplicity; you can use the entire list)
-#     local palettes=("catppuccin-frappe" "catppuccin-latte" "catppuccin-macchiato" "catppuccin-mocha" "catppuccin-oled" "adventuretime")
-
-#     # Select a palette from the predefined list
-#     palette=$(echo "${palettes[@]}" | tr ' ' '\n' | fzf --prompt='Choose a palette: ')
-
-#     if [ -z "$palette" ]; then
-#         echo "No palette selected. Exiting."
-#         return 1
-#     fi
-
-#     # Select one or more images from the current directory
-#     selected_images=$(find . -maxdepth 1 -type f \( -iname \*.jpg -o -iname \*.png -o -iname \*.jpeg \) | fzf --multi --prompt='Choose images to modify: ')
-
-#     if [ -z "$selected_images" ]; then
-#         echo "No images selected. Exiting."
-#         return 1
-#     fi
-
-#     # Loop through the selected images
-#     for image in ${(f)selected_images}; do
-#         local output_image="modified_${palette}_$(basename "$image")"
-
-#         # Render the original image
-#         echo "Rendering original image: $image"
-#         render "$image"
-
-#         # Apply the selected palette using lutgen
-#         lutgen -p "$palette" apply "$image" -o "$output_image"
-#         echo "Modified image saved as $output_image"
-
-#         # Render the modified image
-#         echo "Rendering modified image: $output_image"
-#         render "$output_image"
-#     done
-# }
-#+end_src
-*** wal-opt
-#+begin_src shell
-pal-apply() {
-    local palette selected_images apply_wallpaper=false
-
-    # Predefined palettes list (trimmed down for simplicity; you can use the entire list)
-    local palettes=("catppuccin-frappe" "catppuccin-latte" "catppuccin-macchiato" "catppuccin-mocha" "catppuccin-oled" "adventuretime")
-
-    # Parse command-line options
     while getopts "w" opt; do
         case $opt in
-            w)
-                apply_wallpaper=true
-                ;;
-            \?)
-                echo "Invalid option: -$OPTARG"
+            w) apply_wallpaper=true ;;
+            \?) echo "Invalid option: -$OPTARG"
                 echo "Usage: pal-apply [-w]"
-                return 1
-                ;;
+                return 1 ;;
         esac
     done
 
-    # Remove the parsed options from the argument list
     shift $((OPTIND - 1))
 
-    # Select a palette from the predefined list
-    palette=$(echo "${palettes[@]}" | tr ' ' '\n' | fzf --prompt='Choose a palette: ')
+    # Select multiple palettes with fzf
+    selected_palettes=$(echo "${palettes[@]}" | tr ' ' '\n' | fzf --multi --prompt='Choose palettes: ')
 
-    if [ -z "$palette" ]; then
-        echo "No palette selected. Exiting."
+    if [ -z "$selected_palettes" ]; then
+        echo "No palettes selected. Exiting."
         return 1
     fi
 
-    # Select one or more images from the current directory
+    # Convert the selected palettes to an array
+    selected_palettes=(${(f)selected_palettes})
+
     selected_images=$(find . -maxdepth 1 -type f \( -iname \*.jpg -o -iname \*.png -o -iname \*.jpeg \) | fzf --multi --prompt='Choose images to modify: ')
 
     if [ -z "$selected_images" ]; then
@@ -2102,27 +2054,35 @@ pal-apply() {
         return 1
     fi
 
-    # Loop through the selected images
+    # Loop through selected images
     for image in ${(f)selected_images}; do
-        local output_image="modified_${palette}_$(basename "$image")"
-
-        # Render the original image
+        # Render the original image only once
         echo "Rendering original image: $image"
         render "$image"
 
-        # Apply the selected palette using lutgen
-        lutgen -p "$palette" apply "$image" -o "$output_image"
-        echo "Modified image saved as $output_image"
-
-        # Render the modified image
-        echo "Rendering modified image: $output_image"
-        render "$output_image"
+        # Loop through selected palettes
+        for palette in "${selected_palettes[@]}"; do
+            # Change the output_image format here
+            local output_image="${palette}_$(basename "$image")"
+            lutgen -p "$palette" apply "$image" -o "$output_image"
+            echo "Modified image saved as $output_image"
+            echo "Rendering modified image: $output_image"
+            render "$output_image"
+        done
     done
 
     if [ "$apply_wallpaper" = true ]; then
-        # Set the modified image as wallpaper using wal
-        echo "Setting modified image as wallpaper"
+        # Note: Only the last modified image will be set as wallpaper
+        echo "Setting the last modified image as wallpaper"
         wal -i "$output_image"
     fi
+}
+#+end_src
+* Pywall
+#+begin_src shell
+function update-pywal() {
+    wal -i "$1"
+    ~/xos/scripts/pywal/export-pywal-colors.sh
+    emacsclient --eval "(load-pywal-theme)"
 }
 #+end_src

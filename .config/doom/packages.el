@@ -32,3 +32,8 @@
 (package! lsp-treemacs)
 (package! ef-themes)
 (package! notmuch)
+
+;; (package! ewal)
+;; (package! ewal)
+;; (package! ewal-spacemacs-themes)
+;; (package! ewal-evil-cursors)
