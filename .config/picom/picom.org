@@ -1,3 +1,26 @@
+#+TITLE: Picom.org
+#+AUTHOR: laluxx
+#+DESCRIPTION: Picom configuration
+#+STARTUP: showeverything
+#+PROPERTY: header-args :tangle picom.conf
+#+auto_tangle: t
+
+
+* Animations
+- squeeze-bottom
+- squeeze-minimize
+- slide-down
+- slide-up
+- slide-left
+- fly-in
+- slide-right
+- slide-in
+- slide-out
+- zoom
+- slide-in-center
+- slide-out-center
+- maximize
+#+begin_src conf
 transition-length = 125
 transition-pow-x = 0.1
 transition-pow-y = 0.1
@@ -26,6 +49,9 @@ animation-exclude = [
 #  "class_g = 'awesome'",
 ];
 
+#+end_src
+* Shaders
+#+begin_src conf
 #window-shader-fg = "";
 window-shader-fg-rule = [
     #"/home/e/.config/awesome/configs/Shaders/Render/cube.glsl:class_g = 'kitty'"
@@ -33,7 +59,9 @@ window-shader-fg-rule = [
 ]
 glx-copy-from-front = true;
 glx-swap-method = 2;
-
+#+end_src
+* Corners
+#+begin_src conf
 corner-radius = 12;
 rounded-corners-exclude = [
   "window_type = 'dock'",
@@ -48,7 +76,9 @@ rounded-corners-exclude = [
 #round-borders = 0;
 #round-borders-exclude = [
 #];
-
+#+end_src
+* Shadows
+#+begin_src shell
 # Enabled client-side shadows on windows. Note desktop windows
 # (windows with '_NET_WM_WINDOW_TYPE_DESKTOP') never get shadow,
 # unless explicitly requested using the wintypes option.
@@ -106,7 +136,9 @@ shadow-offset-y = -7;
 # shadow-exclude-reg = ""
 # Crop shadow of a window fully on a particular Xinerama screen to the screen.
 # xinerama-shadow-crop = false
-
+#+end_src
+* Fading
+#+begin_src conf
 # Fade windows in/out when opening/closing and when opacity changes,
 #  unless no-fading-openclose is used.
 fading = true
@@ -123,7 +155,9 @@ fade-delta = 10
 #no-fading-openclose = false
 # Do not fade destroyed ARGB windows with WM frame. Workaround of bugs in Openbox, Fluxbox, etc.
 # no-fading-destroyed-argb = false
-
+#+end_src
+* Trasparency / Opacity
+#+begin_src conf
 # Opacity of inactive windows. (0.1 - 1.0, defaults to 1.0)
 inactive-opacity = 1;
 # Opacity of window titlebars and borders. (0.1 - 1.0, disabled by default)
@@ -165,7 +199,9 @@ opacity-rule = [
   #"100:class_g    = 'firefox'",
   #"80:class_g    = 'Spotify'"
 ];
-
+#+end_src
+* Background-Blurring
+#+begin_src conf
 # Parameters for background blurring, see the *BLUR* section for more information.
 # blur-method =
 # blur-size = 12
@@ -203,7 +239,9 @@ blur-background-exclude = [
   "class_g = 'slop'",
   "_GTK_FRAME_EXTENTS@:c"
 ];
-
+#+end_src
+* General-Settings
+#+begin_src conf
 # daemon = false; # Daemonize process. Fork to background after initialization. Causes issues with certain (badly-written) drivers.
 experimental-backends = true;
 backend = "glx"; # Specify the backend to use: `xrender`, `glx`, or `xr_glx_hybrid` "`xrender` is the default one.".
@@ -345,3 +383,4 @@ wintypes:
   popup_menu = { opacity = 0.8; }
   dropdown_menu = { opacity = 0.8; }
 };
+#+end_src

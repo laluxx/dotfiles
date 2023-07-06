@@ -37,9 +37,15 @@ alias l='lsd --tree' # tree listing
 alias highlight="highlight -O ansi --force"
 alias hcat="cat | highlight"
 #+end_src
-* neovim
+* Neovim
 #+begin_src shell
 alias v="nvim"
+#+end_src
+* Fzf
+#+begin_src shell
+alias fzf='fzf --color=16'
+alias fzf-tmux='fzf-tmux --color=16'
+alias splittedfzf='fzf-tmux -x --height ${FZF_TMUX_HEIGHT:-40%} -m --reverse --ansi'
 #+end_src
 * dev
 ** npm
@@ -126,7 +132,7 @@ alias \
 
 alias \
 	ka="killall" \
-	g="git" \
+	# g="git" \
 	xcp="xclip -selection clipboard" \
 	e="$EDITOR" \
 	# f="$FILE" \

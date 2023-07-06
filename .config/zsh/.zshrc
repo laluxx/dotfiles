@@ -1,7 +1,19 @@
-#TODO make it look cooler
+if [ -z "$NEOFETCH_RUN_ONCE" ] && [ $(pgrep -cx kitty) -eq 1 ] ; then
+    neofetch
+fi
+
 function path() {
   local dir_list=$(echo $PATH | sed "s/:/\\n/g")
-  printf "EnvPath([\n" && printf "'%s',\n" $dir_list | sed "s|^ |/|; s|^|  |" && printf "])\n"
+
+  # ANSI escape codes for colors and styles
+  local highlight_open='\033[1;33m[\033[0m'    # Bold Yellow [
+  local highlight_close='\033[1;33m]\033[0m'   # Bold Yellow ]
+  local highlight_single_quote='\033[1;31m'\''\033[0m' # Bold Red '
+
+  # Printing the list with colors
+  printf "EnvPath${highlight_open}\n"
+  printf "${highlight_single_quote}%s${highlight_single_quote},\n" $dir_list | sed "s|^ |/|; s|^|  |"
+  printf "${highlight_close}\n"
 }
 
 export PATH="$PATH:$HOME/.config/emacs/bin"
@@ -219,12 +231,26 @@ diffrun() {
 
 function t() {
     if [[ $# -eq 0 ]]; then
-        echo "Usage: t <filename>"
+        echo "Usage: t <count> <filename> or t <filename>"
         return 1
     fi
 
+    local count=1
+    local filename="$1"
+
+    # Check if the first argument is a number (for multiple file generation)
+    if [[ $1 =~ ^[0-9]+$ ]]; then
+        if [[ $# -eq 1 ]]; then
+            echo "Please specify the filename"
+            return 1
+        fi
+        count="$1"
+        filename="$2"
+    fi
+
     # Get file extension
-    local ext="${1##*.}"
+    local ext="${filename##*.}"
+    local prefix="${filename%.*}"
 
     # Define templates for each file type
     local template=""
@@ -297,31 +323,15 @@ pub fn main() !void {
             ;;
     esac
 
-    # Generate file with the template (if available)
-    if [[ -n "$template" ]]; then
-        echo "$template" > "$1"
-    else
-        touch "$1"
-    fi
-}
-
-function hex() {
-    # Get a list of actual binary files in the /usr/bin directory
-    local binaries=( $(find /usr/bin -type f -executable -not -name "*.so*" -exec file -i {} \; | grep "charset=binary" | cut -d ":" -f 1) )
-
-    # Prompt the user to select a binary file
-    PS3="Select a binary to disassemble: "
-    select binfile in "${binaries[@]}"; do
-        if [[ -n "$binfile" ]]; then
-            # Prompt the user to enter the objdump command
-            read -p "Enter objdump command to disassemble $binfile: " objcmd
-
-            # Call the user-specified objdump command on the selected binary file
-            $objcmd "$binfile" | less
-            break
-        else
-            echo "Invalid option. Please select a valid binary file."
+    # Generate file(s) with the template
+    local index=1
+    while [[ $index -le $count ]]; do
+        local final_filename="$filename"
+        if [[ $count -gt 1 ]]; then
+            final_filename="${prefix}${index}.${ext}"
         fi
+        echo "$template" > "$final_filename"
+        index=$((index + 1))
     done
 }
 
@@ -336,6 +346,10 @@ function package-web-app() {
 
   nativefier --name "${app_name}" "${url}" --single-instance && c
   echo "Desktop app for ${url} has been created in the current directory."
+}
+
+pull-website() {
+  wget --recursive --no-clobber --page-requisites --html-extension --convert-links --restrict-file-names=windows --no-parent $1
 }
 
 function lazytest() {
@@ -386,47 +400,6 @@ next() {
 }
 # TODO NEXT-BUILD
 
-# xcompile() {
-#   # Use fzf to select a file to compile
-#   filename=$(find . -type f \( -name "*.c" -o -name "*.cpp" -o -name "*.py" -o -name "*.lua" \) | fzf --preview 'bat --color=always {}')
-
-#   # Check if a file was selected
-#   if [ -n "$filename" ]
-#   then
-#     # Create directory if it doesn't exist
-#     dir="xcompiled"
-#     if [ ! -d "$dir" ]
-#     then
-#         mkdir "$dir"
-#     fi
-
-#     # Move file to the generated directory
-#     mv "$filename" "$dir"
-
-#     # Compile and execute the file inside the generated directory
-#     cd "$dir"
-#     if [[ $filename == *.c ]]
-#     then
-#         gcc "$filename" -o "${filename%.*}"
-#         "./${filename%.*}"
-#     elif [[ $filename == *.cpp ]]
-#     then
-#         g++ "$filename" -o "${filename%.*}"
-#         "./${filename%.*}"
-#     elif [[ $filename == *.py ]]
-#     then
-#         python3 "$filename"
-#     elif [[ $filename == *.lua ]]
-#     then
-#         lua "$filename"
-#     else
-#         echo "Invalid file extension. Please provide a C, C++, Python, or Lua file."
-#     fi
-#   fi
-# }
-
-#gcc -o simple simple.c `pkg-config --libs --cflags gtk+-2.0`
-
 function compile() {
     if [[ -z "$1" ]]; then
         echo "Usage: runc <file>"
@@ -443,8 +416,60 @@ function compile() {
     fi
 }
 
-pull-website() {
-  wget --recursive --no-clobber --page-requisites --html-extension --convert-links --restrict-file-names=windows --no-parent $1
+penv() {
+    case "$1" in
+        -s|--source)
+            if [ -n "$2" ]; then
+                # Create the virtual environment
+                python3 -m venv "$2"
+
+                # Source the virtual environment
+                source "$2/bin/activate"
+            else
+                echo "Please provide a name for the environment."
+            fi
+            ;;
+        -d|--delete)
+            if [ -n "$2" ]; then
+                # Check if in the environment
+                if [[ "$VIRTUAL_ENV" == *"$2"* ]]; then
+                    echo "Please deactivate the environment before deleting it."
+                else
+                    # Ask for confirmation before deleting the virtual environment
+                    echo "Are you sure you want to delete the virtual environment $2? [y/N] "
+                    read confirm
+                    if [ "$confirm" = "y" ] || [ "$confirm" = "Y" ]; then
+                        rm -rf "$2"
+                        echo "Virtual environment $2 deleted."
+                    else
+                        echo "Operation canceled."
+                    fi
+                fi
+            else
+                echo "Please provide the name of the environment to delete."
+            fi
+            ;;
+        -l|--list)
+            # List all virtual environments in the current directory
+            echo "Virtual environments in the current directory:"
+            find . -type d -name "bin" -exec dirname {} \; 2>/dev/null
+            ;;
+        -q|--quit)
+            # Deactivate the current environment
+            if [ -n "$VIRTUAL_ENV" ]; then
+                deactivate
+            else
+                echo "No virtual environment is active."
+            fi
+            ;;
+        *)
+            echo "Usage:"
+            echo "  penv -s, --source <env_name>  # Create and source a virtual environment"
+            echo "  penv -d, --delete <env_name>  # Delete a virtual environment"
+            echo "  penv -l, --list               # List all virtual environments in the current directory"
+            echo "  penv -q, --quit               # Deactivate the current environment"
+            ;;
+    esac
 }
 
 function screenshot() {
@@ -548,16 +573,6 @@ function uncargo() {
   c
 }
 
-function gen () {
-  local count=1
-  local prefix=${2%.*}
-
-  while [[ $count -le $1 ]]; do
-    touch "${prefix}${count}.${2#*.}"
-    count=$(( count + 1 ))
-  done
-}
-
 function explain() {
   local name=$1
   local def=$(declare -f $name 2>/dev/null)
@@ -598,40 +613,82 @@ function explain() {
 }
 
 color() {
-  # Check if color is set in terminal, otherwise get it from xresources
-  if [[ -n "$TERM" ]]; then
-    case "$1" in
-      black)   color="\033[0;30m" ;;
-      red)     color="\033[0;31m" ;;
-      green)   color="\033[0;32m" ;;
-      yellow)  color="\033[0;33m" ;;
-      blue)    color="\033[0;34m" ;;
-      purple)  color="\033[0;35m" ;;
-      cyan)    color="\033[0;36m" ;;
-      white)   color="\033[0;37m" ;;
-      *)       color="\033[0m"     ;;
-    esac
-  elif [[ -n "$XTERM_VERSION" ]]; then
-    case "$1" in
-      black)   color="\033[0;30m" ;;
-      red)     color="\033[0;31m" ;;
-      green)   color="\033[0;32m" ;;
-      yellow)  color="\033[0;33m" ;;
-      blue)    color="\033[0;34m" ;;
-      purple)  color="\033[0;35m" ;;
-      cyan)    color="\033[0;36m" ;;
-      white)   color="\033[0;37m" ;;
-      *)       color="\033[0m"     ;;
-    esac
-  else
-    color="\033[0m"
-  fi
+    local input
+    read input
+    local color_code
 
-  # Read input from pipe and colorize it
-  while read -r line; do
-    echo -e "${color}${line}\033[0m"
-  done
+    # Check if the argument is a number
+    if [[ $1 =~ ^[0-9]+$ ]]; then
+        color_code=$1
+    else
+        # Convert color name to color code
+        case "$1" in
+            black) color_code=0 ;;
+            red) color_code=1 ;;
+            green) color_code=2 ;;
+            yellow) color_code=3 ;;
+            blue) color_code=4 ;;
+            magenta) color_code=5 ;;
+            cyan) color_code=6 ;;
+            white) color_code=7 ;;
+            *) color_code=7 ;; # Default to white if unknown color name
+        esac
+        color_code=$((color_code + 30))
+    fi
+
+    # Print colored text
+    echo -e "\033[${color_code}m${input}\033[0m"
 }
+
+colortest() {
+    echo '256-Color Mode:' | color 14
+
+    # Display color numbers
+    for i in {0..255}; do
+        print -Pn "%F{$i}${(l:4::0:)i}%f "
+        if ((i % 16 == 15)); then
+            echo
+        fi
+    done
+}
+
+# color() {
+#   # Check if color is set in terminal, otherwise get it from xresources
+#   if [[ -n "$TERM" ]]; then
+#     case "$1" in
+#       black)   color="\033[0;30m" ;;
+#       red)     color="\033[0;31m" ;;
+#       green)   color="\033[0;32m" ;;
+#       yellow)  color="\033[0;33m" ;;
+#       blue)    color="\033[0;34m" ;;
+#       purple)  color="\033[0;35m" ;;
+#       cyan)    color="\033[0;36m" ;;
+#       white)   color="\033[0;37m" ;;
+#       *)       color="\033[0m"     ;;
+#     esac
+#   elif [[ -n "$XTERM_VERSION" ]]; then
+#     case "$1" in
+#       black)   color="\033[0;30m" ;;
+#       red)     color="\033[0;31m" ;;
+#       green)   color="\033[0;32m" ;;
+#       yellow)  color="\033[0;33m" ;;
+#       blue)    color="\033[0;34m" ;;
+#       purple)  color="\033[0;35m" ;;
+#       cyan)    color="\033[0;36m" ;;
+#       white)   color="\033[0;37m" ;;
+#       *)       color="\033[0m"     ;;
+#     esac
+#   else
+#     color="\033[0m"
+#   fi
+
+#   # Read input from pipe and colorize it
+#   while read -r line; do
+#     echo -e "${color}${line}\033[0m"
+#   done
+# }
+
+
 
 backup () {
     if [ -z "$1" ]; then
@@ -713,32 +770,75 @@ function img-resize() {
     fi
 }
 
-render () {
-	if [[ $# -eq 0 ]]
-	then
-		echo "Usage: render <image_file1> [<image_file2> ...]"
-		return 1
-	fi
-	if ! command -v kitty > /dev/null
-	then
-		echo "Error: 'kitty' terminal emulator is not installed or not in PATH."
-		return 1
-	fi
-	if ! command -v icat > /dev/null
-	then
-		echo "Error: 'icat' feature is not enabled in 'kitty'."
-		return 1
-	fi
+render() {
+    display_info=false
 
-	for image_file in "$@"
-	do
-		if [[ ! -f "$image_file" ]]
-		then
-			echo "Error: File '$image_file' not found."
-			return 1
-		fi
-		kitty +kitten icat "$image_file"
-	done
+    # Check if there are no arguments
+    if [[ $# -eq 0 ]]; then
+        echo "Usage: render [-i | --info] <image_file1> [<image_file2> ...]"
+        return 1
+    fi
+
+    # Check if the first argument is -i or --info
+    if [[ $1 == "-i" ]] || [[ $1 == "--info" ]]; then
+        display_info=true
+        shift # remove the first argument, so image_file arguments start from $1
+    fi
+
+    # Check if 'kitty' is installed
+    if ! command -v kitty > /dev/null; then
+        echo "Error: 'kitty' terminal emulator is not installed or not in PATH."
+        return 1
+    fi
+
+    # Loop through the image files
+    for image_file in "$@"; do
+        # Check if file exists
+        if [[ ! -f "$image_file" ]]; then
+            echo "Error: File '$image_file' not found."
+            return 1
+        fi
+
+        # Display info if flag is set
+        if $display_info; then
+            # Get the file size in bytes
+            file_size_bytes=$(du -b "$image_file" | cut -f1)
+            # Convert file size to kilobytes
+            file_size_kb=$((file_size_bytes / 1024))
+
+            # Get image dimensions
+            dimensions=$(identify -format "%wx%h" "$image_file" 2>/dev/null)
+
+            # Display file information in color in a single line
+            echo -e "\033[1;36m$image_file \033[1;33m[$file_size_kb KB]\033[1;32m [$dimensions]\033[0m"
+        fi
+
+        # Render the image
+        kitty +kitten icat "$image_file"
+    done
+}
+
+render-all() {
+    # Set the nullglob option for zsh
+    setopt nullglob
+
+    # Loop through jpg and png image files
+    for image_file in *.{jpg,png}; do
+        # Get the file size in bytes
+        file_size_bytes=$(du -b "$image_file" | cut -f1)
+        # Convert file size to kilobytes
+        file_size_kb=$((file_size_bytes / 1024))
+
+        # Get image dimensions
+        dimensions=$(identify -format "%wx%h" "$image_file" 2>/dev/null)
+
+        # Display file information in color in a single line
+        # File name in bright cyan, size in yellow, and dimensions in green
+        echo -e "\033[1;36m$image_file \033[1;33m[$file_size_kb KB]\033[1;32m [$dimensions]\033[0m"
+
+        # Render the image using 'kitty +kitten icat'
+        kitty +kitten icat "$image_file"
+    done
 }
 
  copied=()
@@ -978,7 +1078,7 @@ function iso-build {
   echo -e "\033[32mSuccess! ISO image has been built in $output_dir/\033[0m"
 }
 
-# eval "$(starship init zsh)"
+eval "$(starship init zsh)"
 # eval "$(oh-my-posh init zsh)"
 
 export FZF_DEFAULT_OPTS=" \
@@ -1658,7 +1758,7 @@ pal-gen() {
 }
 
 pal-apply () {
-    local palettes=("catppuccin-frappe" "catppuccin-latte" "catppuccin-macchiato" "catppuccin-mocha" "catppuccin-oled" "adventuretime" "material-palenight-base16" "palenighthc" "tokyonight-moon" "tokyonight-night")
+    local palettes=("catppuccin-frappe" "catppuccin-latte" "catppuccin-macchiato" "catppuccin-mocha" "catppuccin-oled" "adventuretime" "material-palenight-base16" "palenighthc" "tokyonight-moon" "tokyonight-night" "doomone" "cupcake-base16" "dracula" "espresso" "rose-pine" "rose-pine-dawn" "rose-pine-moon" "mocha-light-terminal-sexy" "mocha-base16" )
     local selected_palettes selected_images apply_wallpaper=false
 
     while getopts "w" opt; do
@@ -1718,4 +1818,12 @@ function update-pywal() {
     wal -i "$1"
     ~/xos/scripts/pywal/export-pywal-colors.sh
     emacsclient --eval "(load-pywal-theme)"
+}
+
+g() {
+    if [ "$#" -eq 1 ]; then
+        kitty +kitten hyperlinked_grep "$1" | less
+    else
+        echo "Usage: g <search_text>"
+    fi
 }

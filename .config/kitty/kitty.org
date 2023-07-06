@@ -19,21 +19,31 @@
 
 include ~/.cache/wal/colors-kitty.conf
 #+end_src
-** wm
+** Keybinds
 #+begin_src shell
 
+map ctrl+shift+up resize_window taller
+map ctrl+shift+down resize_window shorter
+
+#+end_src
+** Wm
+#+begin_src
 # keys to switch windows
+map alt+h neighboring_window left
+map alt+l neighboring_window right
+map alt+k neighboring_window up
+map alt+j neighboring_window down
+#+end_src
 
-# map alt+h neighboring_window left
-# map alt+l neighboring_window right
-# map alt+k neighboring_window up
-# map alt+j neighboring_window down
-
-
+** bad-splits
+#+begin_src shell
 # keys to split windows
 # map alt+s launch --location hsplit
 # map alt+v launch --location vsplit
+#+end_src
 
+** Tabs
+#+begin_src shell
 # open new tab
 # map alt+t launch --type=tab
 

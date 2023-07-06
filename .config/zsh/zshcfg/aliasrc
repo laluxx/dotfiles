@@ -26,6 +26,10 @@ alias hcat="cat | highlight"
 
 alias v="nvim"
 
+alias fzf='fzf --color=16'
+alias fzf-tmux='fzf-tmux --color=16'
+alias splittedfzf='fzf-tmux -x --height ${FZF_TMUX_HEIGHT:-40%} -m --reverse --ansi'
+
 alias npm="sudo npm"
 
 alias luarocks="sudo luarocks"
@@ -79,7 +83,7 @@ alias \
 
 alias \
 	ka="killall" \
-	g="git" \
+	# g="git" \
 	xcp="xclip -selection clipboard" \
 	e="$EDITOR" \
 	# f="$FILE" \
