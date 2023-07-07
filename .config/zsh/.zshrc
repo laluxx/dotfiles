@@ -231,26 +231,22 @@ diffrun() {
 
 function t() {
     if [[ $# -eq 0 ]]; then
-        echo "Usage: t <count> <filename> or t <filename>"
+        echo "Usage: t <count> <extension> or t <filename>"
         return 1
     fi
 
     local count=1
-    local filename="$1"
+    local ext="$1"
 
     # Check if the first argument is a number (for multiple file generation)
     if [[ $1 =~ ^[0-9]+$ ]]; then
         if [[ $# -eq 1 ]]; then
-            echo "Please specify the filename"
+            echo "Please specify the extension"
             return 1
         fi
         count="$1"
-        filename="$2"
+        ext="$2"
     fi
-
-    # Get file extension
-    local ext="${filename##*.}"
-    local prefix="${filename%.*}"
 
     # Define templates for each file type
     local template=""
@@ -326,10 +322,7 @@ pub fn main() !void {
     # Generate file(s) with the template
     local index=1
     while [[ $index -le $count ]]; do
-        local final_filename="$filename"
-        if [[ $count -gt 1 ]]; then
-            final_filename="${prefix}${index}.${ext}"
-        fi
+        local final_filename="${index}.${ext}"
         echo "$template" > "$final_filename"
         index=$((index + 1))
     done
