@@ -1,3 +1,4 @@
 * TODO
-** Telescope
-telescope should start in visual mode not insert mode based on what you want to do
+* council
+ctrl -j
+ctrl -k

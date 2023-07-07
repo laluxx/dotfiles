@@ -33,7 +33,7 @@ M.leaderMappings = {
 M.telescopeMappings = {
     n = {
         -- FILE
-        ["<leader>ff"] = { "<cmd>Telescope find_files<CR>", "find files" },
+        -- ["<leader>ff"] = { "<cmd>Telescope find_files<CR>", "find files" },
         ["<leader>fg"] = { "<cmd>Telescope live_grep<CR>", "live grep" },
         ["<leader>fr"] = { "<cmd>Telescope oldfiles<CR>", "recent files" },--
         ["<leader>fb"] = { "<cmd>Telescope current_buffer_fuzzy_find<CR>", "fuzzy find in current buffer" },
@@ -60,15 +60,57 @@ M.telescopeMappings = {
         ["<leader>gb"] = { "<cmd>Telescope git_branches<CR>", "git branches" },
         ["<leader>gr"] = { "<cmd>Telescope lsp_references<CR>", "LSP references" },
 
-        -- LSP DOCUMENT
+        -- LSP DONEOCUMENT
         ["<leader>de"] = { "<cmd>Telescope lsp_document_symbols<CR>", "LSP document symbols" },
         ["<leader>ds"] = { "<cmd>Telescope lsp_dynamic_workspace_symbols<CR>", "LSP dynamic workspace symbols" },
 
         -- EDITING
         ["<leader>rn"] = { "<cmd>lua vim.lsp.buf.rename()<CR>", "LSP rename symbol" },
+
+        -- TOGGLE
+        ["<leader>tl"] = { "<cmd>call ToggleLineNumbers()<CR>", "toggle line numbers" },
+
+        -- EMACS-COUNCIL
+        ["<M-x>"] = { "<cmd>lua BottomPaneTelescope(require('telescope.builtin').commands)<CR>", "execute command" },
+        ["<leader>ff"] = { "<cmd>lua BottomPaneTelescope(require('telescope.builtin').find_files)<CR>", "find files" },
     },
 }
 
+
+-- TELESCOPE MODES
+
+function BottomPaneTelescope(telescope_func, options)
+    options = options or {}
+    options.layout_strategy = "bottom_pane"
+    options.layout_config = {
+        height = 10, -- adjust this to set how many results you want to show at once
+        prompt_position = "bottom",
+        width = 1.0
+    }
+    telescope_func(options)
+end
+
+
+
+
+-- Define the function to toggle line numbers DONE
+vim.api.nvim_exec([[
+let g:linenumber_state = 'number'
+
+function! ToggleLineNumbers()
+    if g:linenumber_state == 'number'
+        set relativenumber
+        let g:linenumber_state = 'relativenumber'
+    elseif g:linenumber_state == 'relativenumber'
+        set nonumber
+        set norelativenumber
+        let g:linenumber_state = 'none'
+    else
+        set number
+        let g:linenumber_state = 'number'
+    endif
+endfunction
+]], false)
 
 
 -- Loop through the leader mappings and set them
