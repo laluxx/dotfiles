@@ -40,15 +40,18 @@ animation-for-prev-tag = "zoom";         # slide-down
 enable-fading-prev-tag = false;
 animation-for-next-tag = "slide-out-center";           # slide-up
 enable-fading-next-tag = false;
+#+end_src
+** Animation-exclude
+#+begin_src conf
 animation-exclude = [
    "class_g = 'xmobar'",
+   "class_g = 'xmonad'",
    # "class_g = 'Emacs'",
    # "class_g = 'kitty'",
    # "class_g = 'scrot'",
 #  "class_g = 'kitty'",
 #  "class_g = 'awesome'",
 ];
-
 #+end_src
 * Shaders
 #+begin_src conf

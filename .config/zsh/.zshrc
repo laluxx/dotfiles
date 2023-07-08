@@ -741,99 +741,6 @@ function compile() {
     esac
 }
 
-function img-resize() {
-    if [ $# -ne 3 ]; then
-        echo "Usage: xresize <input-file> <width> <height>"
-        return 1
-    fi
-
-    local input_file="$1"
-    local width="$2"
-    local height="$3"
-    local file_extension="${input_file##*.}"
-    local output_file="${input_file%.*}${width}x${height}.${file_extension}"
-    local lowercase_file_extension="$(echo "$file_extension" | tr '[:upper:]' '[:lower:]')"
-
-    if [[ "${lowercase_file_extension}" =~ ^(jpg|jpeg|png)$ ]]; then
-        convert "${input_file}" -resize "${width}x${height}" "${output_file}"
-        echo "Resized ${input_file} to ${output_file}"
-    else
-        echo "Invalid file extension. Supported formats: jpg, jpeg, png"
-        return 1
-    fi
-}
-
-render() {
-    display_info=false
-
-    # Check if there are no arguments
-    if [[ $# -eq 0 ]]; then
-        echo "Usage: render [-i | --info] <image_file1> [<image_file2> ...]"
-        return 1
-    fi
-
-    # Check if the first argument is -i or --info
-    if [[ $1 == "-i" ]] || [[ $1 == "--info" ]]; then
-        display_info=true
-        shift # remove the first argument, so image_file arguments start from $1
-    fi
-
-    # Check if 'kitty' is installed
-    if ! command -v kitty > /dev/null; then
-        echo "Error: 'kitty' terminal emulator is not installed or not in PATH."
-        return 1
-    fi
-
-    # Loop through the image files
-    for image_file in "$@"; do
-        # Check if file exists
-        if [[ ! -f "$image_file" ]]; then
-            echo "Error: File '$image_file' not found."
-            return 1
-        fi
-
-        # Display info if flag is set
-        if $display_info; then
-            # Get the file size in bytes
-            file_size_bytes=$(du -b "$image_file" | cut -f1)
-            # Convert file size to kilobytes
-            file_size_kb=$((file_size_bytes / 1024))
-
-            # Get image dimensions
-            dimensions=$(identify -format "%wx%h" "$image_file" 2>/dev/null)
-
-            # Display file information in color in a single line
-            echo -e "\033[1;36m$image_file \033[1;33m[$file_size_kb KB]\033[1;32m [$dimensions]\033[0m"
-        fi
-
-        # Render the image
-        kitty +kitten icat "$image_file"
-    done
-}
-
-render-all() {
-    # Set the nullglob option for zsh
-    setopt nullglob
-
-    # Loop through jpg and png image files
-    for image_file in *.{jpg,png}; do
-        # Get the file size in bytes
-        file_size_bytes=$(du -b "$image_file" | cut -f1)
-        # Convert file size to kilobytes
-        file_size_kb=$((file_size_bytes / 1024))
-
-        # Get image dimensions
-        dimensions=$(identify -format "%wx%h" "$image_file" 2>/dev/null)
-
-        # Display file information in color in a single line
-        # File name in bright cyan, size in yellow, and dimensions in green
-        echo -e "\033[1;36m$image_file \033[1;33m[$file_size_kb KB]\033[1;32m [$dimensions]\033[0m"
-
-        # Render the image using 'kitty +kitten icat'
-        kitty +kitten icat "$image_file"
-    done
-}
-
  copied=()
  copy() { # copy dir/file to paste in other dir
   if [[ $# -eq 0 ]]; then
@@ -1726,6 +1633,138 @@ osu-cpkeys () {
 	done
 }
 
+g() {
+    if [ "$#" -eq 1 ]; then
+        kitty +kitten hyperlinked_grep "$1" | less
+    else
+        echo "Usage: g <search_text>"
+    fi
+}
+
+img-rotate() {
+    local image_file="$1"
+    local rotate_degree=0
+    local rotate_step=90
+
+    local temp_file="temp_$image_file"
+    cp "$image_file" "$temp_file"
+
+    while true; do
+        render "$temp_file"
+
+        read -rsk1 input
+
+        if [[ "$input" == "j" ]]; then
+            ((rotate_degree += rotate_step))
+            convert "$temp_file" -rotate $rotate_step "$temp_file"
+        elif [[ "$input" == "k" ]]; then
+            ((rotate_degree -= rotate_step))
+            convert "$temp_file" -rotate -$rotate_step "$temp_file"
+        elif [[ "$input" == "q" || "$input" == $'\e' ]]; then
+            cp "$temp_file" "${rotate_degree}degree-$image_file"
+            break
+        fi
+    done
+
+    mm "$temp_file"
+}
+
+function img-resize() {
+    if [ $# -ne 3 ]; then
+        echo "Usage: xresize <input-file> <width> <height>"
+        return 1
+    fi
+
+    local input_file="$1"
+    local width="$2"
+    local height="$3"
+    local file_extension="${input_file##*.}"
+    local output_file="${input_file%.*}${width}x${height}.${file_extension}"
+    local lowercase_file_extension="$(echo "$file_extension" | tr '[:upper:]' '[:lower:]')"
+
+    if [[ "${lowercase_file_extension}" =~ ^(jpg|jpeg|png)$ ]]; then
+        convert "${input_file}" -resize "${width}x${height}" "${output_file}"
+        echo "Resized ${input_file} to ${output_file}"
+    else
+        echo "Invalid file extension. Supported formats: jpg, jpeg, png"
+        return 1
+    fi
+}
+
+render() {
+    display_info=false
+
+    # Check if there are no arguments
+    if [[ $# -eq 0 ]]; then
+        echo "Usage: render [-i | --info] <image_file1> [<image_file2> ...]"
+        return 1
+    fi
+
+    # Check if the first argument is -i or --info
+    if [[ $1 == "-i" ]] || [[ $1 == "--info" ]]; then
+        display_info=true
+        shift # remove the first argument, so image_file arguments start from $1
+    fi
+
+    # Check if 'kitty' is installed
+    if ! command -v kitty > /dev/null; then
+        echo "Error: 'kitty' terminal emulator is not installed or not in PATH."
+        return 1
+    fi
+
+    # Loop through the image files
+    for image_file in "$@"; do
+        # Check if file exists
+        if [[ ! -f "$image_file" ]]; then
+            echo "Error: File '$image_file' not found."
+            return 1
+        fi
+
+        # Display info if flag is set
+        if $display_info; then
+            # Get the file size in bytes
+            file_size_bytes=$(du -b "$image_file" | cut -f1)
+            # Convert file size to kilobytes
+            file_size_kb=$((file_size_bytes / 1024))
+
+            # Get image dimensions
+            dimensions=$(identify -format "%wx%h" "$image_file" 2>/dev/null)
+
+            # Display file information in color in a single line
+            echo -e "\033[1;36m$image_file \033[1;33m[$file_size_kb KB]\033[1;32m [$dimensions]\033[0m"
+        fi
+
+        # Render the image
+        kitty +kitten icat "$image_file"
+    done
+}
+
+hue() {
+    local image_file="$1"
+    local hue_shift=0
+    local hue_step=5
+
+    local temp_file="temp_$image_file"
+
+    while true; do
+        convert "$image_file" -modulate 100,100,$((100 + hue_shift)) "$temp_file"
+        render "$temp_file"
+
+        read -rsk1 input
+
+        if [[ "$input" == "j" ]]; then
+            ((hue_shift += hue_step))
+        elif [[ "$input" == "k" ]]; then
+            ((hue_shift -= hue_step))
+        elif [[ "$input" == "q" || "$input" == $'\e' ]]; then
+            cp "$temp_file" "${hue_shift}hue-$image_file"
+            break
+        fi
+    done
+
+    rm "$temp_file"
+}
+
 pal-gen() {
   # Get the list of palettes
   local palettes="$(lutgen -p 2>&1)"
@@ -1750,7 +1789,7 @@ pal-gen() {
   done <<< "$selected_palettes"
 }
 
-pal-apply () {
+pal () {
     local palettes=("catppuccin-frappe" "catppuccin-latte" "catppuccin-macchiato" "catppuccin-mocha" "catppuccin-oled" "adventuretime" "material-palenight-base16" "palenighthc" "tokyonight-moon" "tokyonight-night" "doomone" "cupcake-base16" "dracula" "espresso" "rose-pine" "rose-pine-dawn" "rose-pine-moon" "mocha-light-terminal-sexy" "mocha-base16" )
     local selected_palettes selected_images apply_wallpaper=false
 
@@ -1807,16 +1846,25 @@ pal-apply () {
     fi
 }
 
-function update-pywal() {
-    wal -i "$1"
-    ~/xos/scripts/pywal/export-pywal-colors.sh
-    emacsclient --eval "(load-pywal-theme)"
-}
+renderall() {
+    # Set the nullglob option for zsh
+    setopt nullglob
 
-g() {
-    if [ "$#" -eq 1 ]; then
-        kitty +kitten hyperlinked_grep "$1" | less
-    else
-        echo "Usage: g <search_text>"
-    fi
+    # Loop through jpg and png image files
+    for image_file in *.{jpg,png}; do
+        # Get the file size in bytes
+        file_size_bytes=$(du -b "$image_file" | cut -f1)
+        # Convert file size to kilobytes
+        file_size_kb=$((file_size_bytes / 1024))
+
+        # Get image dimensions
+        dimensions=$(identify -format "%wx%h" "$image_file" 2>/dev/null)
+
+        # Display file information in color in a single line
+        # File name in bright cyan, size in yellow, and dimensions in green
+        echo -e "\033[1;36m$image_file \033[1;33m[$file_size_kb KB]\033[1;32m [$dimensions]\033[0m"
+
+        # Render the image using 'kitty +kitten icat'
+        kitty +kitten icat "$image_file"
+    done
 }
