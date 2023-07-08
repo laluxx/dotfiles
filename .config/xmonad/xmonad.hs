@@ -63,7 +63,7 @@ import qualified XMonad.Layout.MultiToggle as MT (Toggle(..))
 
    -- Utilities
 import XMonad.Util.Dmenu
-import XMonad.Util.EZConfig (additionalKeysP, mkNamedKeymap)
+import XMonad.Util.EZConfig (additionalKeysP, mkNamedKeymap, additionalMouseBindings)
 import XMonad.Util.Hacks (windowedFullscreenFixEventHook, javaHack, trayerAboveXmobarEventHook, trayAbovePanelEventHook, trayerPaddingXmobarEventHook, trayPaddingXmobarEventHook, trayPaddingEventHook)
 import XMonad.Util.NamedActions
 import XMonad.Util.NamedScratchpad
@@ -84,10 +84,11 @@ import XMonad.Layout.PerWorkspace (onWorkspace)
       -- SolarizedDark
       -- SolarizedLight
       -- TomorrowNight
--- import Colors.Dracula
-import Colors.Palenight
+import Colors.Dracula
+-- import Colors.Palenight
 -- import Colors.Oxoterm
 -- import Colors.Mocha
+
 -- import Colors.Pywal
 
 myFont :: String
@@ -135,14 +136,15 @@ myStartupHook = do
   spawnOnce "xset r rate 160 60"
   spawnOnce "lxsession"
   -- spawnonce "/usr/lib/polkit-gnome/polkit-gnome-authentication-agent-1"
-  -- spawnOnce "picom"   --Compositor
+  spawnOnce "picom"   --Compositor
   spawnOnce "nm-applet"
   spawnOnce "volumeicon"
   spawnOnce "notify-log $HOME/.log/notify.log"
 
-  spawn "doom sync"
-  spawn "doom sync" -- Double doom sync cuz yes
+  spawn "xdotool keydown Super_L && xdotool key Tab key Tab key Tab key Tab key Tab key Tab && xdotool keyup Super_L"
   spawn "/usr/bin/emacs --daemon" -- emacs daemon for the emacsclient
+  spawn "doom sync"
+  spawn "doom sync"
   spawn "emacsclient -c -a 'emacs'" -- emacs client
 
   spawn ("sleep 2 && conky -c $HOME/.config/conky/xmonad/" ++ colorScheme ++ "-01.conkyrc")
@@ -574,7 +576,7 @@ myKeys c =
   -- In Xmonad and many tiling window managers, M-p is the default keybinding to
   -- launch dmenu_run, so I've decided to use M-p plus KEY for these dmenu scripts.
   ^++^ subKeys "Dmenu scripts"
-  [ ("M-p h", addName "List all dmscripts"     $ spawn "dm-hub")
+  [ ("M-c", addName "List all dmscripts"       $ spawn "jgmenu --at-pointer")
   , ("M-p a", addName "Choose ambient sound"   $ spawn "dm-sounds")
   , ("M-p b", addName "Set background"         $ spawn "dm-setbg")
   , ("M-p c", addName "Choose color scheme"    $ spawn "~/.local/bin/dtos-colorscheme")

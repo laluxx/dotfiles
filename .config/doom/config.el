@@ -1,4 +1,41 @@
-(defun my/update-dotfiles ()
+(setq ewal-use-built-in-always-p nil
+      ewal-use-built-in-on-failure-p t
+      ewal-built-in-palette "sexy-material")
+
+;; Enable ewal-spacemacs-theme
+(after! ewal-spacemacs-themes
+  (setq spacemacs-theme-underline-parens t)
+  (load-theme 'ewal-spacemacs-modern t)
+  (enable-theme 'ewal-spacemacs-modern))
+
+;; Ewal Evil Cursors Configuration
+(after! ewal-evil-cursors
+  (ewal-evil-cursors-get-colors :apply t :spaceline t))
+
+;; Enable show-paren-mode
+(show-paren-mode +1)
+
+;; Enable global-hl-line-mode
+(global-hl-line-mode)
+
+;; Doom modeline settings, Doom Emacs uses doom-modeline by default, let's configure it.
+(setq doom-modeline-height 25)
+(setq doom-modeline-bar-width 3)
+(setq doom-modeline-lsp t)
+(setq doom-modeline-github nil)
+(setq doom-modeline-mu4e nil)
+(setq doom-modeline-irc nil)
+(setq doom-modeline-icon t)
+(setq doom-modeline-major-mode-icon nil)
+(setq doom-modeline-major-mode-color-icon t)
+(setq doom-modeline-persp-name t)
+(setq doom-modeline-buffer-state-icon t)
+(setq doom-modeline-buffer-modification-icon t)
+(setq doom-modeline-modal-icon nil)
+
+;; Additional customization can be added below
+
+(defun laluxx/update-dotfiles ()
   "Update dotfiles."
   (interactive)
   (let* ((dotfiles-path (expand-file-name "~/Desktop/pulls/dotfiles"))
@@ -6,29 +43,117 @@
     (shell-command command)
     (message "Updated dotfiles")))
 
-(defun my/run-update-dotfiles ()
-  "Run `my/update-dotfiles` if the current file is inside ~/Desktop/pulls/dotfiles or its subdirectories."
+(defun laluxx/run-update-dotfiles ()
+  "Run `laluxx/update-dotfiles` if the current file is inside ~/Desktop/pulls/dotfiles or its subdirectories."
   (when (and buffer-file-name
              (string-prefix-p (expand-file-name "~/Desktop/pulls/dotfiles") buffer-file-name)
              (string= (file-name-extension buffer-file-name) "org"))
-    (my/update-dotfiles)))
+    (laluxx/update-dotfiles)))
 
-(add-hook 'after-save-hook 'my/run-update-dotfiles)
+(add-hook 'after-save-hook 'laluxx/run-update-dotfiles)
+
+(defun load-pywal-theme ()
+  "Load the Pywal colors into the current theme."
+  (interactive)
+  (when (f-exists? "~/.cache/wal/colors.el")
+    (load-file "~/.cache/wal/colors.el")
+    (doom/reload-theme)))
+
+(add-hook 'window-setup-hook #'load-pywal-theme)
+
+(use-package! gptel
+  :config
+  (setq! gptel-api-key (getenv "OPENAI_API_KEY")))
+
+(global-set-key (kbd "M-p") 'dmenu)
+
+(defun my-list-hooks ()
+  "List all hooks in a completing-read interface."
+  (interactive)
+  (let* ((hook-symbols (sort
+                        (seq-filter (lambda (sym)
+                                      (and (symbolp sym)
+                                           (string-suffix-p "-hook" (symbol-name sym))))
+                                    (append obarray nil))
+                        #'string-lessp))
+         (hooks (mapcar #'symbol-name hook-symbols))
+         (selected-hook (completing-read "Hooks: " hooks)))
+    (when selected-hook
+      (describe-variable (intern selected-hook)))))
+
+(map! :leader
+      :desc "Show all hooks"
+      "hh" #'my-list-hooks)
+
+(defun vterm-toggle-cd-lfcd ()
+  "Open a vterm buffer in the bottom window running zsh, cd to current directory, execute 'lfcd', and focus it."
+  (interactive)
+  (let ((buffer-name "lfcd-vterm")
+        (current-directory default-directory)
+        (shell-file-name "/bin/zsh")
+        (window-height-fraction 0.3)) ; Adjust this value for desired height
+    (if (get-buffer buffer-name)
+        (if (get-buffer-window buffer-name)
+            (progn
+              (delete-window (get-buffer-window buffer-name))
+              (other-window -1))
+          (let ((new-window (display-buffer-in-side-window (get-buffer buffer-name) '((side . bottom)))))
+            (set-window-text-height new-window (round (* (frame-height) window-height-fraction)))
+            (select-window new-window)
+            (vterm-send-string (concat "cd " (shell-quote-argument current-directory) " && lfcd"))
+            (vterm-send-return)))
+      (progn
+        (split-window-below (round (* (frame-height) (- 1 window-height-fraction))))
+        (other-window 1)
+        (vterm buffer-name)
+        (vterm-send-string (concat "cd " (shell-quote-argument current-directory) " && lfcd"))
+        (vterm-send-return)))))
+
+(map! :leader
+      (:prefix ("d" . "custom")
+       :desc "Toggle vterm with lfcd" "l" #'vterm-toggle-cd-lfcd))
 
 (map! :leader
       :desc "Open dotfiles directory"
       "f p" (lambda () (interactive) (dired "~/Desktop/pulls/dotfiles/.config/doom")))
 
 (map! :leader
+      :desc "Open dotfiles directory"
+      "f t" (lambda () (interactive) (dired "~/Desktop/test")))
+
+(map! :leader
       :desc "Toggle treemacs"
       "t e" #'treemacs)
+
+;; (after! resize-window
+;;   (map! :map resize-window-mode-map
+;;         "h" nil
+;;         "j" nil
+;;         "k" nil
+;;         "l" nil
+;;         "h" (lambda () (interactive) (resize-window--enlarge-horizontally -1))
+;;         "l" (lambda () (interactive) (resize-window--enlarge-horizontally 1))
+;;         "j" (lambda () (interactive) (resize-window--enlarge-vertically 1))
+;;         "k" (lambda () (interactive) (resize-window--enlarge-vertically -1))))
 
 (tool-bar-mode  -1)
 (scroll-bar-mode  -1)
 (menu-bar-mode  -1)
 
+(setq mouse-wheel-scroll-amount '(1 ((shift) . 1))) ;; one line at a time
+(setq mouse-wheel-progressive-speed nil) ;; don"t accelerate scrolling
+(setq mouse-wheel-follow-mouse 't) ;; scroll window under mouse
+(setq scroll-step 1) ;; keyboard scroll one line at a time
+(setq scroll-conservatively 10000)
+(setq auto-window-vscroll nil)
+
+(toggle-scroll-bar -1)
+
 (use-package rainbow-delimiters
   :hook (prog-mode . rainbow-delimiters-mode))
+
+(set-frame-parameter (selected-frame) 'alpha '(95 100))
+(add-to-list 'default-frame-alist '(alpha 95 100))
 
 (defun org-insert-header-tags ()
   "Insert personalized header tags at the beginning of the current Org file."
@@ -38,32 +163,89 @@
   (insert "#+AUTHOR: laluxx\n") ; Insert AUTHOR tag with your desired value
   (insert "#+DESCRIPTION: \n") ; Insert DESCRIPTION tag
   (insert "#+STARTUP: showeverything\n") ; Insert STARTUP tag
-  (insert "#+KEYWORDS: \n") ; Insert KEYWORDS tag
-  (insert "#+PROPERTY: header-args :tangle ./path/to/tangle/file.org\n") ; Insert PROPERTY tag for tangling with a placeholder path
+  (insert "#+PROPERTY: header-args :tangle\n") ; Insert TANGLE tag
   (insert "\n") ; Insert a newline for separation
   (message "Header tags inserted.")
-  (forward-line 1) ; Move cursor to the next line after TITLE tag
-  (end-of-line) ; Move cursor to the end of the line (after TITLE)
-  (evil-insert-state)) ; Enter insert mode (Evil)
-
-
-;; (defun org-insert-header-tags ()
-;;   "Insert header tags at the beginning of the current Org file."
-;;   (interactive)
-;;   (goto-char (point-min)) ; Move to the beginning of the buffer
-;;   (insert "#+TITLE: \n") ; Insert TITLE tag
-;;   (insert "#+AUTHOR: \n") ; Insert AUTHOR tag
-;;   (insert "#+DATE: \n") ; Insert DATE tag
-;;   (insert "#+KEYWORDS: \n") ; Insert KEYWORDS tag
-;;   (insert "#+DESCRIPTION: \n") ; Insert DESCRIPTION tag
-;;   (insert "#+STAFF: \n") ; Insert STAFF tag
-;;   (insert "#+AUTOTANGLE: \n") ; Insert AUTOTANGLE tag
-;;   (insert "\n") ; Insert a newline for separation
-;;   (message "Header tags inserted."))
+  (evil-goto-first-line) ; Move cursor to the top of the buffer
+  (evil-append-line 0)) ; Move cursor to the end of the line (after TITLE) and enter insert mode (Evil)
 
 (map! :leader
       :desc "Insert header tags"
       "i o" #'org-insert-header-tags)
+
+(map! :leader
+      (:prefix "j"
+       :desc "Jump to definition" "d" #'xref-find-definitions))
+
+(defun laluxx/delete-empty-delimiters ()
+  (interactive)
+  (let* ((prev-char (char-before))
+         (next-char (char-after)))
+    (cond ((and (eq prev-char ?\() (eq next-char ?\)))
+           (delete-char 1) (delete-char -1))
+          ((and (eq prev-char ?\[) (eq next-char ?\]))
+           (delete-char 1) (delete-char -1))
+          ((and (eq prev-char ?\{) (eq next-char ?\}))
+           (delete-char 1) (delete-char -1))
+          ((and (eq prev-char ?\") (eq next-char ?\"))
+           (delete-char 1) (delete-char -1))
+          ((and (eq prev-char ?\') (eq next-char ?\'))
+           (delete-char 1) (delete-char -1))
+          (t (call-interactively 'backward-delete-char-untabify)))))
+
+(global-set-key (kbd "<backspace>") 'laluxx/delete-empty-delimiters)
+
+(defun laluxx/tab-out-of-delimiters-or-indent (orig-fun &rest args)
+  (if (and (eq evil-state 'insert)
+           (or (member (char-before) '(?\( ?\" ?\' ?\[ ?\{))
+               (member (char-after) '(?\) ?\" ?\' ?\] ?\}))))
+      (progn
+        (when (member (char-before) '(?\( ?\" ?\' ?\[ ?\{))
+          (while (not (member (char-after) '(?\) ?\" ?\' ?\] ?\})))
+            (forward-char 1)))
+        (when (member (char-after) '(?\) ?\" ?\' ?\] ?\}))
+          (forward-char 1)))
+    (apply orig-fun args)))
+
+(advice-add 'indent-for-tab-command :around #'laluxx/tab-out-of-delimiters-or-indent)
+
+(defun wrap (delimiter)
+  "Wrap region with DELIMITER if region is active."
+  (interactive
+   (list (read-char "Enter a character to wrap with: ")))
+  (if (region-active-p)
+      (let ((beg (region-beginning))
+            (end (region-end))
+            (selected-text (buffer-substring-no-properties (region-beginning) (region-end))))
+        (goto-char beg)
+        (insert-char delimiter)
+        (goto-char (1+ end))
+        (insert-char (get-matching-delimiter delimiter))
+        (when (or (and (string-match-p "\n" selected-text)
+                       (not (eq (char-after end) ?\n)))
+                  (eq (char-before beg) ?\n))
+          (newline-and-indent)
+          (goto-char (1+ end))
+          (newline-and-indent)))
+    (message "No region selected!")))
+
+(defun get-matching-delimiter (delimiter)
+  "Return the matching delimiter for DELIMITER."
+  (pcase delimiter
+    (?\( ?\))
+    (?\" ?\")
+    (?\' ?\')))
+
+(map! :leader
+      :nv "i w" #'wrap)
+
+(after! evil
+  (define-key evil-insert-state-map (kbd "C-v") 'yank)
+  (define-key evil-insert-state-map (kbd "C-s") 'save-buffer)
+  (define-key evil-insert-state-map (kbd "C-c") 'kill-ring-save)
+  (define-key evil-insert-state-map (kbd "C-x") 'kill-region)
+  (define-key evil-insert-state-map (kbd "C-z") 'undo)
+  (define-key evil-insert-state-map (kbd "C-y") 'redo))
 
 (beacon-mode -1)
 
@@ -225,9 +407,27 @@
 (setq delete-by-moving-to-trash t
       trash-directory "~/.local/share/Trash/files/")
 
-(setq doom-theme 'doom-dracula)
-(map! :leader
-      :desc "Load new theme" "h t" #'counsel-load-theme)
+(setq doom-theme 'doom-palenight)
+
+;; TODO
+;; Set ewal options
+;; (setq ewal-use-built-in-on-failure-p t
+;;       ewal-use-built-in-always-p nil)
+
+;; ;; Load the ewal-doom-themes
+;; (require 'ewal-doom-themes)
+
+;; ;; Set the doom theme to use the ewal doom theme
+;; (setq doom-theme 'ewal-doom-one)
+
+;; ;; Set up the theme after loading doom-themes
+;; (after! doom-themes
+;;   (ewal-doom-themes-get-spaceline-faces)
+;;   (ewal-doom-themes-get-unicode-fonts)
+;;   (setq ewal-doom-themes t))
+
+;; ;; Load the theme
+;; (load-theme 'ewal-doom-one t)
 
 (ednc-mode 1)
 
@@ -812,7 +1012,7 @@
 
 (after! org
   (setq org-roam-directory "~/nc/Org/roam/"
-        org-roam-graph-viewer "/usr/bin/brave"))
+        org-roam-graph-viewer "/usr/bin/firefox"))
 
 (map! :leader
       (:prefix ("n r" . "org-roam")
@@ -877,23 +1077,23 @@
 (map! :leader
       :desc "Clone indirect buffer other window" "b c" #'clone-indirect-buffer-other-window)
 
-(setq initial-buffer-choice "~/.config/doom/start.org")
+;; (setq initial-buffer-choice "~/.config/doom/start.org")
 
-(define-minor-mode start-mode
-  "Provide functions for custom start page."
-  :lighter " start"
-  :keymap (let ((map (make-sparse-keymap)))
-          ;;(define-key map (kbd "M-z") 'eshell)
-            (evil-define-key 'normal start-mode-map
-              (kbd "1") '(lambda () (interactive) (find-file "~/.config/doom/config.org"))
-              (kbd "2") '(lambda () (interactive) (find-file "~/.config/doom/init.el"))
-              (kbd "3") '(lambda () (interactive) (find-file "~/.config/doom/packages.el"))
-              (kbd "4") '(lambda () (interactive) (find-file "~/.config/doom/eshell/aliases"))
-              (kbd "5") '(lambda () (interactive) (find-file "~/.config/doom/eshell/profile")))
-          map))
+;; (define-minor-mode start-mode
+;;   "Provide functions for custom start page."
+;;   :lighter " start"
+;;   :keymap (let ((map (make-sparse-keymap)))
+;;           ;;(define-key map (kbd "M-z") 'eshell)
+;;             (evil-define-key 'normal start-mode-map
+;;               (kbd "1") '(lambda () (interactive) (find-file "~/.config/doom/config.org"))
+;;               (kbd "2") '(lambda () (interactive) (find-file "~/.config/doom/init.el"))
+;;               (kbd "3") '(lambda () (interactive) (find-file "~/.config/doom/packages.el"))
+;;               (kbd "4") '(lambda () (interactive) (find-file "~/.config/doom/eshell/aliases"))
+;;               (kbd "5") '(lambda () (interactive) (find-file "~/.config/doom/eshell/profile")))
+;;           map))
 
-(add-hook 'start-mode-hook 'read-only-mode) ;; make start.org read-only; use 'SPC t r' to toggle off read-only.
-(provide 'start-mode)
+;; (add-hook 'start-mode-hook 'read-only-mode) ;; make start.org read-only; use 'SPC t r' to toggle off read-only.
+;; (provide 'start-mode)
 
 (map! :leader
       (:prefix ("w" . "window")

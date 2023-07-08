@@ -1019,17 +1019,85 @@ function pullpkg() {
   done
 }
 
-function get() {
-    if sudo pacman -S "$@"; then
-        echo "Package installed successfully with pacman."
-    else
-        echo "Pacman could not find the package. Trying with yay..."
-        if yay -S "$@"; then
-            echo "Package installed successfully with yay."
-        else
-            echo "yay could not find the package either."
-        fi
+# get() {
+#   no_reinstall=0
+#   while getopts "n" opt; do
+#     case ${opt} in
+#       n)
+#         no_reinstall=1
+#         ;;
+#       \?)
+#         echo "Invalid option: $OPTARG" 1>&2
+#         ;;
+#     esac
+#   done
+#   shift $((OPTIND -1))
+
+#   for pkg in "$@"
+#   do
+#     if [[ $no_reinstall -eq 1 && $(yay -Qe $pkg 2>/dev/null) ]]
+#     then
+#       echo "Package $pkg is already installed and no reinstall is needed."
+#     else
+#       if yay -S "$pkg"
+#       then
+#         echo "Package $pkg installed successfully with yay."
+#       else
+#         echo "yay could not find the package $pkg."
+#       fi
+#     fi
+#   done
+# }
+
+get() {
+  PACKAGE=$1
+  FLAG=$2
+
+  # If no-reinstall flag is specified, check if the package is already installed
+  if [[ "$FLAG" == "--no-reinstall" ]]; then
+    if pacman -Qs "$PACKAGE" > /dev/null ; then
+      echo "$PACKAGE is already installed"
+      return 0
     fi
+  fi
+
+  # If not installed or if no-reinstall flag is not specified, install the package
+  if ! yay -S --noconfirm "$PACKAGE" ; then
+    echo "Error installing $PACKAGE"
+  fi
+}
+
+getall() {
+  FILE_PATH="${1}.txt"
+
+  if [ ! -f "$FILE_PATH" ]; then
+    echo "File $FILE_PATH does not exist."
+    return 1
+  fi
+
+  while IFS= read -r PACKAGE
+  do
+    get "$PACKAGE" --no-reinstall
+  done < "$FILE_PATH"
+}
+
+pacexport() {
+  # Assign the second argument to the output directory, default to the current directory
+  OUTPUT_DIRECTORY=${2:-$(pwd)}
+
+  # Check if output directory exists
+  if [ ! -d "$OUTPUT_DIRECTORY" ]; then
+    echo "Directory $OUTPUT_DIRECTORY does not exist. Creating..."
+    mkdir -p "$OUTPUT_DIRECTORY"
+  fi
+
+  # Get the list of all explicitly installed packages, format it for easier parsing
+  PACKAGES=$(yay -Qqe)
+
+  # Write the output to a file
+  echo "$PACKAGES" > "${OUTPUT_DIRECTORY}/${1}.txt"
+
+  echo "Packages exported to ${OUTPUT_DIRECTORY}/${1}.txt"
 }
 
 function pacanalize() {
