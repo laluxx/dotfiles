@@ -8,12 +8,13 @@ M.general = {
   i = { -- Insert mode mappings
     -- add here
   },
-  v = {  -- Visual mode mappings
-    -- add here
-  },
 
   c = {  -- Command-Line mode mappings
     -- add here
+  },
+
+  v = {  -- Visual mode mappings
+    ["<Tab>"] = { ">gv", "indent selected lines and reselect them" }, -- evil tab
   },
 }
 
@@ -33,11 +34,11 @@ M.leaderMappings = {
 M.telescopeMappings = {
     n = {
         -- FILE
-        -- ["<leader>ff"] = { "<cmd>Telescope find_files<CR>", "find files" },
         ["<leader>fg"] = { "<cmd>Telescope live_grep<CR>", "live grep" },
         ["<leader>fr"] = { "<cmd>Telescope oldfiles<CR>", "recent files" },--
         ["<leader>fb"] = { "<cmd>Telescope current_buffer_fuzzy_find<CR>", "fuzzy find in current buffer" },
         ["<leader>fs"] = { "<cmd>w<CR>", "save file" },
+        ["<leader>fp"] = { "<cmd>execute 'cd' expand('~/.config/nvim/lua/custom') | lua FindFiles()<CR>", "find files in custom config directory" },
 
         -- FIND
         ["<leader>fm"] = { "<cmd>Telescope man_pages<CR>", "man pages" },
@@ -51,7 +52,10 @@ M.telescopeMappings = {
 
         -- BUFFERS
         ["<leader>bi"] = { "<cmd>Telescope buffers<CR>", "switch buffers" },
-        ["<leader>bb"] = { "<cmd>Telescope buffers<CR>", "switch buffer" },
+        ["<leader>bb"] = { "<cmd>lua Council(require('telescope.builtin').buffers)<CR>", "switch buffer" },
+        ["<leader>bn"] = { ":bnext<CR>", "next buffer" },
+        ["<leader>bp"] = { ":bprevious<CR>", "previous buffer" },
+        ["<leader>bd"] = { ":bd<CR>", "delete buffer" },
 
         -- GIT
         ["<leader>gs"] = { "<cmd>Telescope git_status<CR>", "git status" },
@@ -70,16 +74,29 @@ M.telescopeMappings = {
         -- TOGGLE
         ["<leader>tl"] = { "<cmd>call ToggleLineNumbers()<CR>", "toggle line numbers" },
 
-        -- EMACS-COUNCIL
-        ["<M-x>"] = { "<cmd>lua BottomPaneTelescope(require('telescope.builtin').commands)<CR>", "execute command" },
-        ["<leader>ff"] = { "<cmd>lua BottomPaneTelescope(require('telescope.builtin').find_files)<CR>", "find files" },
+        -- DOOM EMACS
+        ["<M-x>"] = { "<cmd>lua Council(require('telescope.builtin').commands)<CR>", "execute command" },
+        -- ["<leader>ff"] = { "<cmd>lua BottomPaneTelescope(require('telescope.builtin').find_files)<CR>", "find files" },
+        ["<leader>ff"] = { "<cmd>lua FindFiles()<CR>", "browse files" },
     },
 }
 
 
 -- TELESCOPE MODES
 
-function BottomPaneTelescope(telescope_func, options)
+function Council(telescope_func, options)
+    options = options or {}
+    options.layout_strategy = "bottom_pane"
+    options.layout_config = {
+        height = 10, -- adjust this to set how many results you want to show at once
+        prompt_position = "bottom",
+        width = 1.0
+    }
+    options.previewer = false -- Disable the preview window
+    telescope_func(options)
+end
+
+function CouncilPreview(telescope_func, options)
     options = options or {}
     options.layout_strategy = "bottom_pane"
     options.layout_config = {
@@ -89,6 +106,19 @@ function BottomPaneTelescope(telescope_func, options)
     }
     telescope_func(options)
 end
+
+function FindFiles()
+    local options = {}
+    options.layout_strategy = "vertical"
+    options.layout_config = {
+        width = 0.25, -- adjust this to control the width of the file listing pane
+    }
+    options.hidden = true -- show hidden files
+    require('telescope.builtin').find_files(options)
+end
+
+-- END
+
 
 
 
