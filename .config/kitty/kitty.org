@@ -9,14 +9,14 @@
 * KITTY
 ** colorscheme
 #+begin_src shell
-# include ~/.cache/wal/colors-kitty.conf
+include ~/.cache/wal/colors-kitty.conf
 
 #include Catppuccin.conf
 #include yoru.conf
 #include rose.conf
 # include palenight.conf
 # include tokyodark.conf
-include oxocarbon.conf
+# include oxocarbon.conf
 #+end_src
 ** Keybinds
 #+begin_src shell

@@ -204,6 +204,8 @@ myStartupHook = do
 #+BEGIN_SRC haskell
   spawnOnce "xrandr --output \"$(xrandr | awk '/ connected/ {print $1; exit}')\" --mode 1920x1080 --rate 144"
   spawnOnce "xset r rate 160 60"
+  spawnOnce "python3 /home/l/xos/typetune/main.py"
+
   spawnOnce "lxsession"
   -- spawnonce "/usr/lib/polkit-gnome/polkit-gnome-authentication-agent-1"
   spawnOnce "picom"   --Compositor

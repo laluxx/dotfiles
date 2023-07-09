@@ -9,7 +9,6 @@
 - [[#xos][XOS]]
   - [[#ewal][Ewal]]
   - [[#update-dotfiles][update-dotfiles]]
-- [[#pywall][PYWALL]]
   - [[#gptel][gptel]]
   - [[#keybinds][keybinds]]
   - [[#resize-window][resize-window]]
@@ -137,17 +136,6 @@ or one of its subdirectories && if that file is a org file
     (laluxx/update-dotfiles)))
 
 (add-hook 'after-save-hook 'laluxx/run-update-dotfiles)
-#+end_src
-* PYWALL
-#+begin_src emacs-lisp
-(defun load-pywal-theme ()
-  "Load the Pywal colors into the current theme."
-  (interactive)
-  (when (f-exists? "~/.cache/wal/colors.el")
-    (load-file "~/.cache/wal/colors.el")
-    (doom/reload-theme)))
-
-(add-hook 'window-setup-hook #'load-pywal-theme)
 #+end_src
 ** gptel
 #+begin_src emacs-lisp

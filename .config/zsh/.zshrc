@@ -501,6 +501,28 @@ function hown() {
     done
 }
 
+function hownfont() {
+    # Set target directory (you may need to adjust this depending on your system)
+    target_dir=~/.fonts
+
+    # Create the target directory if it doesn't exist
+    [[ -d $target_dir ]] || mkdir -p $target_dir
+
+    if [[ $1 == '-a' ]]; then
+        # Find all font files in current directory and subdirectories
+        for file in $(find . -iname '*.ttf' -o -iname '*.otf'); do
+            # Copy each file to the target directory
+            cp $file $target_dir
+        done
+    else
+        # Copy the specified file to the target directory
+        cp $1 $target_dir
+    fi
+
+    # Update the font cache (needed on some systems)
+    fc-cache -f -v
+}
+
 function ex()
 {
   if [ -f $1 ] ; then
@@ -645,44 +667,6 @@ colortest() {
     done
 }
 
-# color() {
-#   # Check if color is set in terminal, otherwise get it from xresources
-#   if [[ -n "$TERM" ]]; then
-#     case "$1" in
-#       black)   color="\033[0;30m" ;;
-#       red)     color="\033[0;31m" ;;
-#       green)   color="\033[0;32m" ;;
-#       yellow)  color="\033[0;33m" ;;
-#       blue)    color="\033[0;34m" ;;
-#       purple)  color="\033[0;35m" ;;
-#       cyan)    color="\033[0;36m" ;;
-#       white)   color="\033[0;37m" ;;
-#       *)       color="\033[0m"     ;;
-#     esac
-#   elif [[ -n "$XTERM_VERSION" ]]; then
-#     case "$1" in
-#       black)   color="\033[0;30m" ;;
-#       red)     color="\033[0;31m" ;;
-#       green)   color="\033[0;32m" ;;
-#       yellow)  color="\033[0;33m" ;;
-#       blue)    color="\033[0;34m" ;;
-#       purple)  color="\033[0;35m" ;;
-#       cyan)    color="\033[0;36m" ;;
-#       white)   color="\033[0;37m" ;;
-#       *)       color="\033[0m"     ;;
-#     esac
-#   else
-#     color="\033[0m"
-#   fi
-
-#   # Read input from pipe and colorize it
-#   while read -r line; do
-#     echo -e "${color}${line}\033[0m"
-#   done
-# }
-
-
-
 backup () {
     if [ -z "$1" ]; then
         echo -e "\033[0;31mError: Please specify a file or directory to backup\033[0m"
@@ -741,44 +725,140 @@ function compile() {
     esac
 }
 
- copied=()
- copy() { # copy dir/file to paste in other dir
-  if [[ $# -eq 0 ]]; then
-    copy $PWD
-    return 1
-  fi
-  if [[ "${1:-}" == "-l" ]]; then
+copied=()
+copy() {
+  local display_list=false
+  local clear_list=false
+
+  # Process options
+  while getopts ":lc" opt; do
+    case $opt in
+      l)
+        display_list=true
+        ;;
+      c)
+        clear_list=true
+        ;;
+      \?)
+        echo "Invalid option: -$OPTARG"
+        return 1
+        ;;
+    esac
+  done
+  shift $((OPTIND -1)) # Remove options from argument list
+
+  # Display copied list
+  if $display_list; then
     if [[ ${#copied[@]} -eq 0 ]]; then
       echo "No items have been copied yet."
     else
       echo "Previously copied items:"
       printf '%s\n' "${copied[@]}"
     fi
-  elif [[ "${1:-}" == "-c" ]]; then
+    return 0
+  fi
+
+  # Clear copied list
+  if $clear_list; then
     copied=()
     echo "Cleared the list of copied items."
-  else
-    while [[ $# -gt 0 ]]; do
-      local source=$(realpath "$1") # Convert to absolute path
-
-      if [[ ! -e $source ]]; then
-        echo "The specified path does not exist: $source"
-      else
-        copied+=("$source")
-        echo "Copied: $source"
-        echo -n "$source" | xclip -selection clipboard # Copy the path to clipboard
-      fi
-      shift
-    done
+    return 0
   fi
- }
 
- paste() { # paste copied dirs/files in other dir
+  # If no arguments are provided, use fzf to select files/directories
+  if [[ $# -eq 0 ]]; then
+    local selected_items=$(ls -A | fzf -m)
+    if [[ -n $selected_items ]]; then
+      while IFS= read -r item; do
+        local source=$(realpath "$item")
+        if [[ -e $source ]]; then
+          copied+=("$source")
+          echo "Copied: $source"
+          echo -n "$source" | xclip -selection clipboard # Copy the path to clipboard
+        else
+          echo "The specified path does not exist: $source"
+        fi
+      done <<< "$selected_items"
+    fi
+    return 0
+  fi
+
+  # Process file paths
+  while [[ $# -gt 0 ]]; do
+    local source=$(realpath "$1") # Convert to absolute path
+
+    if [[ ! -e $source ]]; then
+      echo "The specified path does not exist: $source"
+    else
+      copied+=("$source")
+      echo "Copied: $source"
+      echo -n "$source" | xclip -selection clipboard # Copy the path to clipboard
+    fi
+    shift
+  done
+}
+
+#  paste() { # paste copied dirs/files in other dir
+#   local destination=$PWD
+#   local move=false
+#   if ! command -v fzf &> /dev/null; then
+#     echo "fzf is required but not installed. Aborting."
+#     exit 1
+#   fi
+#   while getopts ":mh" opt; do
+#     case $opt in
+#       m)
+#         move=true
+#         ;;
+#       h)
+#         echo "Usage: paste [-m] [-h] (move)"
+#         exit 0
+#         ;;
+#       \?)
+#         echo "Invalid option: -$OPTARG"
+#         exit 1
+#         ;;
+#     esac
+#   done
+#   if [[ ${#copied[@]} -eq 0 ]]; then
+#     echo "No items have been copied yet."
+#     exit 1
+#   fi
+#   selected_items=$(printf "%s\n" "${copied[@]}" | splittedfzf --multi)
+#   if [[ -z "$selected_items" ]]; then
+#     echo "No items selected. Aborting."
+#     exit 1
+#   fi
+#   if [[ $# -gt 0 ]]; then
+#     destination="$1"
+#     shift
+#   fi
+#   if [[ ! -d $destination ]]; then
+#     echo "The destination path is not a valid directory: $destination"
+#     exit 1
+#   fi
+#   while read -r item; do
+#     if $move; then
+#       if [[ -e $item ]]; then
+#         mv -f "$item" "$destination" 2>/dev/null
+#         echo "Moved: $item to $destination"
+#       fi
+#     else
+#       if [[ -e $item ]]; then
+#         cp -rf "$item" "$destination" 2>/dev/null
+#         echo "Copied: $item to $destination"
+#       fi
+#     fi
+#   done <<< "$selected_items"
+#  }
+# alias splittedfzf='fzf-tmux -x --height ${FZF_TMUX_HEIGHT:-40%} -m --reverse --ansi'
+
+paste() { # paste copied dirs/files in other dir
   local destination=$PWD
   local move=false
   if ! command -v fzf &> /dev/null; then
     echo "fzf is required but not installed. Aborting."
-    exit 1
+    return 1
   fi
   while getopts ":mh" opt; do
     case $opt in
@@ -787,22 +867,22 @@ function compile() {
         ;;
       h)
         echo "Usage: paste [-m] [-h] (move)"
-        exit 0
+        return 0
         ;;
       \?)
         echo "Invalid option: -$OPTARG"
-        exit 1
+        return 1
         ;;
     esac
   done
   if [[ ${#copied[@]} -eq 0 ]]; then
     echo "No items have been copied yet."
-    exit 1
+    return 1
   fi
   selected_items=$(printf "%s\n" "${copied[@]}" | splittedfzf --multi)
   if [[ -z "$selected_items" ]]; then
     echo "No items selected. Aborting."
-    exit 1
+    return 1
   fi
   if [[ $# -gt 0 ]]; then
     destination="$1"
@@ -810,7 +890,7 @@ function compile() {
   fi
   if [[ ! -d $destination ]]; then
     echo "The destination path is not a valid directory: $destination"
-    exit 1
+    return 1
   fi
   while read -r item; do
     if $move; then
@@ -824,8 +904,12 @@ function compile() {
         echo "Copied: $item to $destination"
       fi
     fi
+
+    # Remove the pasted/moved item from the 'copied' array
+    copied=("${copied[@]/$item}") # This line replaces the item with an empty string
+    copied=(${copied[@]}) # This line removes empty strings from the array
   done <<< "$selected_items"
- }
+}
 alias splittedfzf='fzf-tmux -x --height ${FZF_TMUX_HEIGHT:-40%} -m --reverse --ansi'
 
 function mdir () {
@@ -981,21 +1065,63 @@ function iso-build {
 eval "$(starship init zsh)"
 # eval "$(oh-my-posh init zsh)"
 
-export FZF_DEFAULT_OPTS=" \
---color=bg+:#292D3E,bg:#292D3E,spinner:#C792EA,hl:#82AAFF \
---color=fg:#EEFFFF,header:#82AAFF,info:#89DDFF,pointer:#C792EA \
---color=marker:#C792EA,fg+:#EEFFFF,prompt:#89DDFF,hl+:#82AAFF"
+fztheme() {
+  local themes=(
+    "PALENIGHT"
+    "DRACULA"
+    "CATPPUCCIN"
+    "OXOCARBON"
+    "DEFAULT"
+  )
 
-# TODO
-# export FZF_DEFAULT_OPTS=" \
-# --color=bg+:#282a36,bg:#1e1e2e,spinner:#f8f8f2,hl:#ff79c6 \
-# --color=fg:#f8f8f2,header:#ff79c6,info:#8be9fd,pointer:#50fa7b \
-# --color=marker:#50fa7b,fg+:#f8f8f2,prompt:#8be9fd,hl+:#ff79c6"
+  local selected_theme
 
-# export FZF_DEFAULT_OPTS=" \
-# --color=bg+:#313244,bg:#1e1e2e,spinner:#f5e0dc,hl:#f38ba8 \
-# --color=fg:#cdd6f4,header:#f38ba8,info:#cba6f7,pointer:#f5e0dc \
-# --color=marker:#f5e0dc,fg+:#cdd6f4,prompt:#cba6f7,hl+:#f38ba8"
+  if [[ -z $1 ]]; then
+    selected_theme=$(printf '%s\n' "${themes[@]}" | fzf)
+  else
+    selected_theme=$1
+  fi
+
+  # Save the selected theme name to a file
+  echo $selected_theme > ~/xos/fzf/.fzf_theme
+
+  case $selected_theme in
+    "PALENIGHT")
+      export FZF_DEFAULT_OPTS="\
+      --color=bg+:#292D3E,bg:#292D3E,spinner:#C792EA,hl:#82AAFF \
+      --color=fg:#EEFFFF,header:#82AAFF,info:#89DDFF,pointer:#C792EA \
+      --color=marker:#C792EA,fg+:#EEFFFF,prompt:#89DDFF,hl+:#82AAFF"
+      ;;
+    "DRACULA")
+      export FZF_DEFAULT_OPTS="\
+      --color=bg+:#282a36,bg:#1e1e2e,spinner:#f8f8f2,hl:#ff79c6 \
+      --color=fg:#f8f8f2,header:#ff79c6,info:#8be9fd,pointer:#50fa7b \
+      --color=marker:#50fa7b,fg+:#f8f8f2,prompt:#8be9fd,hl+:#ff79c6"
+      ;;
+    "CATPPUCCIN")
+      export FZF_DEFAULT_OPTS="\
+      --color=bg+:#313244,bg:#1e1e2e,spinner:#f5e0dc,hl:#f38ba8 \
+      --color=fg:#cdd6f4,header:#f38ba8,info:#cba6f7,pointer:#f5e0dc \
+      --color=marker:#f5e0dc,fg+:#cdd6f4,prompt:#cba6f7,hl+:#f38ba8"
+      ;;
+    "OXOCARBON")
+      export FZF_DEFAULT_OPTS="\
+      --color=bg+:#161616,bg:#161616,spinner:#FFE585,hl:#f38ba8 \
+      --color=fg:#cdd6f4,header:#f38ba8,info:#33B1FF,pointer:#FF7EB6 \
+      --color=marker:#f5e0dc,fg+:#cdd6f4,prompt:#cba6f7,hl+:#f38ba8"
+      ;;
+    "DEFAULT")
+      export FZF_DEFAULT_OPTS="--color=16"
+      ;;
+    *)
+      echo "Unknown theme. Please specify one of: PALENIGHT, DRACULA, CATPPUCCIN, DEFAULT."
+      ;;
+  esac
+}
+
+if [ -f ~/xos/fzf/.fzf_theme ]; then
+  fztheme $(cat ~/xos/fzf/.fzf_theme)
+fi
 
 function xrate() {
   if [ "$#" -ne 1 ] || ! [[ "$1" =~ ^[0-9]+$ ]]; then
@@ -1287,7 +1413,7 @@ function c() {
     if [ ! -d "$dir" ]; then
         mkdir -p "$dir"
     fi
-    clear && cd "$dir" && exa -la # &&  ls -l -a | wc -l
+    clear && cd "$dir" && lsd # &&  ls -l -a | wc -l
 }
 
 function xos() {
@@ -1682,23 +1808,30 @@ qr-scan() {
     fi
 }
 
-osu-cpkeys () {
-	if [ "$#" -ne 1 ]
-	then
-		echo "Usage: osu-cpkeys <theme_name>"
-		return 1
-	fi
+typetune-new-theme () {
+    destination_directory_base="$HOME/xos/typetune/switches"
+    file_types=("ogg" "wav")
 
-	theme_name=$1
-	destination_directory="$HOME/xos/keyboard-sounds/switches/$theme_name"
-	mkdir -p "$destination_directory"
+    ls $HOME/.local/share/osu-stable/Skins | fzf -m | while IFS= read -r theme_name; do
+        if [ -z "$theme_name" ]
+        then
+            echo "No themes chosen"
+            return 1
+        fi
 
-	file_types=("ogg" "wav")
+        destination_directory="$destination_directory_base/$theme_name"
+        mkdir -p "$destination_directory"
 
-	for file_type in "${file_types[@]}"
-	do
-		cp -iv key-delete.${file_type} key-press-1.${file_type} key-press-2.${file_type} key-press-3.${file_type} key-press-4.${file_type} key-press.${file_type} "$destination_directory"
-	done
+        for file_type in "${file_types[@]}"; do
+            cp -iv "$HOME/.local/share/osu-stable/Skins/$theme_name/key-delete.${file_type}" \
+                   "$HOME/.local/share/osu-stable/Skins/$theme_name/key-press-1.${file_type}" \
+                   "$HOME/.local/share/osu-stable/Skins/$theme_name/key-press-2.${file_type}" \
+                   "$HOME/.local/share/osu-stable/Skins/$theme_name/key-press-3.${file_type}" \
+                   "$HOME/.local/share/osu-stable/Skins/$theme_name/key-press-4.${file_type}" \
+                   "$HOME/.local/share/osu-stable/Skins/$theme_name/key-press.${file_type}" \
+                   "$destination_directory" 2>/dev/null
+        done
+    done
 }
 
 g() {

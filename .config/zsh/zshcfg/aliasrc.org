@@ -43,7 +43,7 @@ alias v="nvim"
 #+end_src
 * Fzf
 #+begin_src shell
-alias fzf='fzf --color=16'
+# alias fzf='fzf --color=16'
 alias fzf-tmux='fzf-tmux --color=16'
 alias splittedfzf='fzf-tmux -x --height ${FZF_TMUX_HEIGHT:-40%} -m --reverse --ansi'
 #+end_src

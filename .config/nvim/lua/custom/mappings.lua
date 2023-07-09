@@ -22,9 +22,7 @@ M.general = {
 M.leaderMappings = {
     n = {
         -- EVIL WINDOW MANAGMENT
-        ["<leader>ww"] = { "<C-w>w", "switch windows" },
-        ["<leader>wc"] = { "<C-w>c", "close window" },
-        ["<leader>wx"] = { "<C-w>x", "exchange window" },
+        ["<leader>ww"] = { "<C-w>w", "switch windows" }, ["<leader>wc"] = { "<C-w>c", "close window" }, ["<leader>wx"] = { "<C-w>x", "exchange window" },
         ["<leader>wv"] = { "<C-w>v", "split window vertically" },
         ["<leader>ws"] = { "<C-w>s", "split window horizontally" },
     },
@@ -40,7 +38,8 @@ M.telescopeMappings = {
         ["<leader>fs"] = { "<cmd>w<CR>", "save file" },
         ["<leader>fp"] = { "<cmd>execute 'cd' expand('~/.config/nvim/lua/custom') | lua FindFiles()<CR>", "find files in custom config directory" },
         ["<leader>ff"] = { "<cmd>lua FindFiles()<CR>", "browse files" },
-        ["<leader>ft"] = { "<cmd>Telescope filetypes<CR>", "file types" },
+        -- ["<leader>ft"] = { "<cmd>Telescope filetypes<CR>", "file types" },
+        ["<leader>ft"] = { "<cmd>TodoTelescope<CR>", "TODO ENTRY" },
 
         -- DIRECTORY
         ["<leader>."] = { "<cmd>Telescope find_files<CR>", "Use Telescope as file manager" },
@@ -59,6 +58,9 @@ M.telescopeMappings = {
         ["<leader>bp"] = { ":bprevious<CR>", "previous buffer" },
         ["<leader>bd"] = { ":bd<CR>", "delete buffer" },
         ["<leader>bk"] = { "<cmd>lua DoomBufferKill()<CR>", "emulate Doom Emacs buffer kill" },
+        
+        -- COUNCIL
+        ["<leader>si"] = { "<cmd>TodoTrouble<CR>", "git status" },
 
         -- GIT
         ["<leader>gs"] = { "<cmd>Telescope git_status<CR>", "git status" },
@@ -77,8 +79,10 @@ M.telescopeMappings = {
         -- TOGGLE
         ["<leader>tl"] = { "<cmd>call ToggleLineNumbers()<CR>", "toggle line numbers" },
         ["<leader>tt"] = { "<cmd>call ToggleWrap()<CR>", "Toggle line wrap" },
+        ["<leader>tn"] = { "<cmd>:NvimTreeToggle<CR>", "Toggle nvim-tree" },
+        ["<leader>tw"] = { "<cmd>:TroubleToggle<CR>", "Toggle nvim-tree" },
 
-        -- DOOM EMACS
+        -- EMACS
         ["<M-x>"] = { "<cmd>lua Council(require('telescope.builtin').commands)<CR>", "execute command" },
     },
 }
@@ -106,7 +110,7 @@ endfunction
 ]], false)
 
 
--- This is the function that emulates Doom Emacs' buffer kill behavior
+--  function that emulates Doom Emacs' buffer kill behavior
 function _G.DoomBufferKill()
   -- store the current buffer number
   local cur_buf = vim.api.nvim_get_current_buf()
