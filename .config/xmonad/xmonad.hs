@@ -146,7 +146,6 @@ myStartupHook = do
   spawn "xdotool keydown Super_L && xdotool key Tab key Tab key Tab key Tab key Tab key Tab && xdotool keyup Super_L"
   spawn "/usr/bin/emacs --daemon" -- emacs daemon for the emacsclient
   spawn "doom sync"
-  spawn "doom sync"
   spawn "emacsclient -c -a 'emacs'" -- emacs client
 
   spawn ("sleep 2 && conky -c $HOME/.config/conky/xmonad/" ++ colorScheme ++ "-01.conkyrc")
@@ -445,11 +444,11 @@ myLayoutHook = avoidStruts
                $ T.toggleLayouts floats
                $ mkToggle (NBFULL ?? NOBORDERS ?? EOT) myDefaultLayout
   where
-    myDefaultLayout = withBorder myBorderWidth tall
+    myDefaultLayout = grid
                                            ||| noBorders monocle
-                                           ||| floats
+                                           ||| noBorders floats
                                            ||| noBorders tabs
-                                           ||| grid
+                                           ||| tall
                                            ||| spirals
                                            ||| threeCol
                                            ||| threeRow
@@ -502,7 +501,7 @@ myManageHook = composeAll
   , isFullscreen -->  doFullFloat
   ] <+> namedScratchpadManageHook myScratchPads
 
-soundDir = "/opt/dtos-sounds/" -- The directory that has the sound files
+soundDir = "~/xos/system-sounds/" -- The directory that has the sound files
 
 startupSound  = soundDir ++ "startup-01.mp3"
 shutdownSound = soundDir ++ "shutdown-01.mp3"

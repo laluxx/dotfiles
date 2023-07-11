@@ -30,7 +30,12 @@ alias ls="lsd"
 # alias ls='exa -l --color=always --group-directories-first'  # long format
 alias la='exa -a --color=always --group-directories-first'  # all files and dirs
 alias ll='exa -l --color=always --group-directories-first'  # long format
-alias l='lsd --tree' # tree listing
+alias l='lsd --tree'
+alias l1='lsd --tree --depth=1'
+alias l2='lsd --tree --depth=2'
+alias l3='lsd --tree --depth=3'
+alias l4='lsd --tree --depth=4'
+alias l5='lsd --tree --depth=5'
 #+end_src
 * Highlight
 #+begin_src shell
@@ -44,10 +49,24 @@ alias v="nvim"
 * Fzf
 #+begin_src shell
 # alias fzf='fzf --color=16'
+
+# alias fzf-images='fzf --preview-window=up:90% --cycle --preview "chafa --stretch -C on {}"'
+alias fzf-images='fzf --preview-window=up:90% --cycle --preview "kitty @ --to $KITTY_LISTEN_ON set-background-image {}"'
+
 alias fzf-tmux='fzf-tmux --color=16'
 alias splittedfzf='fzf-tmux -x --height ${FZF_TMUX_HEIGHT:-40%} -m --reverse --ansi'
 #+end_src
+* Quick-access
+#+begin_src shell
+alias userchrome="c ~/.mozilla/firefox/exnoy41o.default-release/chrome"
+alias desktop-apps="c ~/.local/share/applications"
+#+end_src
 * dev
+** Web-tools
+*** web-site-pull
+#+begin_src shell
+alias web-site-pull="wget --recursive --no-clobber --page-requisites --html-extension --convert-links --restrict-file-names=windows --no-parent"
+#+end_src
 ** npm
 #+begin_src shell
 alias npm="sudo npm"
@@ -55,6 +74,14 @@ alias npm="sudo npm"
 ** luarocks
 #+begin_src shell
 alias luarocks="sudo luarocks"
+#+end_src
+** Meson
+#+begin_src shell
+alias mesosbu="sudo meson setup --wipe build && sudo meson setup --buildtype=release . build && sudo ninja -C build/ && sudo ninja -C build install"
+#+end_src
+** next
+#+begin_src shell
+alias npm="npx create-next-app"
 #+end_src
 * xos
 ** benchmark
@@ -79,6 +106,16 @@ alias xtop='zfxtop'
 * compression
 #+begin_src shell
 alias dotar="tar -czvf"
+#+end_src
+* Un-section
+** unvim
+#+begin_src shell
+alias unvim="rm -rf ~/.local/share/nvim && c"
+#+end_src
+** ungo
+#+begin_src shell
+alias ungo="rm go.mod"
+
 #+end_src
 * picom
 #+begin_src shell

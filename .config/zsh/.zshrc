@@ -145,9 +145,6 @@ function mdl() {
     cd "$original_dir"
 }
 
-userchrome() {
-  c ~/.mozilla/firefox/exnoy41o.default-release/chrome
-}
 
 function desktop-apps() {
     c ~/.local/share/applications
@@ -1038,28 +1035,84 @@ function iso-init() {
   export LS_COLORS="$LS_COLORS:ow=1;36:"
 
   # Copy archiso configs
-  sudo cp -r /usr/share/archiso/configs/releng/ "$here"
+  sudo cp -r /usr/share/archiso/configs/releng/ "$PWD"
 }
+
+# function iso-build {
+#   local script_dir="$(dirname "$0")"
+#   local releng_dir="$(realpath "$script_dir/releng")"
+#   local previous_dir="$(realpath "$script_dir/..")"
+#   local output_dir="$PWD/output"
+
+#   # Check if the releng_dir exists
+#   if [[ ! -d $releng_dir ]]; then
+#     # Try to find it in the previous directory
+#     releng_dir="$previous_dir/releng"
+#     if [[ -d $releng_dir ]]; then
+#       echo "Releng directory was not found in the initial location. However, it has been found in $releng_dir"
+#       l2 "$previous_dir"
+#       echo -n "Is it OK to proceed with this directory? (y/n): "
+#       read answer
+#       if [[ $answer != "y" ]]; then
+#         echo -e "\033[31mAborted\033[0m"
+#         return 1
+#       fi
+#     else
+#       echo -e "\033[31mError: $releng_dir is not a directory\033[0m"
+#       return 1
+#     fi
+#   fi
+
+#   # Create the output directory if it doesn't exist
+#   mkdir -p "$output_dir"
+
+#   # Build the ISO image
+#   sudo mkarchiso -v -w "$PWD/iso" -o "$output_dir" "$releng_dir"
+
+#   # Display a success message in green
+#   echo -e "\033[32mSuccess! ISO image has been built in $output_dir/\033[0m"
+# }
 
 function iso-build {
   local script_dir="$(dirname "$0")"
   local releng_dir="$(realpath "$script_dir/releng")"
+  local previous_dir="$(realpath "$script_dir/..")"
   local output_dir="$PWD/output"
 
   # Check if the releng_dir exists
   if [[ ! -d $releng_dir ]]; then
-    echo -e "\033[31mError: $releng_dir is not a directory\033[0m"
-    return 1
+    # Try to find it in the previous directory
+    releng_dir="$previous_dir/releng"
+    if [[ -d $releng_dir ]]; then
+      echo -e "\033[33mWarning: The releng directory was not found in the initial location. However, it has been found in $releng_dir\033[0m"
+      l2 "$previous_dir"
+      echo -e -n "\033[32mIs it OK to proceed with this directory? (y/n): \033[0m"
+      read answer
+      if [[ $answer != "y" ]]; then
+        echo -e "\033[31mAborted\033[0m"
+        return 1
+      fi
+    else
+      echo -e "\033[31mError: $releng_dir is not a directory\033[0m"
+      return 1
+    fi
   fi
 
   # Create the output directory if it doesn't exist
-  mkdir -p "$output_dir"
+  mkdir -p "$output_dir" 2>/dev/null
 
   # Build the ISO image
-  sudo mkarchiso -v -w "$PWD/iso" -o "$output_dir" "$releng_dir"
+  sudo mkarchiso -v -w "$PWD/iso" -o "$output_dir" "$releng_dir" 2>/dev/null
 
-  # Display a success message in green
-  echo -e "\033[32mSuccess! ISO image has been built in $output_dir/\033[0m"
+  # Check if mkarchiso command was successful
+  if [ $? -eq 0 ]; then
+    # Display a success message in green
+    echo -e "\033[32mSuccess! ISO image has been built in $output_dir/\033[0m"
+  else
+    # Display an error message in red
+    echo -e "\033[31mError: ISO image creation failed!\033[0m"
+    return 1
+  fi
 }
 
 eval "$(starship init zsh)"
@@ -1410,11 +1463,69 @@ function xgeometry-focus() {
 
 function c() {
     local dir="$1"
-    if [ ! -d "$dir" ]; then
+    if [[ -z "$dir" ]]; then
+        dir="."
+    fi
+
+    clear
+    if [[ ! -d "$dir" ]]; then
         mkdir -p "$dir"
     fi
-    clear && cd "$dir" && lsd # &&  ls -l -a | wc -l
+    cd "$dir"
+
+    if [[ "$PWD" == "$HOME" ]]; then
+        exa -la
+    elif [[ "$PWD" == "$HOME/xos" ]]; then
+        exa -la
+    elif [[ "$PWD" == "$HOME/Desktop/test" ]]; then
+        lsd --tree --depth=2
+    else
+        local subdir
+        local use_l=false
+        for subdir in $(find . -maxdepth 1 -type d)
+        do
+            if [[ $(find $subdir -maxdepth 1 -type d | wc -l) -eq 1 && $(find $subdir -maxdepth 1 -type f | wc -l) -gt 0 ]]; then
+                use_l=true
+                break
+            fi
+        done
+
+        if [[ "$use_l" == true ]]; then
+            l
+        else
+            lsd
+        fi
+    fi
 }
+
+# ls() {
+#     local dir="$1"
+#     if [[ -z "$dir" ]]; then
+#         dir="."
+#     fi
+
+#     if [[ "$PWD" == "$HOME" ]]; then
+#         exa -la
+#     elif [[ "$PWD" == "$HOME/xos" ]]; then
+#         lsd --tree --depth=2
+#     else
+#         local subdir
+#         local use_l=false
+#         for subdir in $(find . -maxdepth 1 -type d)
+#         do
+#             if [[ $(find $subdir -maxdepth 1 -type d | wc -l) -eq 1 && $(find $subdir -maxdepth 1 -type f | wc -l) -gt 0 ]]; then
+#                 use_l=true
+#                 break
+#             fi
+#         done
+
+#         if [[ "$use_l" == true ]]; then
+#             l
+#         else
+#             lsd
+#         fi
+#     fi
+# }
 
 function xos() {
     c ~/xos/$1/$2/$3
@@ -1833,6 +1944,8 @@ typetune-new-theme () {
         done
     done
 }
+
+
 
 g() {
     if [ "$#" -eq 1 ]; then

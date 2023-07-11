@@ -19,7 +19,12 @@ alias ls="lsd"
 # alias ls='exa -l --color=always --group-directories-first'  # long format
 alias la='exa -a --color=always --group-directories-first'  # all files and dirs
 alias ll='exa -l --color=always --group-directories-first'  # long format
-alias l='lsd --tree' # tree listing
+alias l='lsd --tree'
+alias l1='lsd --tree --depth=1'
+alias l2='lsd --tree --depth=2'
+alias l3='lsd --tree --depth=3'
+alias l4='lsd --tree --depth=4'
+alias l5='lsd --tree --depth=5'
 
 alias highlight="highlight -O ansi --force"
 alias hcat="cat | highlight"
@@ -27,12 +32,25 @@ alias hcat="cat | highlight"
 alias v="nvim"
 
 # alias fzf='fzf --color=16'
+
+# alias fzf-images='fzf --preview-window=up:90% --cycle --preview "chafa --stretch -C on {}"'
+alias fzf-images='fzf --preview-window=up:90% --cycle --preview "kitty @ --to $KITTY_LISTEN_ON set-background-image {}"'
+
 alias fzf-tmux='fzf-tmux --color=16'
 alias splittedfzf='fzf-tmux -x --height ${FZF_TMUX_HEIGHT:-40%} -m --reverse --ansi'
+
+alias userchrome="c ~/.mozilla/firefox/exnoy41o.default-release/chrome"
+alias desktop-apps="c ~/.local/share/applications"
+
+alias web-site-pull="wget --recursive --no-clobber --page-requisites --html-extension --convert-links --restrict-file-names=windows --no-parent"
 
 alias npm="sudo npm"
 
 alias luarocks="sudo luarocks"
+
+alias mesosbu="sudo meson setup --wipe build && sudo meson setup --buildtype=release . build && sudo ninja -C build/ && sudo ninja -C build install"
+
+alias npm="npx create-next-app"
 
 alias benchmark='hyperfine'
 
@@ -46,6 +64,10 @@ alias showport="ss -ltnp"
 alias xtop='zfxtop'
 
 alias dotar="tar -czvf"
+
+alias unvim="rm -rf ~/.local/share/nvim && c"
+
+alias ungo="rm go.mod"
 
 alias trans='wid=$(xdotool selectwindow); picom-trans -w $wid'
 

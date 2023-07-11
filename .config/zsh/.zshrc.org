@@ -198,19 +198,6 @@ function mdl() {
     cd "$original_dir"
 }
 #+end_src
-* QUICK-ACCESS
-** userchrome
-#+begin_src shell
-userchrome() {
-  c ~/.mozilla/firefox/exnoy41o.default-release/chrome
-}
-#+end_src
-** desktop-apps
-#+begin_src shell
-function desktop-apps() {
-    c ~/.local/share/applications
-}
-#+end_src
 * SHELL
 **  image-map
 Define a mapping between directory names and image files
@@ -246,9 +233,7 @@ declare -A image_map=(
   ["welcome"]="$HOME/Desktop/xos/xicons/weloce.png"
  ["default"]="$HOME/Desktop/xos/xicons/default.png"
 )
-
 #+end_src
-
 ** display_image
 chpwd dependency
 #+begin_src shell
@@ -283,7 +268,6 @@ function chpwd() {
 
 chpwd # run once
 #+end_src
-
 * DEV-TOOLS
 ** diffrun
 DIFF RUN :
@@ -426,13 +410,6 @@ function package-web-app() {
   echo "Desktop app for ${url} has been created in the current directory."
 }
 #+end_src
-*** pull-website
-#+begin_src shell
-pull-website() {
-  wget --recursive --no-clobber --page-requisites --html-extension --convert-links --restrict-file-names=windows --no-parent $1
-}
-#+end_src
-
 ** lazytest
 Usefull when you have a folder full of scripts to test.
 #+begin_src shell
@@ -449,7 +426,6 @@ function lazytest() {
 *** run-sequentially
 Dependencie of lazytest
 #+begin_src shell
-
 function run_sequentially() {
   local files=("$@")
 
@@ -478,46 +454,6 @@ function run_sequentially() {
 }
 
 #+end_src
-** meson
-*** mesosbu
-#+begin_src shell
-
-# TODO
-#dont wipe the first time
-function mesosbu() {
-  sudo meson setup --wipe build && sudo meson setup --buildtype=release . build && sudo ninja -C build/ && sudo ninja -C build install
-}
-
-#+end_src
-** project-init
-*** next
-#+begin_src shell
-next() {
-  npx create-next-app "$1"
-}
-# TODO NEXT-BUILD
-#+end_src
-** compile
-#+begin_src shell
-
-function compile() {
-    if [[ -z "$1" ]]; then
-        echo "Usage: runc <file>"
-        return 1
-    fi
-
-    if [[ "${1##*.}" == "c" ]]; then
-        gcc -Wall -Wextra -Wpedantic -std=c99 -O2 -o "${1%.*}" "$1" && "./${1%.*}"
-    elif [[ "${1##*.}" == "cpp" ]]; then
-        g++ -Wall -Wextra -Wpedantic -std=c++17 -O2 -o "${1%.*}" "$1" && "./${1%.*}"
-    else
-        echo "Error: Unsupported file type"
-        return 1
-    fi
-}
-
-#+end_src
-
 * Python
 ** penv
 #+begin_src shell
@@ -576,9 +512,7 @@ penv() {
             ;;
     esac
 }
-
 #+end_src
-
 * BASICS
 ** screenshot
 #+begin_src shell
@@ -598,27 +532,7 @@ function screenshot() {
   fi
 }
 #+end_src
-** xshellrp
-i lost the config file :)
-#+begin_src shell
-# FIXME
-function xshellrp() {
-  xshellrp --config ~/.config/linux-discord-rich-presencerc &&
-}
-#+end_src
 ** commons
-*** xup
-#+begin_src shell
-function xup() {
-  chmod +x "$1" && c
-}
-#+end_src
-*** xdown
-#+begin_src shell
-function xdown() {
-  chmod -x "$1" && c
-}
-#+end_src
 *** Hown
 #+begin_src shell
 function hown() {
@@ -680,57 +594,11 @@ function ex()
 }
 #+end_src
 ** un-section
-*** untar
-#+begin_src shell
-function untar() {
-  if [ -f "$1" ]; then
-    tar -xvf "$1" && c
-  else
-    echo "$1 is not a valid tar archive"
-  fi
-}
-#+end_src
-*** unvim
-#+begin_src shell
-function unvim() {
-  # rm -rf ~/.config/nvim
-  rm -rf ~/.local/share/nvim
-}
-#+end_src
 *** ungit
 #+begin_src shell
 function ungit() {
   rmdir .git
   echo "WHAT ARE YOU DOING ?" && sleep 1 && rm .gitignore && c
-}
-#+end_src
-*** ungo
-#+begin_src shell
-function ungo() {
-  rm go.mod
-  echo "WHAT ARE YOU DOING ?" && sleep 1 && c
-}
-#+end_src
-*** uncargo
-Check if a Cargo.toml file exists in the current directory
-#+begin_src shell
-function uncargo() {
-  if [ ! -f "Cargo.toml" ]; then
-    echo "No Cargo.toml file found in the current directory."
-    return 1
-  fi
-
-  # Remove the Cargo.toml and Cargo.lock files
-  rm -f Cargo.toml Cargo.lock
-
-  # Search for a src directory and rename it to unrusted-src
-  if [ -d "src" ]; then
-    mv src unrusted-src
-    echo "src directory renamed to unrusted-src."
-  else
-    echo "No src directory found."
-  fi
-  c
 }
 #+end_src
 ** explain
@@ -823,20 +691,32 @@ colortest() {
     done
 }
 #+end_src
-
-** backup
+* Zconvert
 #+begin_src shell
-backup () {
-    if [ -z "$1" ]; then
-        echo -e "\033[0;31mError: Please specify a file or directory to backup\033[0m"
-        return 1
-    fi
+# zconvert() {
+#     # Get the input function/alias
+#     local name=$1
 
-    local backup_dir="$(pwd)/${1}-backup-$(date +%Y-%m-%d-%H-%M-%S)"
-    cp -r "$1" "$backup_dir" && \
-    echo -e "\033[0;32m✔ Success: Created backup in $backup_dir\033[0m" && \
-    bat "$backup_dir"
-}
+#     # Try to retrieve it as a function
+#     local func=$(declare -f $name)
+
+#     # If it's not a function, try to get it as an alias
+#     if [[ -z "$func" ]]; then
+#         func=$(alias $name | sed -E "s/^alias $name='(.*)'/\1/")
+#         if [[ -z "$func" ]]; then
+#             echo "No such function or alias: $name"
+#             return 1
+#         else
+#             # convert alias to function
+#             func="$name() {\n$func\n}"
+#         fi
+#     fi
+
+#     # Write to file
+#     echo "#!/usr/bin/env zsh" > "$name"_standalone.zsh
+#     echo "$func" >> "$name"_standalone.zsh
+#     chmod +x "$name"_standalone.zsh
+# }
 #+end_src
 ** ls
 *** ccx
@@ -970,64 +850,6 @@ copy() {
 }
 #+end_src
 *** paste
-#+begin_src shell
-#  paste() { # paste copied dirs/files in other dir
-#   local destination=$PWD
-#   local move=false
-#   if ! command -v fzf &> /dev/null; then
-#     echo "fzf is required but not installed. Aborting."
-#     exit 1
-#   fi
-#   while getopts ":mh" opt; do
-#     case $opt in
-#       m)
-#         move=true
-#         ;;
-#       h)
-#         echo "Usage: paste [-m] [-h] (move)"
-#         exit 0
-#         ;;
-#       \?)
-#         echo "Invalid option: -$OPTARG"
-#         exit 1
-#         ;;
-#     esac
-#   done
-#   if [[ ${#copied[@]} -eq 0 ]]; then
-#     echo "No items have been copied yet."
-#     exit 1
-#   fi
-#   selected_items=$(printf "%s\n" "${copied[@]}" | splittedfzf --multi)
-#   if [[ -z "$selected_items" ]]; then
-#     echo "No items selected. Aborting."
-#     exit 1
-#   fi
-#   if [[ $# -gt 0 ]]; then
-#     destination="$1"
-#     shift
-#   fi
-#   if [[ ! -d $destination ]]; then
-#     echo "The destination path is not a valid directory: $destination"
-#     exit 1
-#   fi
-#   while read -r item; do
-#     if $move; then
-#       if [[ -e $item ]]; then
-#         mv -f "$item" "$destination" 2>/dev/null
-#         echo "Moved: $item to $destination"
-#       fi
-#     else
-#       if [[ -e $item ]]; then
-#         cp -rf "$item" "$destination" 2>/dev/null
-#         echo "Copied: $item to $destination"
-#       fi
-#     fi
-#   done <<< "$selected_items"
-#  }
-# alias splittedfzf='fzf-tmux -x --height ${FZF_TMUX_HEIGHT:-40%} -m --reverse --ansi'
-
-#+end_src
-**** v2
 #+begin_src shell
 paste() { # paste copied dirs/files in other dir
   local destination=$PWD
@@ -1241,31 +1063,51 @@ function iso-init() {
   export LS_COLORS="$LS_COLORS:ow=1;36:"
 
   # Copy archiso configs
-  sudo cp -r /usr/share/archiso/configs/releng/ "$here"
+  sudo cp -r /usr/share/archiso/configs/releng/ "$PWD"
 }
 #+end_src
 ** Iso-build
 #+begin_src shell
-
 function iso-build {
   local script_dir="$(dirname "$0")"
   local releng_dir="$(realpath "$script_dir/releng")"
+  local previous_dir="$(realpath "$script_dir/..")"
   local output_dir="$PWD/output"
 
   # Check if the releng_dir exists
   if [[ ! -d $releng_dir ]]; then
-    echo -e "\033[31mError: $releng_dir is not a directory\033[0m"
-    return 1
+    # Try to find it in the previous directory
+    releng_dir="$previous_dir/releng"
+    if [[ -d $releng_dir ]]; then
+      echo -e "\033[33mWarning: The releng directory was not found in the initial location. However, it has been found in $releng_dir\033[0m"
+      l2 "$previous_dir"
+      echo -e -n "\033[32mIs it OK to proceed with this directory? (y/n): \033[0m"
+      read answer
+      if [[ $answer != "y" ]]; then
+        echo -e "\033[31mAborted\033[0m"
+        return 1
+      fi
+    else
+      echo -e "\033[31mError: $releng_dir is not a directory\033[0m"
+      return 1
+    fi
   fi
 
   # Create the output directory if it doesn't exist
-  mkdir -p "$output_dir"
+  mkdir -p "$output_dir" 2>/dev/null
 
   # Build the ISO image
-  sudo mkarchiso -v -w "$PWD/iso" -o "$output_dir" "$releng_dir"
+  sudo mkarchiso -v -w "$PWD/iso" -o "$output_dir" "$releng_dir" 2>/dev/null
 
-  # Display a success message in green
-  echo -e "\033[32mSuccess! ISO image has been built in $output_dir/\033[0m"
+  # Check if mkarchiso command was successful
+  if [ $? -eq 0 ]; then
+    # Display a success message in green
+    echo -e "\033[32mSuccess! ISO image has been built in $output_dir/\033[0m"
+  else
+    # Display an error message in red
+    echo -e "\033[31mError: ISO image creation failed!\033[0m"
+    return 1
+  fi
 }
 #+end_src
 
@@ -1668,15 +1510,119 @@ function xgeometry-focus() {
 }
 #+end_src
 * MOTIONS
+** lfcd
+#+begin_src shell
+# lfcd () {
+#     tmp="$(mktemp)"
+#     lf -last-dir-path="$tmp" "$@"
+#     if [ -f "$tmp" ]; then
+#         dir="$(cat "$tmp")"
+#         rm -f "$tmp"
+#         [ -d "$dir" ] && [ "$dir" != "$(pwd)" ] && c "$dir"
+#     fi
+# }
+#+end_sr
+*** v2
+#+begin_src shell
+function lfcd {
+  tmp="$(mktemp)"
+  lf -last-dir-path="$tmp" "$@"
+  if [ -f "$tmp" ]; then
+    dir="$(cat "$tmp")"
+    rm -f "$tmp" 2>/dev/null
+    [ -d "$dir" ] && [ "$dir" != "$(pwd)" ] && c "$dir"
+  fi
+}
+#+end_src
 ** c
-c will replace cd in most zsh functions
+This function enhances the traditional "cd" command in several key ways:
+
+- *Directory Creation*: If the specified directory does not exist, "c" will create it.
+- *Automatic Listing*: The function immediately lists the contents of the directory you've moved into.
+- *Customized Views*: The function adjusts the display based on the directory you're in. For instance, in the home directory, it uses "exa -la" for a detailed view.
+- *Depth-Sensitive Viewing*: If a directory only has one depth level, the function uses a tree view.
+- *Enhanced Navigation*: The process of moving to a new directory, viewing its contents, and creating new directories is significantly simplified.
 #+begin_src shell
 function c() {
     local dir="$1"
-    if [ ! -d "$dir" ]; then
+    if [[ -z "$dir" ]]; then
+        dir="."
+    fi
+
+    clear
+    if [[ ! -d "$dir" ]]; then
         mkdir -p "$dir"
     fi
-    clear && cd "$dir" && lsd # &&  ls -l -a | wc -l
+    cd "$dir"
+
+    if [[ "$PWD" == "$HOME" ]]; then
+        exa -la
+    elif [[ "$PWD" == "$HOME/xos" ]]; then
+        exa -la
+    elif [[ "$PWD" == "$HOME/Desktop/test" ]]; then
+        lsd --tree --depth=2
+    else
+        local subdir
+        local use_l=false
+        for subdir in $(find . -maxdepth 1 -type d)
+        do
+            if [[ $(find $subdir -maxdepth 1 -type d | wc -l) -eq 1 && $(find $subdir -maxdepth 1 -type f | wc -l) -gt 0 ]]; then
+                use_l=true
+                break
+            fi
+        done
+
+        if [[ "$use_l" == true ]]; then
+            l
+        else
+            lsd
+        fi
+    fi
+}
+#+end_src
+** ls
+fuck your plain ls, bloat the system its free:
+#+begin_src shell
+# ls() {
+#     local dir="$1"
+#     if [[ -z "$dir" ]]; then
+#         dir="."
+#     fi
+
+#     if [[ "$PWD" == "$HOME" ]]; then
+#         exa -la
+#     elif [[ "$PWD" == "$HOME/xos" ]]; then
+#         lsd --tree --depth=2
+#     else
+#         local subdir
+#         local use_l=false
+#         for subdir in $(find . -maxdepth 1 -type d)
+#         do
+#             if [[ $(find $subdir -maxdepth 1 -type d | wc -l) -eq 1 && $(find $subdir -maxdepth 1 -type f | wc -l) -gt 0 ]]; then
+#                 use_l=true
+#                 break
+#             fi
+#         done
+
+#         if [[ "$use_l" == true ]]; then
+#             l
+#         else
+#             lsd
+#         fi
+#     fi
+# }
+#+end_src
+
+** test
+#+begin_src shell
+function test() {
+    c ~/Desktop/test/$1/$2/$3
+}
+#+end_src
+** script
+#+begin_src shell
+function script() {
+    c ~/xos/script/$1/$2/$3
 }
 #+end_src
 ** xos
@@ -1690,43 +1636,6 @@ function xos() {
 function dotfiles() {
   c ~/Desktop/pulls/dotfiles/$1/$2/$3
 }
-#+end_src
-*** _dotfiles
-This function is defined to provide autocompletion suggestions.
-#+begin_src shell
-# Define color variables
-typeset -A config
-config=(
-  show_hidden  true
-)
-
-# Autocompletion function
-function _dotfiles() {
-    local curcontext="$curcontext" state line
-    typeset -A opt_args
-
-    _arguments -C \
-        '1: :->files' \
-        '*:: :->other'
-
-    case $state in
-        files)
-            local IFS=$'\n'
-            local -a completions
-            if [[ ${config[show_hidden]} == true ]]; then
-              completions=($(ls -A ~/Desktop/pulls/dotfiles))
-            else
-              completions=($(ls ~/Desktop/pulls/dotfiles))
-            fi
-            _describe 'files' completions
-            ;;
-        other)
-            ;;
-    esac
-}
-
-# Register the function for autocompletion
-compdef _dotfiles dotfiles
 #+end_src
 ** conf
 #+begin_src shell
@@ -1750,30 +1659,6 @@ _conf() {
   return 1
 }
 compdef _conf conf
-#+end_src
-** lfcd
-#+begin_src shell
-lfcd () {
-    tmp="$(mktemp)"
-    lf -last-dir-path="$tmp" "$@"
-    if [ -f "$tmp" ]; then
-        dir="$(cat "$tmp")"
-        rm -f "$tmp"
-        [ -d "$dir" ] && [ "$dir" != "$(pwd)" ] && c "$dir"
-    fi
-}
-#+end_src
-** test
-#+begin_src shell
-function test() {
-    c ~/Desktop/test/$1/$2/$3
-}
-#+end_src
-** script
-#+begin_src shell
-function script() {
-    c ~/xos/script/$1/$2/$3
-}
 #+end_src
 * GIT
 ** gclone
@@ -2091,20 +1976,6 @@ wal-set () {
     fi
 }
 #+end_src
-
-* cheat sheets
-#+begin_src shell
-ch() { # Comunity driven cheatsheet for linux commands
-        for arg in "$@"; do
-        if [[ ! "$@" = /* ]]; then
-            arg="/$@"
-        else
-            arg="$@"
-        fi
-        curl -sS cheat.sh$arg | sed 's/\x1b[[0-9;]*m//g' | bat --style=plain --color=always --theme ansi --file-name $@
-        done
-    }
-#+end_src
 * Qr
 generate qrcodes of text/links
 ** qr-gen
@@ -2142,7 +2013,6 @@ qr-scan() {
 }
 #+end_src
 * Typetune
-c should change cd based on the directory
 ** Typetune-new-theme
 #+begin_src shell
 typetune-new-theme () {
@@ -2171,7 +2041,14 @@ typetune-new-theme () {
     done
 }
 #+end_src
+** Switch theme
+TODO:
+fzf to choose a theme, it should change the script with the new theme name,
+kill the running process and restart
+#+begin_src shell
 
+
+#+end_src
 
 * Kitty
 ** Grep

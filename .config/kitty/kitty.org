@@ -62,7 +62,12 @@ map alt+j neighboring_window down
 #+end_src
 ** config
 #+begin_src conf
-allow_remote_control yes
+# allow_remote_control yes
+allow_remote_control socket-only
+listen_on unix:/tmp/kitt
+
+
+
 cursor_blink_interval 0
 copy_on_select yes
 

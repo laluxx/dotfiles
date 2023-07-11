@@ -77,6 +77,7 @@ M.telescopeMappings = {
         ["<leader>rn"] = { "<cmd>lua vim.lsp.buf.rename()<CR>", "LSP rename symbol" },
 
         -- TOGGLE
+        ["<leader>tb"] = { "<cmd>ZenMode<CR>", "toggle big font mode" },
         ["<leader>tl"] = { "<cmd>call ToggleLineNumbers()<CR>", "toggle line numbers" },
         ["<leader>tt"] = { "<cmd>call ToggleWrap()<CR>", "Toggle line wrap" },
         ["<leader>tn"] = { "<cmd>:NvimTreeToggle<CR>", "Toggle nvim-tree" },
@@ -110,13 +111,40 @@ endfunction
 ]], false)
 
 
---  function that emulates Doom Emacs' buffer kill behavior
+-- --  function that emulates Doom Emacs' buffer kill behavior
+-- function _G.DoomBufferKill()
+--   -- store the current buffer number
+--   local cur_buf = vim.api.nvim_get_current_buf()
+--   
+--   -- get the list of all available buffers
+--   local bufs = vim.api.nvim_list_bufs()
+--
+--   -- iterate over the buffers
+--   for _, buf in ipairs(bufs) do
+--     -- check if the buffer is valid and loaded
+--     if vim.api.nvim_buf_is_valid(buf) and vim.api.nvim_buf_is_loaded(buf) and buf ~= cur_buf then
+--       -- switch to this buffer
+--       vim.api.nvim_set_current_buf(buf)
+--       break
+--     end
+--   end
+
+
+
+
 function _G.DoomBufferKill()
   -- store the current buffer number
   local cur_buf = vim.api.nvim_get_current_buf()
   
   -- get the list of all available buffers
   local bufs = vim.api.nvim_list_bufs()
+
+  -- check if there is only one buffer left
+  if #bufs == 1 then
+    -- quit nvim
+    vim.api.nvim_command('quit')
+    return
+  end
 
   -- iterate over the buffers
   for _, buf in ipairs(bufs) do
@@ -127,13 +155,21 @@ function _G.DoomBufferKill()
       break
     end
   end
-
-  -- check if the buffer to delete is different from the current buffer and if it exists
-  if cur_buf ~= vim.api.nvim_get_current_buf() and vim.api.nvim_buf_is_valid(cur_buf) then
-    -- delete the previous buffer
-    vim.api.nvim_buf_delete(cur_buf, { force = true })
-  end
 end
+
+
+
+
+
+
+
+
+--  -- check if the buffer to delete is different from the current buffer and if it exists
+--  if cur_buf ~= vim.api.nvim_get_current_buf() and vim.api.nvim_buf_is_valid(cur_buf) then
+--    -- delete the previous buffer
+--    vim.api.nvim_buf_delete(cur_buf, { force = true })
+--  end
+--end
 
 
 -- TELESCOPE MODES
