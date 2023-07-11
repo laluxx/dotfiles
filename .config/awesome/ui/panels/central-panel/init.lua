@@ -237,7 +237,7 @@ local picom_opacity_slider = wibox.widget {
     end
 }
 
--- Create the toggle widget TODO
+-- Create the toggle widget TODO 
 local toggle_widget = wibox.widget {
     {
         {

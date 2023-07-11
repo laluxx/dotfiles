@@ -4,10 +4,8 @@
 #+STARTUP: showeverything
 
 * TABLE OF CONTENTS :toc:
-- [[#todo][TODO]]
-  - [[#org][org]]
 - [[#xos][XOS]]
-  - [[#ewal][Ewal]]
+  - [[#general-key][General-key]]
   - [[#update-dotfiles][update-dotfiles]]
   - [[#gptel][gptel]]
   - [[#keybinds][keybinds]]
@@ -69,49 +67,18 @@
 - [[#winner-mode][WINNER MODE]]
 - [[#zap-to-char][ZAP TO CHAR]]
 
-* TODO
-** org
-make lsp work inside org documents too
 * XOS
-** Ewal
+** General-key
+Keybinds that execute other keybinds, cuz im lazy aka efficent
+*** Dired
 #+begin_src emacs-lisp
-(setq ewal-use-built-in-always-p nil
-      ewal-use-built-in-on-failure-p t
-      ewal-built-in-palette "sexy-material")
-
-;; Enable ewal-spacemacs-theme
-(after! ewal-spacemacs-themes
-  (setq spacemacs-theme-underline-parens t)
-  (load-theme 'ewal-spacemacs-modern t)
-  (enable-theme 'ewal-spacemacs-modern))
-
-;; Ewal Evil Cursors Configuration
-(after! ewal-evil-cursors
-  (ewal-evil-cursors-get-colors :apply t :spaceline t))
-
-;; Enable show-paren-mode
-(show-paren-mode +1)
-
-;; Enable global-hl-line-mode
-(global-hl-line-mode)
-
-;; Doom modeline settings, Doom Emacs uses doom-modeline by default, let's configure it.
-(setq doom-modeline-height 25)
-(setq doom-modeline-bar-width 3)
-(setq doom-modeline-lsp t)
-(setq doom-modeline-github nil)
-(setq doom-modeline-mu4e nil)
-(setq doom-modeline-irc nil)
-(setq doom-modeline-icon t)
-(setq doom-modeline-major-mode-icon nil)
-(setq doom-modeline-major-mode-color-icon t)
-(setq doom-modeline-persp-name t)
-(setq doom-modeline-buffer-state-icon t)
-(setq doom-modeline-buffer-modification-icon t)
-(setq doom-modeline-modal-icon nil)
-
-;; Additional customization can be added below
-
+(map! :leader
+      :desc "Custom Keybind"
+      "d J" (lambda ()
+              (interactive)
+              (text-scale-set -1)  ;; Set the desired zoom level here
+              (execute-kbd-macro (kbd "SPC w v"))
+              (execute-kbd-macro (kbd "SPC d j"))))
 #+end_src
 ** update-dotfiles
 whenever you save a file inside "~/Desktop/pulls/dotfiles"
@@ -216,6 +183,12 @@ it will also open dired inside a window
       :desc "Open dotfiles directory"
       "f t" (lambda () (interactive) (dired "~/Desktop/test")))
 #+end_src
+**** xos
+#+begin_src emacs-lisp
+(map! :leader
+      :desc "Open dotfiles directory"
+      "f x" (lambda () (interactive) (dired "~/xos")))
+#+end_src
 *** toggle
 **** treemacs
 #+begin_src emacs-lisp
@@ -271,6 +244,16 @@ when focused and not focused
 (add-to-list 'default-frame-alist '(alpha 95 100))
 #+end_src
 ** functions
+*** zsh
+#+begin_src shell
+(defun edit-zsh-function (name)
+  (interactive "sEnter function name: ")
+  (find-file "~/.zshrc")
+  (goto-char (point-min))
+  (search-forward-regexp (concat "function " name " "))
+  (narrow-to-defun)
+  (beginning-of-buffer))
+#+end_src
 *** org
 #+begin_src emacs-lisp
 (defun org-insert-header-tags ()
@@ -651,6 +634,7 @@ Dired is the file manager within Emacs.  Below, I setup keybindings for image pr
       (:prefix ("d" . "dired")
        :desc "Open dired" "d" #'dired
        :desc "Dired jump to current" "j" #'dired-jump)
+       ;; :desc "Dired split jump" "J" #'dired-jump)
       (:after dired
        (:map dired-mode-map
         :desc "Peep-dired image previews" "d p" #'peep-dired

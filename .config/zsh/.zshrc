@@ -145,11 +145,6 @@ function mdl() {
     cd "$original_dir"
 }
 
-
-function desktop-apps() {
-    c ~/.local/share/applications
-}
-
 declare -A image_map=(
   # ["rust"]="$HOME/Desktop/xos/xicons/rust.png"
   ["rust"]="$HOME/Desktop/xos/xicons/3.png"
@@ -160,7 +155,7 @@ declare -A image_map=(
   ["c"]="$HOME/Desktop/xos/xicons/c.png"
   ["haskell"]="$HOME/Desktop/xos/xassets/haskell.png"
   ["python"]="$HOME/Desktop/xos/xassets/python.png"
-  ["test"]="$HOME/Desktop/xos/xassets/test.png"
+  ["test"]="$HOME/xos/xassets/test.png"
   [".doom.d"]="$HOME/Desktop/xos/xicons/emacs.png"
   ["emacs"]="$HOME/Desktop/xos/xicons/emacs.png"
   ["doom"]="$HOME/Desktop/xos/xicons/emacs.png"
@@ -180,34 +175,6 @@ declare -A image_map=(
   ["welcome"]="$HOME/Desktop/xos/xicons/weloce.png"
  ["default"]="$HOME/Desktop/xos/xicons/default.png"
 )
-
-function display_image() {
-  local image_path="${image_map[$1]}"
-  if [[ -z "$image_path" ]]; then
-    image_path="${image_map["default"]}"
-  fi
-  if [[ -f "$image_path" ]]; then
-    kitty +kitten icat "$image_path"
-  fi
-}
-
-function chpwd() {
-  local path_parts=("${(@s:/:)PWD}") # Split the current path into an array
-  local dir=""
-  for part in "${path_parts[@]}"; do
-    if [[ -n "${image_map[$part]}" ]]; then
-      dir="$part"
-    fi
-  done
-
-  if [[ -n "$dir" ]]; then
-    display_image "$dir"
-  else
-    display_image "default"
-  fi
-}
-
-chpwd # run once
 
 #HACK custo function and aliases should work
 diffrun() {
@@ -338,10 +305,6 @@ function package-web-app() {
   echo "Desktop app for ${url} has been created in the current directory."
 }
 
-pull-website() {
-  wget --recursive --no-clobber --page-requisites --html-extension --convert-links --restrict-file-names=windows --no-parent $1
-}
-
 function lazytest() {
   # Find all Lua and Python files in the current directory
   files=()
@@ -377,33 +340,6 @@ function run_sequentially() {
     $interpreter "$file" & # Run the script in the background
     wait $!               # Wait for the background process to finish
   done
-}
-
-# TODO
-#dont wipe the first time
-function mesosbu() {
-  sudo meson setup --wipe build && sudo meson setup --buildtype=release . build && sudo ninja -C build/ && sudo ninja -C build install
-}
-
-next() {
-  npx create-next-app "$1"
-}
-# TODO NEXT-BUILD
-
-function compile() {
-    if [[ -z "$1" ]]; then
-        echo "Usage: runc <file>"
-        return 1
-    fi
-
-    if [[ "${1##*.}" == "c" ]]; then
-        gcc -Wall -Wextra -Wpedantic -std=c99 -O2 -o "${1%.*}" "$1" && "./${1%.*}"
-    elif [[ "${1##*.}" == "cpp" ]]; then
-        g++ -Wall -Wextra -Wpedantic -std=c++17 -O2 -o "${1%.*}" "$1" && "./${1%.*}"
-    else
-        echo "Error: Unsupported file type"
-        return 1
-    fi
 }
 
 penv() {
@@ -478,19 +414,6 @@ function screenshot() {
   fi
 }
 
-# FIXME
-function xshellrp() {
-  xshellrp --config ~/.config/linux-discord-rich-presencerc &&
-}
-
-function xup() {
-  chmod +x "$1" && c
-}
-
-function xdown() {
-  chmod -x "$1" && c
-}
-
 function hown() {
     for file in $@
     do
@@ -543,46 +466,9 @@ function ex()
   fi
 }
 
-function untar() {
-  if [ -f "$1" ]; then
-    tar -xvf "$1" && c
-  else
-    echo "$1 is not a valid tar archive"
-  fi
-}
-
-function unvim() {
-  # rm -rf ~/.config/nvim
-  rm -rf ~/.local/share/nvim
-}
-
 function ungit() {
   rmdir .git
   echo "WHAT ARE YOU DOING ?" && sleep 1 && rm .gitignore && c
-}
-
-function ungo() {
-  rm go.mod
-  echo "WHAT ARE YOU DOING ?" && sleep 1 && c
-}
-
-function uncargo() {
-  if [ ! -f "Cargo.toml" ]; then
-    echo "No Cargo.toml file found in the current directory."
-    return 1
-  fi
-
-  # Remove the Cargo.toml and Cargo.lock files
-  rm -f Cargo.toml Cargo.lock
-
-  # Search for a src directory and rename it to unrusted-src
-  if [ -d "src" ]; then
-    mv src unrusted-src
-    echo "src directory renamed to unrusted-src."
-  else
-    echo "No src directory found."
-  fi
-  c
 }
 
 function explain() {
@@ -664,27 +550,53 @@ colortest() {
     done
 }
 
-backup () {
-    if [ -z "$1" ]; then
-        echo -e "\033[0;31mError: Please specify a file or directory to backup\033[0m"
-        return 1
+# Declare an associative array to keep track of included functions
+typeset -A included
+
+zconvert() {
+    local name=$1
+
+    # Check if function has already been included
+    if [[ -n "${included[$name]}" ]]; then
+        return
     fi
 
-    local backup_dir="$(pwd)/${1}-backup-$(date +%Y-%m-%d-%H-%M-%S)"
-    cp -r "$1" "$backup_dir" && \
-    echo -e "\033[0;32m✔ Success: Created backup in $backup_dir\033[0m" && \
-    bat "$backup_dir"
-}
+    # Try to retrieve it as a function
+    local func=$(declare -f $name)
 
-#HACK cd into the clicked dir
-function ccx() {
-    local dir="$1"
-    local full_dir
-    if [ ! -d "$dir" ]; then
-        mkdir -p "$dir"
+    # If it's not a function, try to get it as an alias
+    if [[ -z "$func" ]]; then
+        func=$(alias $name | sed -E "s/^alias $name='(.*)'/\1/")
+        if [[ -z "$func" ]]; then
+            echo "No such function or alias: $name"
+            return 1
+        else
+            # Convert alias to function
+            func="$name() {\n$func\n}"
+        fi
     fi
-    full_dir=$(realpath "$dir")
-    clear && cd "$full_dir" && ls --color=always -1 | awk -v pwd="$full_dir" '{ printf "\033]8;;file://localhost" pwd "/" $0 "\007" $0 "\033]8;;\007\n" }'
+
+    # Mark function as included
+    included[$name]=1
+
+    # Find function or alias calls in the function's body
+    local commands=$(echo "$func" | sed -n -E "s/^[[:space:]]*([a-zA-Z0-9_]+).*/\1/p")
+
+    for command in $commands; do
+        # Skip if command is a shell built-in or exists in PATH
+        if [[ $(type -t "$command") != "file" ]]; then
+            zconvert "$command"
+        fi
+    done
+
+    # Write the function to the file
+    echo "$func" >> "$name"_standalone.zsh
+
+    # Add shebang to the start of the file
+    sed -i '1i#!/usr/bin/env zsh' "$name"_standalone.zsh
+
+    # Make the file executable
+    chmod +x "$name"_standalone.zsh
 }
 
 function compile() {
@@ -794,61 +706,6 @@ copy() {
     shift
   done
 }
-
-#  paste() { # paste copied dirs/files in other dir
-#   local destination=$PWD
-#   local move=false
-#   if ! command -v fzf &> /dev/null; then
-#     echo "fzf is required but not installed. Aborting."
-#     exit 1
-#   fi
-#   while getopts ":mh" opt; do
-#     case $opt in
-#       m)
-#         move=true
-#         ;;
-#       h)
-#         echo "Usage: paste [-m] [-h] (move)"
-#         exit 0
-#         ;;
-#       \?)
-#         echo "Invalid option: -$OPTARG"
-#         exit 1
-#         ;;
-#     esac
-#   done
-#   if [[ ${#copied[@]} -eq 0 ]]; then
-#     echo "No items have been copied yet."
-#     exit 1
-#   fi
-#   selected_items=$(printf "%s\n" "${copied[@]}" | splittedfzf --multi)
-#   if [[ -z "$selected_items" ]]; then
-#     echo "No items selected. Aborting."
-#     exit 1
-#   fi
-#   if [[ $# -gt 0 ]]; then
-#     destination="$1"
-#     shift
-#   fi
-#   if [[ ! -d $destination ]]; then
-#     echo "The destination path is not a valid directory: $destination"
-#     exit 1
-#   fi
-#   while read -r item; do
-#     if $move; then
-#       if [[ -e $item ]]; then
-#         mv -f "$item" "$destination" 2>/dev/null
-#         echo "Moved: $item to $destination"
-#       fi
-#     else
-#       if [[ -e $item ]]; then
-#         cp -rf "$item" "$destination" 2>/dev/null
-#         echo "Copied: $item to $destination"
-#       fi
-#     fi
-#   done <<< "$selected_items"
-#  }
-# alias splittedfzf='fzf-tmux -x --height ${FZF_TMUX_HEIGHT:-40%} -m --reverse --ansi'
 
 paste() { # paste copied dirs/files in other dir
   local destination=$PWD
@@ -1037,41 +894,6 @@ function iso-init() {
   # Copy archiso configs
   sudo cp -r /usr/share/archiso/configs/releng/ "$PWD"
 }
-
-# function iso-build {
-#   local script_dir="$(dirname "$0")"
-#   local releng_dir="$(realpath "$script_dir/releng")"
-#   local previous_dir="$(realpath "$script_dir/..")"
-#   local output_dir="$PWD/output"
-
-#   # Check if the releng_dir exists
-#   if [[ ! -d $releng_dir ]]; then
-#     # Try to find it in the previous directory
-#     releng_dir="$previous_dir/releng"
-#     if [[ -d $releng_dir ]]; then
-#       echo "Releng directory was not found in the initial location. However, it has been found in $releng_dir"
-#       l2 "$previous_dir"
-#       echo -n "Is it OK to proceed with this directory? (y/n): "
-#       read answer
-#       if [[ $answer != "y" ]]; then
-#         echo -e "\033[31mAborted\033[0m"
-#         return 1
-#       fi
-#     else
-#       echo -e "\033[31mError: $releng_dir is not a directory\033[0m"
-#       return 1
-#     fi
-#   fi
-
-#   # Create the output directory if it doesn't exist
-#   mkdir -p "$output_dir"
-
-#   # Build the ISO image
-#   sudo mkarchiso -v -w "$PWD/iso" -o "$output_dir" "$releng_dir"
-
-#   # Display a success message in green
-#   echo -e "\033[32mSuccess! ISO image has been built in $output_dir/\033[0m"
-# }
 
 function iso-build {
   local script_dir="$(dirname "$0")"
@@ -1461,6 +1283,16 @@ function xgeometry-focus() {
 	echo "Height: $height"
 }
 
+lfcd () {
+    tmp="$(mktemp)"
+    lf -last-dir-path="$tmp" "$@"
+    if [ -f "$tmp" ]; then
+        dir="$(cat "$tmp")"
+        rm -f "$tmp"
+        [ -d "$dir" ] && [ "$dir" != "$(pwd)" ] && c "$dir"
+    fi
+}
+
 function c() {
     local dir="$1"
     if [[ -z "$dir" ]]; then
@@ -1478,7 +1310,7 @@ function c() {
     elif [[ "$PWD" == "$HOME/xos" ]]; then
         exa -la
     elif [[ "$PWD" == "$HOME/Desktop/test" ]]; then
-        lsd --tree --depth=2
+        exa -la
     else
         local subdir
         local use_l=false
@@ -1527,6 +1359,14 @@ function c() {
 #     fi
 # }
 
+function test() {
+    c ~/Desktop/test/$1/$2/$3
+}
+
+function script() {
+    c ~/xos/script/$1/$2/$3
+}
+
 function xos() {
     c ~/xos/$1/$2/$3
 }
@@ -1534,40 +1374,6 @@ function xos() {
 function dotfiles() {
   c ~/Desktop/pulls/dotfiles/$1/$2/$3
 }
-
-# Define color variables
-typeset -A config
-config=(
-  show_hidden  true
-)
-
-# Autocompletion function
-function _dotfiles() {
-    local curcontext="$curcontext" state line
-    typeset -A opt_args
-
-    _arguments -C \
-        '1: :->files' \
-        '*:: :->other'
-
-    case $state in
-        files)
-            local IFS=$'\n'
-            local -a completions
-            if [[ ${config[show_hidden]} == true ]]; then
-              completions=($(ls -A ~/Desktop/pulls/dotfiles))
-            else
-              completions=($(ls ~/Desktop/pulls/dotfiles))
-            fi
-            _describe 'files' completions
-            ;;
-        other)
-            ;;
-    esac
-}
-
-# Register the function for autocompletion
-compdef _dotfiles dotfiles
 
 function conf() {
   local x=~/.config
@@ -1587,24 +1393,6 @@ _conf() {
   return 1
 }
 compdef _conf conf
-
-lfcd () {
-    tmp="$(mktemp)"
-    lf -last-dir-path="$tmp" "$@"
-    if [ -f "$tmp" ]; then
-        dir="$(cat "$tmp")"
-        rm -f "$tmp"
-        [ -d "$dir" ] && [ "$dir" != "$(pwd)" ] && c "$dir"
-    fi
-}
-
-function test() {
-    c ~/Desktop/test/$1/$2/$3
-}
-
-function script() {
-    c ~/xos/script/$1/$2/$3
-}
 
 function gclone() {
   clear
@@ -1878,17 +1666,6 @@ wal-set () {
     fi
 }
 
-ch() { # Comunity driven cheatsheet for linux commands
-        for arg in "$@"; do
-        if [[ ! "$@" = /* ]]; then
-            arg="/$@"
-        else
-            arg="$@"
-        fi
-        curl -sS cheat.sh$arg | sed 's/\x1b[[0-9;]*m//g' | bat --style=plain --color=always --theme ansi --file-name $@
-        done
-    }
-
 qr-gen() {       if [ -z "$1" ]; then
         echo "Usage: qrgen <text_or_url>"
         return 1
@@ -1918,34 +1695,6 @@ qr-scan() {
         echo "No QR code found"
     fi
 }
-
-typetune-new-theme () {
-    destination_directory_base="$HOME/xos/typetune/switches"
-    file_types=("ogg" "wav")
-
-    ls $HOME/.local/share/osu-stable/Skins | fzf -m | while IFS= read -r theme_name; do
-        if [ -z "$theme_name" ]
-        then
-            echo "No themes chosen"
-            return 1
-        fi
-
-        destination_directory="$destination_directory_base/$theme_name"
-        mkdir -p "$destination_directory"
-
-        for file_type in "${file_types[@]}"; do
-            cp -iv "$HOME/.local/share/osu-stable/Skins/$theme_name/key-delete.${file_type}" \
-                   "$HOME/.local/share/osu-stable/Skins/$theme_name/key-press-1.${file_type}" \
-                   "$HOME/.local/share/osu-stable/Skins/$theme_name/key-press-2.${file_type}" \
-                   "$HOME/.local/share/osu-stable/Skins/$theme_name/key-press-3.${file_type}" \
-                   "$HOME/.local/share/osu-stable/Skins/$theme_name/key-press-4.${file_type}" \
-                   "$HOME/.local/share/osu-stable/Skins/$theme_name/key-press.${file_type}" \
-                   "$destination_directory" 2>/dev/null
-        done
-    done
-}
-
-
 
 g() {
     if [ "$#" -eq 1 ]; then
@@ -2005,18 +1754,25 @@ function img-resize() {
     fi
 }
 
-render() {
+function render() {
     display_info=false
+    suppress_errors=false
 
     # Check if there are no arguments
     if [[ $# -eq 0 ]]; then
-        echo "Usage: render [-i | --info] <image_file1> [<image_file2> ...]"
+        echo "Usage: render [-i | --info] [-n | --no-errors] <image_file1> [<image_file2> ...]"
         return 1
     fi
 
     # Check if the first argument is -i or --info
     if [[ $1 == "-i" ]] || [[ $1 == "--info" ]]; then
         display_info=true
+        shift # remove the first argument, so image_file arguments start from $1
+    fi
+
+    # Check if the first argument is -n or --no-errors
+    if [[ $1 == "-n" ]] || [[ $1 == "--no-errors" ]]; then
+        suppress_errors=true
         shift # remove the first argument, so image_file arguments start from $1
     fi
 
@@ -2030,8 +1786,10 @@ render() {
     for image_file in "$@"; do
         # Check if file exists
         if [[ ! -f "$image_file" ]]; then
-            echo "Error: File '$image_file' not found."
-            return 1
+            if ! $suppress_errors; then
+                echo "Error: File '$image_file' not found."
+            fi
+            continue
         fi
 
         # Display info if flag is set
@@ -2104,7 +1862,7 @@ pal-gen() {
 }
 
 pal () {
-    local palettes=("catppuccin-frappe" "catppuccin-latte" "catppuccin-macchiato" "catppuccin-mocha" "catppuccin-oled" "adventuretime" "material-palenight-base16" "palenighthc" "tokyonight-moon" "tokyonight-night" "doomone" "cupcake-base16" "dracula" "espresso" "rose-pine" "rose-pine-dawn" "rose-pine-moon" "mocha-light-terminal-sexy" "mocha-base16" )
+   local palettes=("catppuccin-frappe" "catppuccin-latte" "catppuccin-macchiato" "catppuccin-mocha" "catppuccin-oled" "adventuretime" "material-palenight-base16" "palenighthc" "tokyonight-moon" "tokyonight-night" "doomone" "cupcake-base16" "dracula" "espresso" "rose-pine" "rose-pine-dawn" "rose-pine-moon" "mocha-light-terminal-sexy" "mocha-base16" )
     local selected_palettes selected_images apply_wallpaper=false
 
     while getopts "w" opt; do
@@ -2181,4 +1939,100 @@ renderall() {
         # Render the image using 'kitty +kitten icat'
         kitty +kitten icat "$image_file"
     done
+}
+
+function chpwd() {
+  local path_parts=("${(@s:/:)PWD}") # Split the current path into an array
+  local dir=""
+  for part in "${path_parts[@]}"; do
+    if [[ -n "${image_map[$part]}" ]]; then
+      dir="$part"
+    fi
+  done
+
+  if [[ -n "$dir" ]]; then
+    render -n "${image_map[$dir]}"
+  else
+    render -n "${image_map["default"]}"
+  fi
+}
+
+chpwd # run once
+
+typetune-new-theme () {
+    destination_directory_base="$HOME/xos/typetune/switches"
+    file_types=("ogg" "wav")
+
+    ls $HOME/.local/share/osu-stable/Skins | fzf -m | while IFS= read -r theme_name; do
+        if [ -z "$theme_name" ]
+        then
+            echo "No themes chosen"
+            return 1
+        fi
+
+        destination_directory="$destination_directory_base/$theme_name"
+        mkdir -p "$destination_directory"
+
+        for file_type in "${file_types[@]}"; do
+            cp -iv "$HOME/.local/share/osu-stable/Skins/$theme_name/key-delete.${file_type}" \
+                   "$HOME/.local/share/osu-stable/Skins/$theme_name/key-press-1.${file_type}" \
+                   "$HOME/.local/share/osu-stable/Skins/$theme_name/key-press-2.${file_type}" \
+                   "$HOME/.local/share/osu-stable/Skins/$theme_name/key-press-3.${file_type}" \
+                   "$HOME/.local/share/osu-stable/Skins/$theme_name/key-press-4.${file_type}" \
+                   "$HOME/.local/share/osu-stable/Skins/$theme_name/key-press.${file_type}" \
+                   "$destination_directory" 2>/dev/null
+        done
+    done
+}
+
+function copy_audio_files() {
+    # Specify the source directory
+    local source_dir=~/.local/share/osu-stable/Skins/
+
+    # Use rsync to recursively copy .ogg and .wav files
+    rsync -avm --include='*.wav' --include='*.ogg' -f 'hide,! */' "$source_dir" .
+}
+
+ff() {
+    local name=$1
+    local def=$(declare -f $name 2>/dev/null)
+
+    # Ensure the function exists
+    if [[ -z "$def" ]]; then
+        echo "$name not found"
+        return 1
+    fi
+
+    # Set the location of the backup and temporary files
+    local backup_dir="${HOME}/xos/functions"
+    local temp_file_dir="/tmp"
+    local temp_file="${temp_file_dir}/${name}.zsh"
+
+    # Make sure the backup directory exists
+    mkdir -p $backup_dir
+
+    # Write the function's body to the temp file
+    echo "$def" > $temp_file
+
+    # Open the file in Neovim
+    nvim $temp_file
+
+    # After nvim is closed, update the function in the .zshrc.org file
+    local zshrc_file="${HOME}/Desktop/pulls/dotfiles/.config/zsh/.zshrc.org"
+    local start_line=$(grep -n "^$name () {" $zshrc_file | cut -d : -f 1)
+    local end_line=$(sed -n "${start_line},/}/=" $zshrc_file | tail -n 1)
+
+    # Create a backup of the function
+    sed -n "${start_line},${end_line}p" "$zshrc_file" > "${backup_dir}/${name}.bak"
+
+    # Replace the function in the .zshrc.org file
+    sed -i "${start_line},${end_line}d" "$zshrc_file"
+    sed -i "${start_line}r $temp_file" "$zshrc_file"
+
+    # Clean up the temporary file
+    rm -f $temp_file
+}
+
+sburo(){
+    echo 'wela'
 }

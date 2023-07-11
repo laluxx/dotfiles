@@ -213,7 +213,7 @@ declare -A image_map=(
   ["c"]="$HOME/Desktop/xos/xicons/c.png"
   ["haskell"]="$HOME/Desktop/xos/xassets/haskell.png"
   ["python"]="$HOME/Desktop/xos/xassets/python.png"
-  ["test"]="$HOME/Desktop/xos/xassets/test.png"
+  ["test"]="$HOME/xos/xassets/test.png"
   [".doom.d"]="$HOME/Desktop/xos/xicons/emacs.png"
   ["emacs"]="$HOME/Desktop/xos/xicons/emacs.png"
   ["doom"]="$HOME/Desktop/xos/xicons/emacs.png"
@@ -233,40 +233,6 @@ declare -A image_map=(
   ["welcome"]="$HOME/Desktop/xos/xicons/weloce.png"
  ["default"]="$HOME/Desktop/xos/xicons/default.png"
 )
-#+end_src
-** display_image
-chpwd dependency
-#+begin_src shell
-function display_image() {
-  local image_path="${image_map[$1]}"
-  if [[ -z "$image_path" ]]; then
-    image_path="${image_map["default"]}"
-  fi
-  if [[ -f "$image_path" ]]; then
-    kitty +kitten icat "$image_path"
-  fi
-}
-
-#+end_src
-** chpwd
-#+begin_src shell
-function chpwd() {
-  local path_parts=("${(@s:/:)PWD}") # Split the current path into an array
-  local dir=""
-  for part in "${path_parts[@]}"; do
-    if [[ -n "${image_map[$part]}" ]]; then
-      dir="$part"
-    fi
-  done
-
-  if [[ -n "$dir" ]]; then
-    display_image "$dir"
-  else
-    display_image "default"
-  fi
-}
-
-chpwd # run once
 #+end_src
 * DEV-TOOLS
 ** diffrun
@@ -693,47 +659,57 @@ colortest() {
 #+end_src
 * Zconvert
 #+begin_src shell
-# zconvert() {
-#     # Get the input function/alias
-#     local name=$1
+# Declare an associative array to keep track of included functions
+typeset -A included
 
-#     # Try to retrieve it as a function
-#     local func=$(declare -f $name)
+zconvert() {
+    local name=$1
 
-#     # If it's not a function, try to get it as an alias
-#     if [[ -z "$func" ]]; then
-#         func=$(alias $name | sed -E "s/^alias $name='(.*)'/\1/")
-#         if [[ -z "$func" ]]; then
-#             echo "No such function or alias: $name"
-#             return 1
-#         else
-#             # convert alias to function
-#             func="$name() {\n$func\n}"
-#         fi
-#     fi
-
-#     # Write to file
-#     echo "#!/usr/bin/env zsh" > "$name"_standalone.zsh
-#     echo "$func" >> "$name"_standalone.zsh
-#     chmod +x "$name"_standalone.zsh
-# }
-#+end_src
-** ls
-*** ccx
-clickable ls
-#+begin_src shell
-#HACK cd into the clicked dir
-function ccx() {
-    local dir="$1"
-    local full_dir
-    if [ ! -d "$dir" ]; then
-        mkdir -p "$dir"
+    # Check if function has already been included
+    if [[ -n "${included[$name]}" ]]; then
+        return
     fi
-    full_dir=$(realpath "$dir")
-    clear && cd "$full_dir" && ls --color=always -1 | awk -v pwd="$full_dir" '{ printf "\033]8;;file://localhost" pwd "/" $0 "\007" $0 "\033]8;;\007\n" }'
+
+    # Try to retrieve it as a function
+    local func=$(declare -f $name)
+
+    # If it's not a function, try to get it as an alias
+    if [[ -z "$func" ]]; then
+        func=$(alias $name | sed -E "s/^alias $name='(.*)'/\1/")
+        if [[ -z "$func" ]]; then
+            echo "No such function or alias: $name"
+            return 1
+        else
+            # Convert alias to function
+            func="$name() {\n$func\n}"
+        fi
+    fi
+
+    # Mark function as included
+    included[$name]=1
+
+    # Find function or alias calls in the function's body
+    local commands=$(echo "$func" | sed -n -E "s/^[[:space:]]*([a-zA-Z0-9_]+).*/\1/p")
+
+    for command in $commands; do
+        # Skip if command is a shell built-in or exists in PATH
+        if [[ $(type -t "$command") != "file" ]]; then
+            zconvert "$command"
+        fi
+    done
+
+    # Write the function to the file
+    echo "$func" >> "$name"_standalone.zsh
+
+    # Add shebang to the start of the file
+    sed -i '1i#!/usr/bin/env zsh' "$name"_standalone.zsh
+
+    # Make the file executable
+    chmod +x "$name"_standalone.zsh
 }
+
 #+end_src
-** compile
+* compile
 #+begin_src shell
 
 function compile() {
@@ -1512,26 +1488,14 @@ function xgeometry-focus() {
 * MOTIONS
 ** lfcd
 #+begin_src shell
-# lfcd () {
-#     tmp="$(mktemp)"
-#     lf -last-dir-path="$tmp" "$@"
-#     if [ -f "$tmp" ]; then
-#         dir="$(cat "$tmp")"
-#         rm -f "$tmp"
-#         [ -d "$dir" ] && [ "$dir" != "$(pwd)" ] && c "$dir"
-#     fi
-# }
-#+end_sr
-*** v2
-#+begin_src shell
-function lfcd {
-  tmp="$(mktemp)"
-  lf -last-dir-path="$tmp" "$@"
-  if [ -f "$tmp" ]; then
-    dir="$(cat "$tmp")"
-    rm -f "$tmp" 2>/dev/null
-    [ -d "$dir" ] && [ "$dir" != "$(pwd)" ] && c "$dir"
-  fi
+lfcd () {
+    tmp="$(mktemp)"
+    lf -last-dir-path="$tmp" "$@"
+    if [ -f "$tmp" ]; then
+        dir="$(cat "$tmp")"
+        rm -f "$tmp"
+        [ -d "$dir" ] && [ "$dir" != "$(pwd)" ] && c "$dir"
+    fi
 }
 #+end_src
 ** c
@@ -1560,7 +1524,7 @@ function c() {
     elif [[ "$PWD" == "$HOME/xos" ]]; then
         exa -la
     elif [[ "$PWD" == "$HOME/Desktop/test" ]]; then
-        lsd --tree --depth=2
+        exa -la
     else
         local subdir
         local use_l=false
@@ -1922,7 +1886,6 @@ gum confirm "Commit changes?" && git commit -m "$SUMMARY" -m "$DESCRIPTION"
 #+end_src
 * INSTANT-MENU
 #+begin_src shell
-
 # Define Color Schemes
 typeset -A color_schemes
 color_schemes=(
@@ -1950,10 +1913,6 @@ instant_menu() {
 
 # Usage: instant_menu 'dracula'
 #        instant_menu 'doom-one'
-
-
-
-
 #+end_src
 
 * WAL
@@ -2012,44 +1971,6 @@ qr-scan() {
     fi
 }
 #+end_src
-* Typetune
-** Typetune-new-theme
-#+begin_src shell
-typetune-new-theme () {
-    destination_directory_base="$HOME/xos/typetune/switches"
-    file_types=("ogg" "wav")
-
-    ls $HOME/.local/share/osu-stable/Skins | fzf -m | while IFS= read -r theme_name; do
-        if [ -z "$theme_name" ]
-        then
-            echo "No themes chosen"
-            return 1
-        fi
-
-        destination_directory="$destination_directory_base/$theme_name"
-        mkdir -p "$destination_directory"
-
-        for file_type in "${file_types[@]}"; do
-            cp -iv "$HOME/.local/share/osu-stable/Skins/$theme_name/key-delete.${file_type}" \
-                   "$HOME/.local/share/osu-stable/Skins/$theme_name/key-press-1.${file_type}" \
-                   "$HOME/.local/share/osu-stable/Skins/$theme_name/key-press-2.${file_type}" \
-                   "$HOME/.local/share/osu-stable/Skins/$theme_name/key-press-3.${file_type}" \
-                   "$HOME/.local/share/osu-stable/Skins/$theme_name/key-press-4.${file_type}" \
-                   "$HOME/.local/share/osu-stable/Skins/$theme_name/key-press.${file_type}" \
-                   "$destination_directory" 2>/dev/null
-        done
-    done
-}
-#+end_src
-** Switch theme
-TODO:
-fzf to choose a theme, it should change the script with the new theme name,
-kill the running process and restart
-#+begin_src shell
-
-
-#+end_src
-
 * Kitty
 ** Grep
 Better Grep
@@ -2125,18 +2046,25 @@ function img-resize() {
 #+end_src
 ** render
 #+begin_src shell
-render() {
+function render() {
     display_info=false
+    suppress_errors=false
 
     # Check if there are no arguments
     if [[ $# -eq 0 ]]; then
-        echo "Usage: render [-i | --info] <image_file1> [<image_file2> ...]"
+        echo "Usage: render [-i | --info] [-n | --no-errors] <image_file1> [<image_file2> ...]"
         return 1
     fi
 
     # Check if the first argument is -i or --info
     if [[ $1 == "-i" ]] || [[ $1 == "--info" ]]; then
         display_info=true
+        shift # remove the first argument, so image_file arguments start from $1
+    fi
+
+    # Check if the first argument is -n or --no-errors
+    if [[ $1 == "-n" ]] || [[ $1 == "--no-errors" ]]; then
+        suppress_errors=true
         shift # remove the first argument, so image_file arguments start from $1
     fi
 
@@ -2150,8 +2078,10 @@ render() {
     for image_file in "$@"; do
         # Check if file exists
         if [[ ! -f "$image_file" ]]; then
-            echo "Error: File '$image_file' not found."
-            return 1
+            if ! $suppress_errors; then
+                echo "Error: File '$image_file' not found."
+            fi
+            continue
         fi
 
         # Display info if flag is set
@@ -2231,7 +2161,7 @@ pal-gen() {
 *** Pal
 #+begin_src shell
 pal () {
-    local palettes=("catppuccin-frappe" "catppuccin-latte" "catppuccin-macchiato" "catppuccin-mocha" "catppuccin-oled" "adventuretime" "material-palenight-base16" "palenighthc" "tokyonight-moon" "tokyonight-night" "doomone" "cupcake-base16" "dracula" "espresso" "rose-pine" "rose-pine-dawn" "rose-pine-moon" "mocha-light-terminal-sexy" "mocha-base16" )
+   local palettes=("catppuccin-frappe" "catppuccin-latte" "catppuccin-macchiato" "catppuccin-mocha" "catppuccin-oled" "adventuretime" "material-palenight-base16" "palenighthc" "tokyonight-moon" "tokyonight-night" "doomone" "cupcake-base16" "dracula" "espresso" "rose-pine" "rose-pine-dawn" "rose-pine-moon" "mocha-light-terminal-sexy" "mocha-base16" )
     local selected_palettes selected_images apply_wallpaper=false
 
     while getopts "w" opt; do
@@ -2311,4 +2241,115 @@ renderall() {
         kitty +kitten icat "$image_file"
     done
 }
+#+end_src
+
+* chpwd
+#+begin_src shell
+function chpwd() {
+  local path_parts=("${(@s:/:)PWD}") # Split the current path into an array
+  local dir=""
+  for part in "${path_parts[@]}"; do
+    if [[ -n "${image_map[$part]}" ]]; then
+      dir="$part"
+    fi
+  done
+
+  if [[ -n "$dir" ]]; then
+    render -n "${image_map[$dir]}"
+  else
+    render -n "${image_map["default"]}"
+  fi
+}
+
+chpwd # run once
+#+end_src
+* Typetune
+** Typetune-new-theme
+#+begin_src shell
+typetune-new-theme () {
+    destination_directory_base="$HOME/xos/typetune/switches"
+    file_types=("ogg" "wav")
+
+    ls $HOME/.local/share/osu-stable/Skins | fzf -m | while IFS= read -r theme_name; do
+        if [ -z "$theme_name" ]
+        then
+            echo "No themes chosen"
+            return 1
+        fi
+
+        destination_directory="$destination_directory_base/$theme_name"
+        mkdir -p "$destination_directory"
+
+        for file_type in "${file_types[@]}"; do
+            cp -iv "$HOME/.local/share/osu-stable/Skins/$theme_name/key-delete.${file_type}" \
+                   "$HOME/.local/share/osu-stable/Skins/$theme_name/key-press-1.${file_type}" \
+                   "$HOME/.local/share/osu-stable/Skins/$theme_name/key-press-2.${file_type}" \
+                   "$HOME/.local/share/osu-stable/Skins/$theme_name/key-press-3.${file_type}" \
+                   "$HOME/.local/share/osu-stable/Skins/$theme_name/key-press-4.${file_type}" \
+                   "$HOME/.local/share/osu-stable/Skins/$theme_name/key-press.${file_type}" \
+                   "$destination_directory" 2>/dev/null
+        done
+    done
+}
+#+end_src
+** Typetune-get-sounds
+#+begin_src shell
+function copy_audio_files() {
+    # Specify the source directory
+    local source_dir=~/.local/share/osu-stable/Skins/
+
+    # Use rsync to recursively copy .ogg and .wav files
+    rsync -avm --include='*.wav' --include='*.ogg' -f 'hide,! */' "$source_dir" .
+}
+#+end_src
+* FF
+#+begin_src shell
+ff() {
+    local name=$1
+    local def=$(declare -f $name 2>/dev/null)
+
+    # Ensure the function exists
+    if [[ -z "$def" ]]; then
+        echo "$name not found"
+        return 1
+    fi
+
+    # Set the location of the backup and temporary files
+    local backup_dir="${HOME}/xos/functions"
+    local temp_file_dir="/tmp"
+    local temp_file="${temp_file_dir}/${name}.zsh"
+
+    # Make sure the backup directory exists
+    mkdir -p $backup_dir
+
+    # Write the function's body to the temp file
+    echo "$def" > $temp_file
+
+    # Open the file in Neovim
+    nvim $temp_file
+
+    # After nvim is closed, update the function in the .zshrc.org file
+    local zshrc_file="${HOME}/Desktop/pulls/dotfiles/.config/zsh/.zshrc.org"
+    local start_line=$(grep -n "^$name () {" $zshrc_file | cut -d : -f 1)
+    local end_line=$(sed -n "${start_line},/}/=" $zshrc_file | tail -n 1)
+
+    # Create a backup of the function
+    sed -n "${start_line},${end_line}p" "$zshrc_file" > "${backup_dir}/${name}.bak"
+
+    # Replace the function in the .zshrc.org file
+    sed -i "${start_line},${end_line}d" "$zshrc_file"
+    sed -i "${start_line}r $temp_file" "$zshrc_file"
+
+    # Clean up the temporary file
+    rm -f $temp_file
+}
+#+end_src
+** Revert
+[rever explain] from ff backup file
+* sburo
+#+begin_src shell
+sburo(){
+    echo 'wela'
+}
+
 #+end_src
