@@ -134,7 +134,7 @@ myStartupHook = do
 
   spawnOnce "xrandr --output \"$(xrandr | awk '/ connected/ {print $1; exit}')\" --mode 1920x1080 --rate 144"
   spawnOnce "xset r rate 160 60"
-  spawnOnce "python3 /home/l/xos/typetune/main.py"
+  spawnOnce "python3 /home/l/xos/typetune/original.py"
 
   spawnOnce "lxsession"
   -- spawnonce "/usr/lib/polkit-gnome/polkit-gnome-authentication-agent-1"
@@ -146,7 +146,9 @@ myStartupHook = do
   spawn "xdotool keydown Super_L && xdotool key Tab key Tab key Tab key Tab key Tab key Tab && xdotool keyup Super_L"
   spawn "/usr/bin/emacs --daemon" -- emacs daemon for the emacsclient
   spawn "doom sync"
+  -- spawn "pgrep -u $USER -x emacsclient > /dev/null || emacsclient -c -a 'emacs'" -- emacs client
   spawn "emacsclient -c -a 'emacs'" -- emacs client
+  spawn "zsh -c 'ded'"  --drammtic
 
   spawn ("sleep 2 && conky -c $HOME/.config/conky/xmonad/" ++ colorScheme ++ "-01.conkyrc")
   spawn ("sleep 2 && trayer --edge top --align right --widthtype request --padding 6 --SetDockType true --SetPartialStrut true --expand true --monitor 1 --transparent true --alpha 0 " ++ colorTrayer ++ " --height 22")

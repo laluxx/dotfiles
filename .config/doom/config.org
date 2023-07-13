@@ -12,6 +12,7 @@
   - [[#resize-window][resize-window]]
   - [[#look-and-feel][look and feel]]
   - [[#functions][functions]]
+  - [[#org][org]]
   - [[#editing][editing]]
 - [[#beacon][BEACON]]
 - [[#bookmarks-and-buffers][BOOKMARKS AND BUFFERS]]
@@ -244,7 +245,7 @@ when focused and not focused
 (add-to-list 'default-frame-alist '(alpha 95 100))
 #+end_src
 ** functions
-*** zsh
+*** TODO zsh
 #+begin_src shell
 (defun edit-zsh-function (name)
   (interactive "sEnter function name: ")
@@ -254,7 +255,44 @@ when focused and not focused
   (narrow-to-defun)
   (beginning-of-buffer))
 #+end_src
-*** org
+** org
+*** detect-double-asterisk
+*DONT WORK*
+#+begin_src emacs-lisp
+(defun laluxx/detect-double-asterisk ()
+  "If the last two characters typed are '**', move cursor in between."
+  (message "Running laluxx/detect-double-asterisk")
+  (when (and (eq major-mode 'org-mode)
+             (string= "**" (buffer-substring-no-properties (- (point) 2) (point))))
+    (backward-char 1)))
+#+end_src
+*** C-to-org
+dont really work, maybe i will do bash to org
+#+begin_src shell
+(defun laluxx/c-to-org ()
+  (interactive)
+  (let* ((buffer-contents (buffer-string))
+         (org-buffer (get-buffer-create (concat (file-name-base (buffer-name)) ".org")))
+         (includes (s-match-strings-all "^#include .*" buffer-contents))
+         (functions (s-match-strings-all "^\\(.*\\)\\(\\w+ \\*?\\w+\\)(.*)\n{" buffer-contents))
+         (main (s-match "^int main.*" buffer-contents)))
+    (with-current-buffer org-buffer
+      (insert "* Imports\n")
+      (insert "#+BEGIN_SRC c\n")
+      (mapc (lambda (include) (insert (car include) "\n")) includes)
+      (insert "#+END_SRC\n")
+      (insert "* Functions\n")
+      (mapc (lambda (function)
+              (insert (format "* %s\n" (second (split-string (cadr function))))))
+            functions)
+      (when main
+        (insert "* Main\n")
+        (insert "#+BEGIN_SRC c\n")
+        (insert (car main) "\n")
+        (insert "#+END_SRC\n")))
+    (switch-to-buffer org-buffer)))
+#+end_src
+*** insert-header-tags
 #+begin_src emacs-lisp
 (defun org-insert-header-tags ()
   "Insert personalized header tags at the beginning of the current Org file."
@@ -275,6 +313,25 @@ when focused and not focused
 (map! :leader
       :desc "Insert header tags"
       "i o" #'org-insert-header-tags)
+#+end_src
+***  remove-duplicate-headings
+#+begin_src emacs-lisp
+(defun org-remove-duplicate-headings ()
+  "Remove duplicate org headings and keep the last one."
+  (interactive)
+  (save-excursion
+    (goto-char (point-min))
+    (let ((headings (make-hash-table :test 'equal))
+          (dups nil))
+      (while (re-search-forward org-heading-regexp nil t)
+        (let ((heading (match-string-no-properties 0)))
+          (if (gethash heading headings)
+              (push (cons (copy-marker (match-beginning 0)) heading) dups)
+            (puthash heading t headings))))
+      (dolist (dup (nreverse dups))
+        (delete-region (marker-position (car dup))
+                       (progn (org-end-of-subtree t t)
+                              (point)))))))
 #+end_src
 ** editing
 *** jump-definition

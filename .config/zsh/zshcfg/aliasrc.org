@@ -37,6 +37,23 @@ alias l3='lsd --tree --depth=3'
 alias l4='lsd --tree --depth=4'
 alias l5='lsd --tree --depth=5'
 #+end_src
+* Pipes
+#+begin_src shell
+alias -g L='| less'
+#+end_src
+* Awesome
+#+begin_src shell
+alias awesome-refresh='awesome-client "awesome.restart()"'
+alias awesome-refresh-auto='diffrun awesome-refresh "$HOME/.config/awesome"'
+#+end_src
+* Programs
+#+begin_src shell
+alias ded='cd ~/Desktop/test/ded/ded && ./ded'
+#+end_src
+* Common
+#+begin_src shell
+alias ffont='fc-list : family | cut -d',' -f1 | fzf'
+#+end_src
 * Highlight
 #+begin_src shell
 alias highlight="highlight -O ansi --force"

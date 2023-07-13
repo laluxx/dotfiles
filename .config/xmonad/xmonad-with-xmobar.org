@@ -204,7 +204,7 @@ myStartupHook = do
 #+BEGIN_SRC haskell
   spawnOnce "xrandr --output \"$(xrandr | awk '/ connected/ {print $1; exit}')\" --mode 1920x1080 --rate 144"
   spawnOnce "xset r rate 160 60"
-  spawnOnce "python3 /home/l/xos/typetune/main.py"
+  spawnOnce "python3 /home/l/xos/typetune/original.py"
 
   spawnOnce "lxsession"
   -- spawnonce "/usr/lib/polkit-gnome/polkit-gnome-authentication-agent-1"
@@ -216,7 +216,10 @@ myStartupHook = do
   spawn "xdotool keydown Super_L && xdotool key Tab key Tab key Tab key Tab key Tab key Tab && xdotool keyup Super_L"
   spawn "/usr/bin/emacs --daemon" -- emacs daemon for the emacsclient
   spawn "doom sync"
+  -- spawn "pgrep -u $USER -x emacsclient > /dev/null || emacsclient -c -a 'emacs'" -- emacs client
   spawn "emacsclient -c -a 'emacs'" -- emacs client
+  spawn "zsh -c 'ded'"  --drammtic
+
 #+END_SRC
 
 We killed any running conky and trayer processes earlier in the autostart, so now we sleep for 2 seconds and then restart conky and trayer.

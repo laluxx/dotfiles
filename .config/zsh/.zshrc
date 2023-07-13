@@ -146,35 +146,88 @@ function mdl() {
 }
 
 declare -A image_map=(
-  # ["rust"]="$HOME/Desktop/xos/xicons/rust.png"
-  ["rust"]="$HOME/Desktop/xos/xicons/3.png"
-  ["doom"]="$HOME/.doom.d"
-  ["lua"]="$HOME/Desktop/xos/xicons/lua.png"
-  ["bash"]="$HOME/Desktop/xos/xicons/bash.png"
-  ["c++"]="$HOME/Desktop/xos/xicons/cpp.png"
-  ["c"]="$HOME/Desktop/xos/xicons/c.png"
-  ["haskell"]="$HOME/Desktop/xos/xassets/haskell.png"
-  ["python"]="$HOME/Desktop/xos/xassets/python.png"
+  ["test"]="$HOME/xos//.png"
+  ["test"]="$HOME/xos//.jpg"
   ["test"]="$HOME/xos/xassets/test.png"
-  [".doom.d"]="$HOME/Desktop/xos/xicons/emacs.png"
-  ["emacs"]="$HOME/Desktop/xos/xicons/emacs.png"
-  ["doom"]="$HOME/Desktop/xos/xicons/emacs.png"
-  ["xwal"]="$HOME/Desktop/xos/xicons/xwal.png"
-  ["nix"]="$HOME/Desktop/xos/xicons/nix256x256.png"
-  ["go"]="$HOME/Desktop/xos/xicons/go.png"
-  ["debian"]="$HOME/Desktop/xos/xicons/debian.png"
-  ["head"]="$HOME/Desktop/xos/xicons/head.png"
-  ["docker"]="$HOME/Desktop/xos/xicons/docker.png"
-  ["web"]="$HOME/Desktop/xos/xicons/md.png"
-  ["react"]="$HOME/Desktop/xos/xicons/react256x256.png"
-  ["cutefish"]="$HOME/Desktop/xos/xicons/cutefish.png"
-  ["awesome"]="$HOME/Desktop/xos/xicons/awesome.png"
-  ["xos"]="$HOME/Desktop/xos/xicons/xos.png"
- # ["ai"]="$HOME/Desktop/xos/xicons/head.png"
-  ["deepin"]="$HOME/Desktop/xos/xicons/deepin.png"
-  ["welcome"]="$HOME/Desktop/xos/xicons/weloce.png"
- ["default"]="$HOME/Desktop/xos/xicons/default.png"
 )
+# rust, doom, lua, bash, c++, c, haskell, python, test
+# .doom.d, emacs, doom, xwal, nix, go, debian, head
+# docker, web, react, cutefish, awesome, xos, ai, deepin, welcome, default
+
+function render() {
+    display_info=false
+    suppress_errors=false
+
+    # Check if there are no arguments
+    if [[ $# -eq 0 ]]; then
+        echo "Usage: render [-i | --info] [-n | --no-errors] <image_file1> [<image_file2> ...]"
+        return 1
+    fi
+
+    # Check if the first argument is -i or --info
+    if [[ $1 == "-i" ]] || [[ $1 == "--info" ]]; then
+        display_info=true
+        shift # remove the first argument, so image_file arguments start from $1
+    fi
+
+    # Check if the first argument is -n or --no-errors
+    if [[ $1 == "-n" ]] || [[ $1 == "--no-errors" ]]; then
+        suppress_errors=true
+        shift # remove the first argument, so image_file arguments start from $1
+    fi
+
+    # Check if 'kitty' is installed
+    if ! command -v kitty > /dev/null; then
+        echo "Error: 'kitty' terminal emulator is not installed or not in PATH."
+        return 1
+    fi
+
+    # Loop through the image files
+    for image_file in "$@"; do
+        # Check if file exists
+        if [[ ! -f "$image_file" ]]; then
+            if ! $suppress_errors; then
+                echo "Error: File '$image_file' not found."
+            fi
+            continue
+        fi
+
+        # Display info if flag is set
+        if $display_info; then
+            # Get the file size in bytes
+            file_size_bytes=$(du -b "$image_file" | cut -f1)
+            # Convert file size to kilobytes
+            file_size_kb=$((file_size_bytes / 1024))
+
+            # Get image dimensions
+            dimensions=$(identify -format "%wx%h" "$image_file" 2>/dev/null)
+
+            # Display file information in color in a single line
+            echo -e "\033[1;36m$image_file \033[1;33m[$file_size_kb KB]\033[1;32m [$dimensions]\033[0m"
+        fi
+
+        # Render the image
+        kitty +kitten icat "$image_file"
+    done
+}
+
+render_pwd() {
+  local path_parts=("${(@s:/:)PWD}") # Split the current path into an array
+  local dir=""
+  for part in "${path_parts[@]}"; do
+    if [[ -n "${image_map[$part]}" ]]; then
+      dir="$part"
+    fi
+  done
+
+  if [[ -n "$dir" ]]; then
+    render -n "${image_map[$dir]}"
+  else
+    render -n "${image_map["default"]}"
+  fi
+}
+
+render_pwd # run once
 
 #HACK custo function and aliases should work
 diffrun() {
@@ -194,102 +247,27 @@ diffrun() {
     }
 
 function t() {
-    if [[ $# -eq 0 ]]; then
-        echo "Usage: t <count> <extension> or t <filename>"
+    if [[ $# -eq 0 || $# -gt 2 ]]; then
+        echo "Usage: t <filename> [<extension>]"
         return 1
     fi
 
-    local count=1
-    local ext="$1"
+    local filename="$1"
+    local ext="$2"
+    local template_path=~/xos/config/t/${ext}.${ext}
 
-    # Check if the first argument is a number (for multiple file generation)
-    if [[ $1 =~ ^[0-9]+$ ]]; then
-        if [[ $# -eq 1 ]]; then
-            echo "Please specify the extension"
-            return 1
-        fi
-        count="$1"
-        ext="$2"
-    fi
-
-    # Define templates for each file type
-    local template=""
-    case "$ext" in
-        "cpp")
-            template="#include <iostream>
-
-using namespace std;
-
-int main() {
-    // your code goes here
-    return 0;
-}"
-            ;;
-        "html")
-            template='<!DOCTYPE html>
-<html>
-<head>
-    <title>Title</title>
-</head>
-<body>
-
-    <!-- your code goes here -->
-
-</body>
-</html>'
-            ;;
-        "py")
-            template="#!/usr/bin/env python3
-
-# your code goes here"
-            ;;
-        "sh")
-            template="#!/bin/bash
-
-# your code goes here"
-            ;;
-        "lua")
-            template="-- your code goes here"
-            ;;
-        "rs")
-            template="fn main() {
-    // your code goes here
-}"
-            ;;
-        "go")
-            template='package main
-
-import "fmt"
-
-func main() {
-    // your code goes here
-}'
-            ;;
-        "zig")
-            template='const std = @import("std");
-
-pub fn main() !void {
-    // your code goes here
-}'
-            ;;
-        "hs")
-            template="main = do
-    -- your code goes here
-    return ()"
-            ;;
-        *)
+    # If extension is not specified, just touch the file
+    if [[ -z $ext ]]; then
+        touch "$filename"
+    else
+        if [[ ! -f $template_path ]]; then
             echo "Unsupported file type: $ext"
             return 1
-            ;;
-    esac
+        fi
 
-    # Generate file(s) with the template
-    local index=1
-    while [[ $index -le $count ]]; do
-        local final_filename="${index}.${ext}"
-        echo "$template" > "$final_filename"
-        index=$((index + 1))
-    done
+        local final_filename="${filename}.${ext}"
+        cp "$template_path" "$final_filename"
+    fi
 }
 
 function package-web-app() {
@@ -1754,63 +1732,6 @@ function img-resize() {
     fi
 }
 
-function render() {
-    display_info=false
-    suppress_errors=false
-
-    # Check if there are no arguments
-    if [[ $# -eq 0 ]]; then
-        echo "Usage: render [-i | --info] [-n | --no-errors] <image_file1> [<image_file2> ...]"
-        return 1
-    fi
-
-    # Check if the first argument is -i or --info
-    if [[ $1 == "-i" ]] || [[ $1 == "--info" ]]; then
-        display_info=true
-        shift # remove the first argument, so image_file arguments start from $1
-    fi
-
-    # Check if the first argument is -n or --no-errors
-    if [[ $1 == "-n" ]] || [[ $1 == "--no-errors" ]]; then
-        suppress_errors=true
-        shift # remove the first argument, so image_file arguments start from $1
-    fi
-
-    # Check if 'kitty' is installed
-    if ! command -v kitty > /dev/null; then
-        echo "Error: 'kitty' terminal emulator is not installed or not in PATH."
-        return 1
-    fi
-
-    # Loop through the image files
-    for image_file in "$@"; do
-        # Check if file exists
-        if [[ ! -f "$image_file" ]]; then
-            if ! $suppress_errors; then
-                echo "Error: File '$image_file' not found."
-            fi
-            continue
-        fi
-
-        # Display info if flag is set
-        if $display_info; then
-            # Get the file size in bytes
-            file_size_bytes=$(du -b "$image_file" | cut -f1)
-            # Convert file size to kilobytes
-            file_size_kb=$((file_size_bytes / 1024))
-
-            # Get image dimensions
-            dimensions=$(identify -format "%wx%h" "$image_file" 2>/dev/null)
-
-            # Display file information in color in a single line
-            echo -e "\033[1;36m$image_file \033[1;33m[$file_size_kb KB]\033[1;32m [$dimensions]\033[0m"
-        fi
-
-        # Render the image
-        kitty +kitten icat "$image_file"
-    done
-}
-
 hue() {
     local image_file="$1"
     local hue_shift=0
@@ -1941,23 +1862,82 @@ renderall() {
     done
 }
 
-function chpwd() {
-  local path_parts=("${(@s:/:)PWD}") # Split the current path into an array
-  local dir=""
-  for part in "${path_parts[@]}"; do
-    if [[ -n "${image_map[$part]}" ]]; then
-      dir="$part"
-    fi
-  done
+define () {
+    local name=$1
+    local def=$(declare -f $name 2>/dev/null)
 
-  if [[ -n "$dir" ]]; then
-    render -n "${image_map[$dir]}"
-  else
-    render -n "${image_map["default"]}"
-  fi
+    if [[ -z "$def" ]]
+    then
+        echo "$name not found"
+        return 1
+    fi
+
+    local temp_file_dir="/tmp"
+    local temp_file="${temp_file_dir}/${name}.zsh"
+
+    echo "$def" > $temp_file
+    nvim $temp_file
+
+    local zshrc_file="${HOME}/Desktop/pulls/dotfiles/.config/zsh/.zshrc.org"
+
+    local start_line=$(grep -n "^* $name" $zshrc_file | cut -d : -f 1)
+    if [[ -n "$start_line" ]]
+    then
+        # Change this line to find the end line of the function's definition
+        local end_line=$(grep -n -m 1 -A 1 "^* $name" $zshrc_file | tail -n 1 | cut -d : -f 1)
+        if [[ -z "$end_line" ]]
+        then
+            end_line=$(wc -l < $zshrc_file)
+        fi
+        sed -i "${start_line},${end_line}d" "$zshrc_file"
+    fi
+
+    echo "* $name" >> $zshrc_file
+    echo '#+begin_src shell' >> $zshrc_file
+    cat $temp_file >> $zshrc_file
+    echo '#+end_src' >> $zshrc_file
+
+    rm -vI -f $temp_file
+
+    emacsclient -e "(progn (require 'org) (find-file \"${zshrc_file}\") (org-babel-tangle))"
+
+    update-dotfiles
+    exec zsh
 }
 
-chpwd # run once
+delete() {
+	local name=$1
+	local zshrc_file="${HOME}/Desktop/pulls/dotfiles/.config/zsh/.zshrc.org"
+
+	# Get the last start line
+	local start_line=$(grep -n "^* $name" $zshrc_file | cut -d : -f 1 | tail -n 1)
+
+	if [[ -n "$start_line" ]]
+	then
+		# Get lines for "#+end_src" occurring after the function start line
+		local end_lines=$(awk -v start="$start_line" 'NR >= start && /#\+end_src/ {print NR}' "$zshrc_file")
+		# Select the first of these as the end line
+		local end_line=$(echo "$end_lines" | head -n 1)
+
+		# If no end line found, set it to last line of file
+		[[ -z "$end_line" ]] && end_line=$(wc -l < "$zshrc_file")
+
+		# Deletes the function from the zshrc file
+		sed -i "${start_line},${end_line}d" "$zshrc_file"
+	else
+		echo "Function $name not found in $zshrc_file"
+		return 1
+	fi
+
+	# Unsets the function from the current session
+	unset -f $name
+
+	# Tangle org file
+	emacsclient -e "(progn (require 'org) (find-file \"${zshrc_file}\") (org-babel-tangle))"
+
+	update-dotfiles
+	exec zsh
+}
 
 typetune-new-theme () {
     destination_directory_base="$HOME/xos/typetune/switches"
@@ -1985,54 +1965,17 @@ typetune-new-theme () {
     done
 }
 
-function copy_audio_files() {
+function typetune-get-sounds() {
     # Specify the source directory
     local source_dir=~/.local/share/osu-stable/Skins/
 
     # Use rsync to recursively copy .ogg and .wav files
-    rsync -avm --include='*.wav' --include='*.ogg' -f 'hide,! */' "$source_dir" .
+    sync -avm --include='*.wav' --include='*.ogg' -f 'hide,! */' "$source_dir" .
 }
 
-ff() {
-    local name=$1
-    local def=$(declare -f $name 2>/dev/null)
-
-    # Ensure the function exists
-    if [[ -z "$def" ]]; then
-        echo "$name not found"
-        return 1
-    fi
-
-    # Set the location of the backup and temporary files
-    local backup_dir="${HOME}/xos/functions"
-    local temp_file_dir="/tmp"
-    local temp_file="${temp_file_dir}/${name}.zsh"
-
-    # Make sure the backup directory exists
-    mkdir -p $backup_dir
-
-    # Write the function's body to the temp file
-    echo "$def" > $temp_file
-
-    # Open the file in Neovim
-    nvim $temp_file
-
-    # After nvim is closed, update the function in the .zshrc.org file
-    local zshrc_file="${HOME}/Desktop/pulls/dotfiles/.config/zsh/.zshrc.org"
-    local start_line=$(grep -n "^$name () {" $zshrc_file | cut -d : -f 1)
-    local end_line=$(sed -n "${start_line},/}/=" $zshrc_file | tail -n 1)
-
-    # Create a backup of the function
-    sed -n "${start_line},${end_line}p" "$zshrc_file" > "${backup_dir}/${name}.bak"
-
-    # Replace the function in the .zshrc.org file
-    sed -i "${start_line},${end_line}d" "$zshrc_file"
-    sed -i "${start_line}r $temp_file" "$zshrc_file"
-
-    # Clean up the temporary file
-    rm -f $temp_file
-}
-
-sburo(){
-    echo 'wela'
+brutepaste() {
+    current=$(xkb-switch -p)
+    setxkbmap us -option caps:none
+    xdotool type "$(xclip -o)" && sleep 1
+    trap "setxkbmap $current -option caps:none" 0
 }
