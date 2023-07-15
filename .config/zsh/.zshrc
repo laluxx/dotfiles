@@ -146,9 +146,9 @@ function mdl() {
 }
 
 declare -A image_map=(
-  ["test"]="$HOME/xos//.png"
-  ["test"]="$HOME/xos//.jpg"
   ["test"]="$HOME/xos/xassets/test.png"
+  # ["test"]="$HOME/xos//.png"
+  # ["test"]="$HOME/xos//.jpg"
 )
 # rust, doom, lua, bash, c++, c, haskell, python, test
 # .doom.d, emacs, doom, xwal, nix, go, debian, head
@@ -918,64 +918,6 @@ function iso-build {
 eval "$(starship init zsh)"
 # eval "$(oh-my-posh init zsh)"
 
-fztheme() {
-  local themes=(
-    "PALENIGHT"
-    "DRACULA"
-    "CATPPUCCIN"
-    "OXOCARBON"
-    "DEFAULT"
-  )
-
-  local selected_theme
-
-  if [[ -z $1 ]]; then
-    selected_theme=$(printf '%s\n' "${themes[@]}" | fzf)
-  else
-    selected_theme=$1
-  fi
-
-  # Save the selected theme name to a file
-  echo $selected_theme > ~/xos/fzf/.fzf_theme
-
-  case $selected_theme in
-    "PALENIGHT")
-      export FZF_DEFAULT_OPTS="\
-      --color=bg+:#292D3E,bg:#292D3E,spinner:#C792EA,hl:#82AAFF \
-      --color=fg:#EEFFFF,header:#82AAFF,info:#89DDFF,pointer:#C792EA \
-      --color=marker:#C792EA,fg+:#EEFFFF,prompt:#89DDFF,hl+:#82AAFF"
-      ;;
-    "DRACULA")
-      export FZF_DEFAULT_OPTS="\
-      --color=bg+:#282a36,bg:#1e1e2e,spinner:#f8f8f2,hl:#ff79c6 \
-      --color=fg:#f8f8f2,header:#ff79c6,info:#8be9fd,pointer:#50fa7b \
-      --color=marker:#50fa7b,fg+:#f8f8f2,prompt:#8be9fd,hl+:#ff79c6"
-      ;;
-    "CATPPUCCIN")
-      export FZF_DEFAULT_OPTS="\
-      --color=bg+:#313244,bg:#1e1e2e,spinner:#f5e0dc,hl:#f38ba8 \
-      --color=fg:#cdd6f4,header:#f38ba8,info:#cba6f7,pointer:#f5e0dc \
-      --color=marker:#f5e0dc,fg+:#cdd6f4,prompt:#cba6f7,hl+:#f38ba8"
-      ;;
-    "OXOCARBON")
-      export FZF_DEFAULT_OPTS="\
-      --color=bg+:#161616,bg:#161616,spinner:#FFE585,hl:#f38ba8 \
-      --color=fg:#cdd6f4,header:#f38ba8,info:#33B1FF,pointer:#FF7EB6 \
-      --color=marker:#f5e0dc,fg+:#cdd6f4,prompt:#cba6f7,hl+:#f38ba8"
-      ;;
-    "DEFAULT")
-      export FZF_DEFAULT_OPTS="--color=16"
-      ;;
-    *)
-      echo "Unknown theme. Please specify one of: PALENIGHT, DRACULA, CATPPUCCIN, DEFAULT."
-      ;;
-  esac
-}
-
-if [ -f ~/xos/fzf/.fzf_theme ]; then
-  fztheme $(cat ~/xos/fzf/.fzf_theme)
-fi
-
 function xrate() {
   if [ "$#" -ne 1 ] || ! [[ "$1" =~ ^[0-9]+$ ]]; then
     echo "Usage: xrate [refresh rate]"
@@ -1288,6 +1230,8 @@ function c() {
     elif [[ "$PWD" == "$HOME/xos" ]]; then
         exa -la
     elif [[ "$PWD" == "$HOME/Desktop/test" ]]; then
+        exa -la
+    elif [[ "$PWD" == "$HOME/Desktop/pulls/dotfiles/.config" ]]; then
         exa -la
     else
         local subdir
@@ -1634,14 +1578,11 @@ wal-set () {
     if [[ -n "$wallpaper" ]]
     then
         wal -i "${wallpaper}" -q
-        echo "Wallpaper set to ${wallpaper}"
-
-        # Open a new horizontally split window and display the selected image using kitty icat
-        kitty @ new-window --layout horizontal kitty +kitten icat "${wallpaper}"
-
     else
         echo "No wallpaper selected."
     fi
+
+    theme pywal
 }
 
 qr-gen() {       if [ -z "$1" ]; then
@@ -1905,9 +1846,16 @@ define () {
     exec zsh
 }
 
+
+
 delete() {
 	local name=$1
 	local zshrc_file="${HOME}/Desktop/pulls/dotfiles/.config/zsh/.zshrc.org"
+
+	# If no function name is given, get the name of the last function defined
+	if [[ -z "$name" ]]; then
+		name=$(grep -oP "^* \K\w+" $zshrc_file | tail -n 1)
+	fi
 
 	# Get the last start line
 	local start_line=$(grep -n "^* $name" $zshrc_file | cut -d : -f 1 | tail -n 1)
@@ -1979,3 +1927,80 @@ brutepaste() {
     xdotool type "$(xclip -o)" && sleep 1
     trap "setxkbmap $current -option caps:none" 0
 }
+
+theme() {
+  local themes=(
+    "palenight"
+    "dracula"
+    "catppuccin"
+    "pywal"
+    "rose"
+    "oxocarbon"
+  )
+
+  local selected_theme
+
+  if [[ -z $1 ]]; then
+    selected_theme=$(printf '%s\n' "${themes[@]}" | splittedfzf)
+  else
+    selected_theme=$1
+  fi
+
+  # Save the selected theme name to a file
+  echo $selected_theme > ~/xos/theme/.theme
+
+  # Update the fzf theme
+  fzf_theme $selected_theme
+
+  # Update the kitty theme if it is not default
+  if [ "$selected_theme" != "default" ]; then
+    kitty +kitten themes --reload-in=all $selected_theme
+  fi
+}
+
+fzf_theme() {
+  local selected_theme=$1
+
+  case $selected_theme in
+    "palenight")
+      export FZF_DEFAULT_OPTS="\
+      --color=bg+:#292D3E,bg:#292D3E,spinner:#C792EA,hl:#82AAFF \
+      --color=fg:#EEFFFF,header:#82AAFF,info:#89DDFF,pointer:#C792EA \
+      --color=marker:#C792EA,fg+:#EEFFFF,prompt:#89DDFF,hl+:#82AAFF"
+      ;;
+    "dracula")
+      export FZF_DEFAULT_OPTS="\
+      --color=bg+:#282A36,bg:#282A36,spinner:#8BE9FD,hl:#ff79c6 \
+      --color=fg:#f8f8f2,header:#BD93F9,info:#8be9fd,pointer:#50fa7b \
+      --color=marker:#50fa7b,fg+:#f8f8f2,prompt:#8be9fd,hl+:#ff79c6"
+      ;;
+    "catppuccin")
+      export FZF_DEFAULT_OPTS="\
+      --color=bg+:#101213,bg:#101213,spinner:#f5e0dc,hl:#f38ba8 \
+      --color=fg:#cdd6f4,header:#f38ba8,info:#cba6f7,pointer:#f5e0dc \
+      --color=marker:#f5e0dc,fg+:#cdd6f4,prompt:#cba6f7,hl+:#f38ba8"
+      ;;
+    "oxocarbon")
+      export FZF_DEFAULT_OPTS="\
+      --color=bg+:#161616,bg:#161616,spinner:#FFE585,hl:#f38ba8 \
+      --color=fg:#cdd6f4,header:#f38ba8,info:#33B1FF,pointer:#FF7EB6 \
+      --color=marker:#f5e0dc,fg+:#cdd6f4,prompt:#cba6f7,hl+:#f38ba8"
+      ;;
+    "rose")
+      export FZF_DEFAULT_OPTS="\
+      --color=bg+:#191724,bg:#191724,spinner:#9CCFD8,hl:#EB6F92 \
+      --color=fg:#cdd6f4,header:#f38ba8,info:#EABBB9,pointer:#F6C177 \
+      --color=marker:#f5e0dc,fg+:#cdd6f4,prompt:#cba6f7,hl+:#C4A7E7"
+      ;;
+    "pywal")
+      export FZF_DEFAULT_OPTS="--color=16"
+      ;;
+    *)
+      echo "Unknown theme. Please specify one of: PALENIGHT, DRACULA, CATPPUCCIN, DEFAULT."
+      ;;
+  esac
+}
+
+if [ -f ~/xos/theme/.theme ]; then
+  theme $(cat ~/xos/theme/.theme)
+fi

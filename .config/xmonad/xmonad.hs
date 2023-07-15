@@ -148,6 +148,7 @@ myStartupHook = do
   spawn "doom sync"
   -- spawn "pgrep -u $USER -x emacsclient > /dev/null || emacsclient -c -a 'emacs'" -- emacs client
   spawn "emacsclient -c -a 'emacs'" -- emacs client
+  spawn "discord" -- discord
   spawn "zsh -c 'ded'"  --drammtic
 
   spawn ("sleep 2 && conky -c $HOME/.config/conky/xmonad/" ++ colorScheme ++ "-01.conkyrc")

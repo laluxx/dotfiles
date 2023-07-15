@@ -23,6 +23,8 @@ alias doomsync="~/.emacs.d/bin/doom sync"
 alias doomdoctor="~/.emacs.d/bin/doom doctor"
 alias doomupgrade="~/.emacs.d/bin/doom upgrade"
 alias doompurge="~/.emacs.d/bin/doom purge"
+
+alias undoom="rm -rf ~/.config/doom ~/.config/emacs"
 #+end_src
 * Listing
 #+begin_src shell
@@ -101,6 +103,12 @@ alias mesosbu="sudo meson setup --wipe build && sudo meson setup --buildtype=rel
 alias npm="npx create-next-app"
 #+end_src
 * xos
+** Check
+*** service
+**** libvirtd
+#+begin_src shell
+alias xos-check-service-Libvirtd="sudo systemctl status libvirtd.service"
+#+end_src
 ** benchmark
 #+begin_src shell
 alias benchmark='hyperfine'

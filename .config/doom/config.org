@@ -1,4 +1,4 @@
-#+TITLE: XOS Doom Emacs Config
+#+TITLE: XOS Doom Bloated Emacs Config
 #+AUTHOR: laluxx
 #+DESCRIPTION: personal Doom Emacs config.
 #+STARTUP: showeverything
@@ -196,6 +196,9 @@ it will also open dired inside a window
 (map! :leader
       :desc "Toggle treemacs"
       "t e" #'treemacs)
+
+;; (map! :g "M-n" #'treemacs)
+
 #+end_src
 ** resize-window
 #TODO
@@ -1713,7 +1716,7 @@ Settings for the various shells and terminal emulators within Emacs.
       eshell-visual-commands'("bash" "fish" "htop" "ssh" "top" "zsh"))
 (map! :leader
       :desc "Eshell"                 "e s" #'eshell
-      :desc "Eshell popup toggle"    "e t" #'+eshell/toggle
+      :desc "Eshell popup toggle"    "t e" #'+eshell/toggle
       :desc "Counsel eshell history" "e h" #'counsel-esh-history
       :desc "Vterm popup toggle"     "v t" #'+vterm/toggle)
 #+END_SRC

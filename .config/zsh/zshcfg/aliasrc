@@ -15,6 +15,8 @@ alias doomdoctor="~/.emacs.d/bin/doom doctor"
 alias doomupgrade="~/.emacs.d/bin/doom upgrade"
 alias doompurge="~/.emacs.d/bin/doom purge"
 
+alias undoom="rm -rf ~/.config/doom ~/.config/emacs"
+
 alias ls="lsd"
 # alias ls='exa -l --color=always --group-directories-first'  # long format
 alias la='exa -a --color=always --group-directories-first'  # all files and dirs
@@ -60,6 +62,8 @@ alias luarocks="sudo luarocks"
 alias mesosbu="sudo meson setup --wipe build && sudo meson setup --buildtype=release . build && sudo ninja -C build/ && sudo ninja -C build install"
 
 alias npm="npx create-next-app"
+
+alias xos-check-service-Libvirtd="sudo systemctl status libvirtd.service"
 
 alias benchmark='hyperfine'
 
