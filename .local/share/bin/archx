@@ -1,0 +1,242 @@
+#!/bin/bash
+
+# XOS VERSION
+function checkwget {
+    which wget > /dev/null 2>&1
+    if [ "$?" -eq "0" ]; then
+    echo [✔]::[wget]: installation found!;
+  else
+  echo [x]::[warning]:this script require wget ;
+  echo ""
+  echo [!]::[please wait]: Installing Wget ;
+  pacman -S wget --noconfirm
+  echo ""
+  fi
+  sleep 0.25
+  }
+function checkyay {
+    which yay > /dev/null 2>&1
+    if [ "$?" -eq "0" ]; then
+    echo [✔]::[Yay]: installation found!;
+  else
+  echo [x]::[warning]:this script require Yay ;
+  echo ""
+  echo [!]::[please wait]: Installing Yay ..  ;
+  git clone https://aur.archlinux.org/yay.git && cd yay && makepkg -si
+  echo ""
+  fi
+  sleep 0.25
+  }
+function checkgit {
+    which git > /dev/null 2>&1
+    if [ "$?" -eq "0" ]; then
+    echo [✔]::[Git]: installation found!;
+  else
+  echo [x]::[warning]:this script require Git ;
+  echo ""
+  echo [!]::[please wait]: Installing Git ..  ;
+  pacman -S git --noconfirm
+  echo ""
+  fi
+  sleep 0.25
+  }
+function checkfzf {
+    which fzf > /dev/null 2>&1
+    if [ "$?" -eq "0" ]; then
+    echo [✔]::[Fzf]: installation found!;
+  else
+  echo [x]::[warning]:this script require fzf ;
+  echo ""
+  echo [!]::[please wait]: Installing fzf ..  ;
+  pacman -S fzf --noconfirm
+  echo ""
+  fi
+  sleep 0.25
+  }
+function showlogo {
+  clear
+  echo ""
+  echo "      █████╗ ██████╗  ██████╗██╗  ██╗██╗  ██╗"
+  echo "     ██╔══██╗██╔══██╗██╔════╝██║  ██║╚██╗██╔╝"
+  echo "     ███████║██████╔╝██║     ███████║ ╚███╔╝ "
+  echo "     ██╔══██║██╔══██╗██║     ██╔══██║ ██╔██╗ "
+  echo "     ██║  ██║██║  ██║╚██████╗██║  ██║██╔╝ ██╗"
+  echo "     ╚═╝  ╚═╝╚═╝  ╚═╝ ╚═════╝╚═╝  ╚═╝╚═╝  ╚═╝"
+  echo -e "                \e[1;37m| ArchX toolbox |\e[0m\n"
+  }
+function loading_animation() {
+    local pid=$1
+    local pkgname=$2
+    local delay=0.1
+    local spinstr='|/-\'
+    local counter=0
+    while [ "$(ps a | awk '{print $1}' | grep $pid)" ]; do
+        local temp=${spinstr#?}
+        printf "\r[%c] Checking %s" "$spinstr" "$pkgname"
+        local spinstr=$temp${spinstr%"$temp"}
+        sleep $delay
+        counter=$((counter + 1))
+        if [ $counter -eq 40 ]; then
+            printf "\r[%c] Checking %s...           " "$spinstr" "$pkgname"
+            counter=0
+        fi
+    done
+    printf "\r[%c] Checking %s... Done          \n" "$spinstr" "$pkgname"
+}
+# ArchX
+  function updateconfig {
+      showlogo
+      difffile="$HOME/.cache/xos/user-changes-$(date +"%Y%m%d_%H%M%S")"
+      echo -e "Warning \nThis will replace your dotfiles with https://github.com/laluxx/dotfiles \nbut save diffs in $difffile"
+      read -p 'Update dotfiles? y[n]: ' dt
+      if [[ $dt == "y" ]]; then
+        sudo clear
+        echo "[✔]::[Deps]: checking!"
+        echo "[✔]::[Deps]: checking awesome!"
+        while IFS= read -r package; do
+            sudo pacman -S --noconfirm --needed "$package" 2>&1 | grep -E -v 'up to date|nothing to do' &
+            loading_animation $! "$package"
+        done < <(curl -s https://raw.githubusercontent.com/laluxx/dotfiles/master/packages.txt | sed '/--END OF MINIMAL INSTALL--/d')
+        echo "[✔]::[Deps]: all packages checked and installed successfully!"
+        echo [✔]::[laluxx/dotfiles]: config installation;
+
+        usr=$(whoami)
+        if [ -d $HOME/.cache/xos ]; then
+          echo "Saving your personal changes to $difffile"
+          find ./.cache/xos -type f \( ! -name 'README.md' -a ! -name 'LICENSE' \) -not \( -path './.cache/xos/.git*' -o -path './.cache/xos/.mozilla*' -o -path './.cache/xos/.cache*' \) -exec sh -c 'basefile="${0#*/.cache/xos/}"; diff -uN "./$basefile" "$0"' {} \; > $difffile
+          cd $HOME/.cache/xos
+          git stash
+          git pull
+          cd $HOME
+        else
+          cd $HOME/.cache
+          git clone https://github.com/laluxx/dotfiles.git
+          cd $HOME
+        fi
+        find ./.cache/xos -type f \( ! -name 'README.md' -a ! -name 'LICENSE' \) -not \( -path './.cache/xos/.git*' -o -path './.cache/xos/.mozilla*' -o -path './.cache/xos/.cache*' \) -exec sh -c 'basefile="${0#*/.cache/xos/}"; diff -uN "$0" "./$basefile"' {} \; | delta --dark
+        git --git-dir=$HOME/.cache/xos/.git log -1 --pretty=format:%B
+        sudo rm -Rf $HOME/.cache/xos/.mozilla
+        sudo chown -Rf $usr:$usr $HOME/.cache/xos/
+        sudo chmod -Rf +x $HOME/.cache/xos/
+        sudo chmod 755 $HOME/.cache/xos/
+        sudo cp -r -a $HOME/.cache/xos/. $HOME/
+        sudo rm -Rf $HOME/.git/
+        sudo rm -Rf $HOME/README.md
+        sudo rm -Rf $HOME/LICENSE
+        pgrep -x "awesome" >/dev/null && awesome-client "awesome.restart()" > /dev/null 2>&1 # refresh awesome if running
+        [ -f "$HOME/archx" ] && sudo rm -Rf $HOME/archx
+      fi
+    }
+  function getwallpapers {
+      git clone https://github.com/laluxx/wallpapers
+      sudo rm -Rf $HOME/wallpapers/README.md
+      sudo rm -Rf $HOME/wallpapers/.git/
+      sudo cp -r -a $HOME/wallpapers/. $HOME/xos/wallpapers
+      sudo rm -Rf $HOME/wallpapers/
+    }
+  function installsamba {
+      sudo systemctl enable smb.service
+      sudo systemctl enable nmb.service
+      echo "Cange password samba"
+      sudo smbpasswd -a $choice
+    }
+  function installwine {
+      sudo pacman -S --needed --noconfirm wine winetricks
+      gpu_type=$(lspci)
+      if grep -E "NVIDIA|GeForce" <<< ${gpu_type}; then
+          sudo pacman -S --needed --noconfirm nvidia-dkms nvidia-utils lib32-nvidia-utils nvidia-settings vulkan-icd-loader lib32-vulkan-icd-loader
+      elif lspci | grep 'VGA' | grep -E "Radeon|AMD"; then
+          sudo pacman -S --needed --noconfirm lib32-mesa vulkan-radeon lib32-vulkan-radeon vulkan-icd-loader lib32-vulkan-icd-loader
+      elif grep -E "Integrated Graphics Controller" <<< ${gpu_type}; then
+          sudo pacman -S --needed --noconfirm lib32-mesa vulkan-intel lib32-vulkan-intel vulkan-icd-loader lib32-vulkan-icd-loader
+      elif grep -E "Intel Corporation UHD" <<< ${gpu_type}; then
+          sudo pacman -S --needed --noconfirm lib32-mesa vulkan-intel lib32-vulkan-intel vulkan-icd-loader lib32-vulkan-icd-loader
+      fi
+      yay -S --quiet --noconfirm dxvk
+      wineboot
+    }
+  function installemacs {
+      sudo  pacman -S --noconfirm emacs
+      read -p 'Install doom emacs? y[n]: ' doom
+      if [[ $doom == "y" ]]; then
+        git clone --depth 1 https://github.com/doomemacs/doomemacs ~/.config/emacs
+        doom install
+        doom sync
+      fi
+    }
+  function installprinters {
+      sudo pacman -S --needed --noconfirm cups
+      sudo pacman -S --needed --noconfirm cups-pdf
+      sudo pacman -S --needed --noconfirm ghostscript
+      sudo pacman -S --needed --noconfirm gsfonts
+      sudo pacman -S --needed --noconfirm gutenprint
+      sudo pacman -S --needed --noconfirm gtk3-print-backends
+      sudo pacman -S --needed --noconfirm libcups
+      sudo pacman -S --needed --noconfirm system-config-printer
+    }
+  # PicomX
+    function installpicom {
+        mkdir -p picomx && cd picomx && (curl -O https://raw.githubusercontent.com/X3ric/picom/next/PKGBUILD && makepkg -si) && cd .. && rm -rf picomx
+        awesome-client "awesome.restart()" > /dev/null 2>&1
+      }
+    function installctpv {
+        mkdir -p ctpvx && cd ctpvx && (curl -O https://raw.githubusercontent.com/X3ric/ctpv/master/PKGBUILD && makepkg -si) && cd .. && rm -rf ctpvx
+      }
+clear && checkwget && checkyay && checkgit && checkfzf
+menu_state=1
+
+while true; do
+  if [[ $menu_state -eq 0 ]]; then
+    exit
+  elif [[ $menu_state -eq 1 ]]; then
+    showlogo
+    echo -e "                  \E[32m[ ARCHXMENU ]\033[0m"
+    if [ -f "$HOME/.local/share/bin/archx" ]; then
+      options=("Install" "Update" "Quit")
+      selected_option=$(printf '%s\n' "${options[@]}" | fzf-tmux --prompt="Find = " -x --color=16 --height ${FZF_TMUX_HEIGHT:-40%} -m --reverse --ansi)
+      case $selected_option in
+        "Install") menu_state=2 ;;
+        "Update") clear && updateconfig && break ;;
+        "Quit") clear && break ;;
+        *) echo "Invalid option = $selected_option" && sleep 1 ;;
+      esac
+    else
+      options=("Configs" "Quit")
+      selected_option=$(printf '%s\n' "${options[@]}" | fzf-tmux --prompt="Find = " -x --color=16 --height ${FZF_TMUX_HEIGHT:-40%} -m --reverse --ansi)
+      case $selected_option in
+        "Configs") clear && updateconfig && break ;;
+        "Quit") clear && break ;;
+        *) echo "Invalid option = $selected_option" && sleep 1 ;;
+      esac
+    fi
+  elif [[ $menu_state -eq 2 ]]; then
+    showlogo
+    echo -e "                  \033[1m[INSTALLERS]\033[0m"
+    options=("Wallpapers" "Services" "Upgrade" "Picom" "Emacs" "Wine" "Ctpv" "Back")
+    selected_option=$(printf '%s\n' "${options[@]}" | fzf-tmux --prompt=" Find = " -x --color=16 --height ${FZF_TMUX_HEIGHT:-40%} -m --reverse --ansi)
+    case $selected_option in
+      "Wallpapers") clear && getwallpapers && break ;;
+      "Upgrade") clear && yay -Syu --noconfirm && break ;;
+      "Services") menu_state=3 ;;
+      "Emacs") clear && installemacs && break ;;
+      "Picom") clear && installpicom && break ;;
+      "Wine") clear && installwine && break ;;
+      "Ctpv") clear && installctpv && break ;;
+      "Back") menu_state=1 ;;
+      *) echo "Invalid option = $selected_option" && sleep 1 ;;
+    esac
+  elif [[ $menu_state -eq 3 ]]; then
+    showlogo
+    echo -e "                  \033[1m[INSTALLERS]\033[0m"
+    echo -e "                   \033[1m[SERVICES]\033[0m"
+    options=("Printers" "Samba" "Back")
+    selected_option=$(printf '%s\n' "${options[@]}" | fzf-tmux --prompt=" Find = " -x --color=16 --height ${FZF_TMUX_HEIGHT:-40%} -m --reverse --ansi)
+    case $selected_option in
+      "Printers") clear && installprinters && break ;;
+      "Samba") clear && installsamba && break ;;
+      "Back") menu_state=2 ;;
+      *) echo "Invalid option = $selected_option" && sleep 1 ;;
+    esac
+  fi
+  exit
+done

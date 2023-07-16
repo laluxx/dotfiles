@@ -1845,13 +1845,29 @@ wal-set () {
     local wallpaper=$(find "$dir" \( -name "*.png" -o -name "*.jpg" -o -name "*.jpeg" -o -name "*.webp" \) -type f | fzf --height 40% -m --reverse --ansi --cycle)
     if [[ -n "$wallpaper" ]]
     then
-        wal -i "${wallpaper}" -q
+        wpg -s "${wallpaper}" # -q #wal -i
     else
         echo "No wallpaper selected."
     fi
 
     theme pywal --no-random
 }
+
+wal-set () {
+    local dir=~/xos/wallpapers/static
+    local wallpaper=$(find "$dir" \( -name "*.png" -o -name "*.jpg" -o -name "*.jpeg" -o -name "*.webp" \) -type f | fzf --height 40% -m --reverse --ansi --cycle)
+    if [[ -n "$wallpaper" ]]
+    then
+        wpg -s "${wallpaper}" # -q #wal -i
+        echo "${wallpaper}" > ~/xos/theme/.wallpaper
+    else
+        echo "No wallpaper selected."
+    fi
+
+    theme pywal --no-random
+}
+
+
 #+end_src
 * Qr
 generate qrcodes of text/links
@@ -2276,63 +2292,8 @@ theme() {
     "catppuccin"
     "pywal"
     "rose"
-    "oxocarbon"
-  )
-
-  # Themes that require pkill picom
-  local pkill_themes=(
-    "oxocarbon"
-    "palenight"
-    # Add more themes as necessary
-  )
-
-  # Themes that require picom
-  local picom_themes=(
-    "rose"
-    "pywal"
-    # Add more themes as necessary
-  )
-
-  local selected_theme
-
-  if [[ -z $1 ]]; then
-    selected_theme=$(printf '%s\n' "${themes[@]}" | splittedfzf)
-  else
-    selected_theme=$1
-  fi
-
-  # Save the selected theme name to a file
-  echo $selected_theme > ~/xos/theme/.theme
-
-  # Update the fzf theme
-  fzf_theme $selected_theme
-  lxappearance_theme $selected_theme
-  wallpaper_theme $selected_theme
-
-  # Check if the selected theme is in the pkill_themes array and pkill picom if it is
-  if [[ " ${pkill_themes[@]} " =~ " ${selected_theme} " ]]; then
-    pkill picom || true
-  fi
-
-  # Check if the selected theme is in the picom_themes array and start picom if it is
-  if [[ " ${picom_themes[@]} " =~ " ${selected_theme} " ]]; then
-    picom & disown
-  fi
-
-  # Update the kitty theme if it is not default
-  if [ "$selected_theme" != "default" ]; then
-    kitty +kitten themes --reload-in=all $selected_theme
-  fi
-}
-
-
-theme() {
-  local themes=(
-    "palenight"
-    "dracula"
-    "catppuccin"
-    "pywal"
-    "rose"
+    "nord"
+    "adventure"
     "oxocarbon"
   )
 
@@ -2365,8 +2326,10 @@ theme() {
 
   # Update the theme
   fzf_theme $selected_theme
+  nvim_theme $selected_theme
   lxappearance_theme $selected_theme
   dmenu_theme $selected_theme
+  # gtk_theme $selected_theme
 
   # If the theme is pywal and no_random_flag is set, do not change wallpaper
   if [[ $selected_theme == "pywal" && $no_random_flag == "--no-random" ]]; then
@@ -2395,6 +2358,9 @@ theme() {
   fi
 }
 #+end_src
+
+#+RESULTS:
+
 ** fzf_theme
 #+begin_src shell
 fzf_theme() {
@@ -2431,6 +2397,12 @@ fzf_theme() {
       --color=fg:#cdd6f4,header:#f38ba8,info:#EABBB9,pointer:#F6C177 \
       --color=marker:#f5e0dc,fg+:#cdd6f4,prompt:#cba6f7,hl+:#C4A7E7"
       ;;
+    "adventure")
+      export FZF_DEFAULT_OPTS="\
+      --color=bg+:#191724,bg:#191724,spinner:#9CCFD8,hl:#EB6F92 \
+      --color=fg:#cdd6f4,header:#f38ba8,info:#EABBB9,pointer:#F6C177 \
+      --color=marker:#f5e0dc,fg+:#cdd6f4,prompt:#cba6f7,hl+:#C4A7E7"
+      ;;
     "pywal")
       export FZF_DEFAULT_OPTS="--color=16"
       ;;
@@ -2439,7 +2411,6 @@ fzf_theme() {
       ;;
   esac
 }
-
 #+end_src
 ** Lxappearance_theme
 #+begin_src shell
@@ -2457,18 +2428,22 @@ lxappearance_theme () {
             ("dracula") gtk_theme="Dracula"
                 icon_theme="Dracula"
                 cursor_theme="Dracula-cursors"  ;;
-            ("catppuccin") gtk_theme="SomeGtkTheme"
-                icon_theme="SomeIconTheme"
-                cursor_theme="SomeCursorTheme"  ;;
+            ("catppuccin") gtk_theme="Catppuccin-Mocha-Standard-Mauve-Dark"
+                icon_theme="Papirus-Dark"
+                cursor_theme="Catppuccin-Mocha-Dark"  ;;
             ("oxocarbon") gtk_theme="SomeGtkTheme"
                 icon_theme="SomeIconTheme"
                 cursor_theme="SomeCursorTheme"  ;;
             ("rose") gtk_theme="SomeGtkTheme"
                 icon_theme="SomeIconTheme"
                 cursor_theme="SomeCursorTheme"  ;;
-            ("pywal") gtk_theme="SomeGtkTheme"
-                icon_theme="SomeIconTheme"
-                cursor_theme="SomeCursorTheme"  ;;
+            ("pywal")
+                # Call Oomox CLI tool to generate theme
+                local wallpaper=$(cat ~/xos/theme/.wallpaper)
+                /opt/oomox/plugins/theme_oomox/change_color.sh "$wallpaper" --output FlatColor
+                gtk_theme="FlatColor"
+                icon_theme="FlatColor"
+                cursor_theme="FlatColor"  ;;
             (*) echo "Unknown theme. Please specify one of: palenight, dracula, catppuccin, oxocarbon, rose, pywal."
                 return ;;
         esac
@@ -2482,8 +2457,6 @@ lxappearance_theme () {
         sed -i "s/^gtk-theme-name=.*$/gtk-theme-name=\"$gtk_theme\"/" ~/.gtkrc-2.0
         sed -i "s/^gtk-icon-theme-name=.*$/gtk-icon-theme-name=\"$icon_theme\"/" ~/.gtkrc-2.0
         sed -i "s/^gtk-cursor-theme-name=.*$/gtk-cursor-theme-name=\"$cursor_theme\"/" ~/.gtkrc-2.0
-
-        # echo "GTK2 and GTK3 themes, icon themes and cursor themes updated for $selected_theme theme"
     fi
 }
 #+end_src
@@ -2498,14 +2471,14 @@ wallpaper_theme () {
 	else
 		selected_theme=$1
 		case $selected_theme in
-			("palenight") wallpaper="$wallpapers_dir/palenight/wallpaper.jpg"  ;;
+			("palenight") wallpaper="$wallpapers_dir/distro/iarch/material-palenight-base16_iarch.png"  ;;
 			("dracula") wallpaper="$wallpapers_dir/ship/Ship.png"  ;;
 			("catppuccin") wallpaper="$wallpapers_dir/catppuccin/waves.png"  ;;
 			("oxocarbon") wallpaper="$wallpapers_dir/oxocarbon/wallpaper.jpg"  ;;
 			("rose") wallpaper="$wallpapers_dir/rose/wallpaper.jpg"  ;;
 			("pywal")
-				wallpaper=$(find $wallpapers_dir -type f | shuf -n 1)
-				wal -i "$wallpaper"
+				# wallpaper=$(find $wallpapers_dir -type f | shuf -n 1)
+				# wal -i "$wallpaper"
 				;;
 			(*) echo "Unknown theme. Please specify one of: palenight, dracula, catppuccin, oxocarbon, rose, pywal."
 				return ;;
