@@ -1582,7 +1582,7 @@ wal-set () {
         echo "No wallpaper selected."
     fi
 
-    theme pywal
+    theme pywal --no-random
 }
 
 qr-gen() {       if [ -z "$1" ]; then
@@ -1928,19 +1928,6 @@ brutepaste() {
     trap "setxkbmap $current -option caps:none" 0
 }
 
-# Define array
-typeset -A themes
-
-themes=(
-  "palenight" "--color=bg+:#292D3E,bg:#292D3E,spinner:#C792EA,hl:#82AAFF \
-               --color=fg:#EEFFFF,header:#82AAFF,info:#89DDFF,pointer:#C792EA \
-               --color=marker:#C792EA,fg+:#EEFFFF,prompt:#89DDFF,hl+:#82AAFF"
-  "dracula" "--color=bg+:#282A36,bg:#282A36,spinner:#8BE9FD,hl:#ff79c6 \
-             --color=fg:#f8f8f2,header:#BD93F9,info:#8be9fd,pointer:#50fa7b \
-             --color=marker:#50fa7b,fg+:#f8f8f2,prompt:#8be9fd,hl+:#ff79c6"
-  # Add the rest of your themes here...
-)
-
 theme() {
   local themes=(
     "palenight"
@@ -1949,6 +1936,20 @@ theme() {
     "pywal"
     "rose"
     "oxocarbon"
+  )
+
+  # Themes that require pkill picom
+  local pkill_themes=(
+    "oxocarbon"
+    "palenight"
+    # Add more themes as necessary
+  )
+
+  # Themes that require picom
+  local picom_themes=(
+    "rose"
+    "pywal"
+    # Add more themes as necessary
   )
 
   local selected_theme
@@ -1966,6 +1967,86 @@ theme() {
   fzf_theme $selected_theme
   lxappearance_theme $selected_theme
   wallpaper_theme $selected_theme
+
+  # Check if the selected theme is in the pkill_themes array and pkill picom if it is
+  if [[ " ${pkill_themes[@]} " =~ " ${selected_theme} " ]]; then
+    pkill picom || true
+  fi
+
+  # Check if the selected theme is in the picom_themes array and start picom if it is
+  if [[ " ${picom_themes[@]} " =~ " ${selected_theme} " ]]; then
+    picom & disown
+  fi
+
+  # Update the kitty theme if it is not default
+  if [ "$selected_theme" != "default" ]; then
+    kitty +kitten themes --reload-in=all $selected_theme
+  fi
+}
+
+
+theme() {
+  local themes=(
+    "palenight"
+    "dracula"
+    "catppuccin"
+    "pywal"
+    "rose"
+    "oxocarbon"
+  )
+
+  # Themes that require pkill picom
+  local pkill_themes=(
+    "oxocarbon"
+    "palenight"
+    # Add more themes as necessary
+  )
+
+  # Themes that require picom
+  local picom_themes=(
+    "rose"
+    "dracula"
+    # Add more themes as necessary
+  )
+
+  local selected_theme
+
+  if [[ -z $1 ]]; then
+    selected_theme=$(printf '%s\n' "${themes[@]}" | splittedfzf)
+  else
+    selected_theme=$1
+  fi
+
+  local no_random_flag=$2
+
+  # Save the selected theme name to a file
+  echo $selected_theme > ~/xos/theme/.theme
+
+  # Update the theme
+  fzf_theme $selected_theme
+  lxappearance_theme $selected_theme
+  dmenu_theme $selected_theme
+
+  # If the theme is pywal and no_random_flag is set, do not change wallpaper
+  if [[ $selected_theme == "pywal" && $no_random_flag == "--no-random" ]]; then
+    # Do nothing
+    :
+  else
+    wallpaper_theme $selected_theme
+  fi
+
+  # Check if the selected theme is in the pkill_themes array and pkill picom if it is
+  if [[ " ${pkill_themes[@]} " =~ " ${selected_theme} " ]]; then
+    pkill picom || true
+  fi
+
+  # Check if the selected theme is in the picom_themes array and start picom if it is
+  # But only if it is not already running
+  if [[ " ${picom_themes[@]} " =~ " ${selected_theme} " ]]; then
+    if ! pgrep -x "picom" > /dev/null; then
+      picom & disown
+    fi
+  fi
 
   # Update the kitty theme if it is not default
   if [ "$selected_theme" != "default" ]; then
@@ -2111,6 +2192,62 @@ nvim_theme () {
 	fi
 }
 
-# if [ -f ~/xos/theme/.theme ]; then
-#   theme $(cat ~/xos/theme/.theme)
-# fi
+dmenu_theme() {
+  local selected_theme
+
+  if [ -n "$1" ]; then
+    selected_theme=$1
+  elif [ -f ~/xos/theme/.theme ]; then
+    selected_theme=$(cat ~/xos/theme/.theme)
+  else
+    echo "No theme specified and no default theme found at ~/xos/theme/.theme"
+    return 1
+  fi
+
+  case $selected_theme in
+    "palenight")
+      DMENU_COLORS="-nb #292D3E -nf #EEFFFF -sb #C792EA -sf #82AAFF"
+      DMENU_POSITION="-X 0"
+      DMENU_Y_POSITION="-Y 0"
+      ;;
+    "dracula")
+      DMENU_COLORS="-nb #282A36 -nf #f8f8f2 -sb #8BE9FD -sf #ff79c6"
+      DMENU_POSITION="-X 0"
+      DMENU_Y_POSITION="-Y 0"
+      ;;
+    "catppuccin")
+      DMENU_COLORS="-nb #101213 -nf #cdd6f4 -sb #f5e0dc -sf #f38ba8"
+      DMENU_POSITION="-X 1239"
+      DMENU_Y_POSITION="-Y 500"
+      ;;
+    "oxocarbon")
+      DMENU_COLORS="-nb #161616 -nf #cdd6f4 -sb #FFE585 -sf #f38ba8"
+      DMENU_POSITION="-X 0"
+      DMENU_Y_POSITION="-Y 0"
+      ;;
+    "rose")
+      DMENU_COLORS="-nb #191724 -nf #cdd6f4 -sb #9CCFD8 -sf #EB6F92"
+      DMENU_POSITION="-X 1239"
+      DMENU_Y_POSITION="-Y 500"
+      ;;
+    "pywal")
+      # Default to original purple theme for the border, use neutral colors for the rest
+      DMENU_COLORS="-nb #282a36 -nf #f8f8f2 -sb #BD93F9 -sf #000000"
+      DMENU_POSITION="-X 0"
+      DMENU_Y_POSITION="-Y 0"
+      ;;
+    *)
+      echo "Unknown theme. Please specify one of: palenight, dracula, catppuccin, oxocarbon, rose, pywal."
+      return 1
+      ;;
+  esac
+
+  # Save dmenu colors and positions to files for use in other scripts
+  echo "${DMENU_COLORS[@]}" > ~/xos/theme/.dmenu_theme
+  echo "${DMENU_POSITION}" > ~/xos/theme/.dmenu_position
+  echo "${DMENU_Y_POSITION}" > ~/xos/theme/.dmenu_y_position
+}
+
+if [ -f ~/xos/theme/.theme ]; then
+  fzf_theme $(cat ~/xos/theme/.theme)
+fi

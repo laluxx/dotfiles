@@ -39,6 +39,10 @@ alias l3='lsd --tree --depth=3'
 alias l4='lsd --tree --depth=4'
 alias l5='lsd --tree --depth=5'
 #+end_src
+* Dmenu
+#+begin_src shell
+alias dmenut='dmenu_run $(cat ~/xos/theme/.dmenu_theme)'
+#+end_src
 * Pipes
 #+begin_src shell
 alias -g L='| less'

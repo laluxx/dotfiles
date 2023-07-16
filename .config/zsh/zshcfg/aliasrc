@@ -28,6 +28,8 @@ alias l3='lsd --tree --depth=3'
 alias l4='lsd --tree --depth=4'
 alias l5='lsd --tree --depth=5'
 
+alias dmenut='dmenu_run $(cat ~/xos/theme/.dmenu_theme)'
+
 alias -g L='| less'
 
 alias awesome-refresh='awesome-client "awesome.restart()"'
