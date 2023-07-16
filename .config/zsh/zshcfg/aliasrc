@@ -47,7 +47,7 @@ alias v="nvim"
 # alias fzf-images='fzf --preview-window=up:90% --cycle --preview "chafa --stretch -C on {}"'
 alias fzf-images='fzf --preview-window=up:90% --cycle --preview "kitty @ --to $KITTY_LISTEN_ON set-background-image {}"'
 
-alias fzf-tmux='fzf-tmux --color=16'
+# alias fzf-tmux='fzf-tmux --color=16'
 alias splittedfzf='fzf-tmux -x --height ${FZF_TMUX_HEIGHT:-40%} -m --reverse --ansi'
 
 alias userchrome="c ~/.mozilla/firefox/exnoy41o.default-release/chrome"

@@ -2260,6 +2260,29 @@ brutepaste() {
 #+end_src
 
 * THEME
+*TODO:*
+- set a specific wallpaper per theme
+- set also nvim theme
+- maybe gtk too
+- change x cursor
+- xmobar change colors in real time
+- Doom emacs too maybe ? just for hardcoded themes not pywal
+
+#+begin_src shell
+# Define array
+typeset -A themes
+
+themes=(
+  "palenight" "--color=bg+:#292D3E,bg:#292D3E,spinner:#C792EA,hl:#82AAFF \
+               --color=fg:#EEFFFF,header:#82AAFF,info:#89DDFF,pointer:#C792EA \
+               --color=marker:#C792EA,fg+:#EEFFFF,prompt:#89DDFF,hl+:#82AAFF"
+  "dracula" "--color=bg+:#282A36,bg:#282A36,spinner:#8BE9FD,hl:#ff79c6 \
+             --color=fg:#f8f8f2,header:#BD93F9,info:#8be9fd,pointer:#50fa7b \
+             --color=marker:#50fa7b,fg+:#f8f8f2,prompt:#8be9fd,hl+:#ff79c6"
+  # Add the rest of your themes here...
+)
+#+end_src
+
 #+begin_src shell
 theme() {
   local themes=(
@@ -2284,6 +2307,8 @@ theme() {
 
   # Update the fzf theme
   fzf_theme $selected_theme
+  lxappearance_theme $selected_theme
+  wallpaper_theme $selected_theme
 
   # Update the kitty theme if it is not default
   if [ "$selected_theme" != "default" ]; then
@@ -2337,12 +2362,114 @@ fzf_theme() {
 }
 
 #+end_src
+** Lxappearance_theme
+#+begin_src shell
+lxappearance_theme () {
+    local selected_theme
+    if [[ -z $1 ]]
+    then
+        echo "Please specify a theme"
+    else
+        selected_theme=$1
+        case $selected_theme in
+            ("palenight") gtk_theme="palenight"
+                icon_theme="palenight"
+                cursor_theme="palenight"  ;;
+            ("dracula") gtk_theme="Dracula"
+                icon_theme="Dracula"
+                cursor_theme="Dracula-cursors"  ;;
+            ("catppuccin") gtk_theme="SomeGtkTheme"
+                icon_theme="SomeIconTheme"
+                cursor_theme="SomeCursorTheme"  ;;
+            ("oxocarbon") gtk_theme="SomeGtkTheme"
+                icon_theme="SomeIconTheme"
+                cursor_theme="SomeCursorTheme"  ;;
+            ("rose") gtk_theme="SomeGtkTheme"
+                icon_theme="SomeIconTheme"
+                cursor_theme="SomeCursorTheme"  ;;
+            ("pywal") gtk_theme="SomeGtkTheme"
+                icon_theme="SomeIconTheme"
+                cursor_theme="SomeCursorTheme"  ;;
+            (*) echo "Unknown theme. Please specify one of: palenight, dracula, catppuccin, oxocarbon, rose, pywal."
+                return ;;
+        esac
 
-#+RESULTS:
+        # Update GTK-3.0 settings
+        sed -i "s/^gtk-theme-name=.*$/gtk-theme-name=$gtk_theme/" ~/.config/gtk-3.0/settings.ini
+        sed -i "s/^gtk-icon-theme-name=.*$/gtk-icon-theme-name=$icon_theme/" ~/.config/gtk-3.0/settings.ini
+        sed -i "s/^gtk-cursor-theme-name=.*$/gtk-cursor-theme-name=$cursor_theme/" ~/.config/gtk-3.0/settings.ini
 
+        # Update GTK-2.0 settings
+        sed -i "s/^gtk-theme-name=.*$/gtk-theme-name=\"$gtk_theme\"/" ~/.gtkrc-2.0
+        sed -i "s/^gtk-icon-theme-name=.*$/gtk-icon-theme-name=\"$icon_theme\"/" ~/.gtkrc-2.0
+        sed -i "s/^gtk-cursor-theme-name=.*$/gtk-cursor-theme-name=\"$cursor_theme\"/" ~/.gtkrc-2.0
+
+        # echo "GTK2 and GTK3 themes, icon themes and cursor themes updated for $selected_theme theme"
+    fi
+}
+#+end_src
+** Wallpaper_theme
+*TODO:*
+- the wallpaper is reset every time you restart the shell if resurrect mode is on
+#+begin_src shell
+wallpaper_theme () {
+	local selected_theme
+	local wallpapers_dir="$HOME/xos/wallpapers/static"
+	if [[ -z $1 ]]
+	then
+		echo "Please specify a theme"
+	else
+		selected_theme=$1
+		case $selected_theme in
+			("palenight") wallpaper="$wallpapers_dir/palenight/wallpaper.jpg"  ;;
+			("dracula") wallpaper="$wallpapers_dir/ship/Ship.png"  ;;
+			("catppuccin") wallpaper="$wallpapers_dir/catppuccin/waves.png"  ;;
+			("oxocarbon") wallpaper="$wallpapers_dir/oxocarbon/wallpaper.jpg"  ;;
+			("rose") wallpaper="$wallpapers_dir/rose/wallpaper.jpg"  ;;
+			("pywal")
+				wallpaper=$(find $wallpapers_dir -type f | shuf -n 1)
+				wal -i "$wallpaper"
+				;;
+			(*) echo "Unknown theme. Please specify one of: palenight, dracula, catppuccin, oxocarbon, rose, pywal."
+				return ;;
+		esac
+		if [[ $selected_theme != "pywal" ]]; then
+			feh --bg-scale "$wallpaper"
+		fi
+		echo "Wallpaper updated for $selected_theme theme"
+	fi
+}
+#+end_src
+** Nvim_theme
+*TODO*
+- it changes the file correctly but nvchad dont change non interactevly
+#+begin_src shell
+nvim_theme () {
+	local selected_theme
+	if [[ -z $1 ]]
+	then
+		echo "Please specify a theme"
+	else
+		selected_theme=$1
+		case $selected_theme in
+			("palenight") nvim_theme="palenight"  ;;
+			("dracula") nvim_theme="chadracula"  ;;
+			("catppuccin") nvim_theme="catppuccin"  ;;
+			("oxocarbon") nvim_theme="oxocarbon"  ;;
+			("rose") nvim_theme="rosepine"  ;;
+			("pywal") nvim_theme="pywal"  ;;
+			(*) echo "Unknown theme. Please specify one of: palenight, dracula, catppuccin, oxocarbon, rose, pywal."
+				return ;;
+		esac
+		sed -i "s/^  theme = .*$/  theme = \"$nvim_theme\",/" ~/.config/nvim/lua/custom/chadrc.lua
+		echo ":wq" | nvim -Es ~/.config/nvim/lua/custom/chadrc.lua
+		echo "Neovim theme updated to $selected_theme"
+	fi
+}
+#+end_src
 ** theme-resurrect
 #+begin_src shell
-if [ -f ~/xos/theme/.theme ]; then
-  theme $(cat ~/xos/theme/.theme)
-fi
+# if [ -f ~/xos/theme/.theme ]; then
+#   theme $(cat ~/xos/theme/.theme)
+# fi
 #+end_src
