@@ -2477,8 +2477,8 @@ wallpaper_theme () {
 			("oxocarbon") wallpaper="$wallpapers_dir/oxocarbon/wallpaper.jpg"  ;;
 			("rose") wallpaper="$wallpapers_dir/rose/wallpaper.jpg"  ;;
 			("pywal")
-				# wallpaper=$(find $wallpapers_dir -type f | shuf -n 1)
-				# wal -i "$wallpaper"
+				wallpaper=$(find $wallpapers_dir -type f | shuf -n 1)
+				wal -i "$wallpaper"
 				;;
 			(*) echo "Unknown theme. Please specify one of: palenight, dracula, catppuccin, oxocarbon, rose, pywal."
 				return ;;
