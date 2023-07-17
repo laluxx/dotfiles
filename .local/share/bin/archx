@@ -86,7 +86,7 @@ function loading_animation() {
 # ArchX
   function updateconfig {
       showlogo
-      difffile="$HOME/.cache/xos/user-changes-$(date +"%Y%m%d_%H%M%S")"
+      diffold="$HOME/.cache/xos/diffold-$(date +"%Y%m%d_%H%M%S")"
       echo -e "Warning \nThis will replace your dotfiles with https://github.com/laluxx/dotfiles \nbut save diffs in $difffile"
       read -p 'Update dotfiles? y[n]: ' dt
       if [[ $dt == "y" ]]; then
@@ -101,25 +101,25 @@ function loading_animation() {
         echo [✔]::[laluxx/dotfiles]: config installation;
 
         usr=$(whoami)
-        if [ -d $HOME/.cache/xos ]; then
+        if [ -d $HOME/.cache/dotfiles ]; then
           echo "Saving your personal changes to $difffile"
-          find ./.cache/xos -type f \( ! -name 'README.md' -a ! -name 'LICENSE' \) -not \( -path './.cache/xos/.git*' -o -path './.cache/xos/.mozilla*' -o -path './.cache/xos/.cache*' \) -exec sh -c 'basefile="${0#*/.cache/xos/}"; diff -uN "./$basefile" "$0"' {} \; > $difffile
-          cd $HOME/.cache/xos
+          find ./.cache/dotfiles -type f \( ! -name 'README.md' -a ! -name 'LICENSE' \) -not \( -path './.cache/dotfiles/.git*' -o -path './.cache/dotfiles/.mozilla*' -o -path './.cache/dotfiles/.cache*' \) -exec sh -c 'basefile="${0#*/.cache/dotfiles/}"; diff -uN "./$basefile" "$0"' {} \; > $difffile
+          cd $HOME/.cache/dotfiles/
           git stash
-          git pull
+          git pull --rebase
           cd $HOME
         else
           cd $HOME/.cache
           git clone https://github.com/laluxx/dotfiles.git
           cd $HOME
         fi
-        find ./.cache/xos -type f \( ! -name 'README.md' -a ! -name 'LICENSE' \) -not \( -path './.cache/xos/.git*' -o -path './.cache/xos/.mozilla*' -o -path './.cache/xos/.cache*' \) -exec sh -c 'basefile="${0#*/.cache/xos/}"; diff -uN "$0" "./$basefile"' {} \; | delta --dark
-        git --git-dir=$HOME/.cache/xos/.git log -1 --pretty=format:%B
-        sudo rm -Rf $HOME/.cache/xos/.mozilla
-        sudo chown -Rf $usr:$usr $HOME/.cache/xos/
-        sudo chmod -Rf +x $HOME/.cache/xos/
-        sudo chmod 755 $HOME/.cache/xos/
-        sudo cp -r -a $HOME/.cache/xos/. $HOME/
+        find ./.cache/dotfiles -type f \( ! -name 'README.md' -a ! -name 'LICENSE' \) -not \( -path './.cache/dotfiles/.git*' -o -path './.cache/dotfiles/.mozilla*' -o -path './.cache/dotfiles/.cache*' \) -exec sh -c 'basefile="${0#*/.cache/dotfiles/}"; diff -uN "$0" "./$basefile"' {} \; | delta --dark
+        git --git-dir=$HOME/.cache/dotfiles/.git log -1 --pretty=format:%B
+        sudo rm -Rf $HOME/.cache/dotfiles/.mozilla
+        sudo chown -Rf $usr:$usr $HOME/.cache/dotfiles/
+        sudo chmod -Rf +x $HOME/.cache/dotfiles/
+        sudo chmod 755 $HOME/.cache/dotfiles/
+        sudo cp -r -a $HOME/.cache/dotfiles/. $HOME/
         sudo rm -Rf $HOME/.git/
         sudo rm -Rf $HOME/README.md
         sudo rm -Rf $HOME/LICENSE

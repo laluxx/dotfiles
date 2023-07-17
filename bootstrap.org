@@ -4,141 +4,139 @@
 #+STARTUP: showeverything
 #+PROPERTY: header-args :tangle
 
-* XORG
+* Cecks
 #+begin_src shell
-sudo pacman -S xorg-server xorg-xinit xorg-xinput xorg-xkill xdotool
-#+end_src
+function checkwget {
+    which wget > /dev/null 2>&1
+    if [ "$?" -eq "0" ]; then
+    echo [✔]::[wget]: installation found!;
+  else
+  echo [x]::[warning]:this script require wget ;
+  echo ""
+  echo [!]::[please wait]: Installing Wget ;
+  pacman -S wget --noconfirm
+  echo ""
+  fi
+  sleep 0.25
+}
 
-* AUR-HELPER
-#+begin_src shell
-# BUILD YAY
 
-yay -S paru
-#+end_src
+function checkyay {
+    which yay > /dev/null 2>&1
+    if [ "$?" -eq "0" ]; then
+    echo [✔]::[Yay]: installation found!;
+  else
+  echo [x]::[warning]:this script require Yay ;
+  echo ""
+  echo [!]::[please wait]: Installing Yay ..  ;
+  git clone https://aur.archlinux.org/yay.git && cd yay && makepkg -si
+  echo ""
+  fi
+  sleep 0.25
+}
 
-* SHELL
-#+begin_src shell
-
-sudo pacman -S fish zsh zsh-syntax-highlighting
-#+end_src
-* PACMAN
-** polkit
-#+begin_src shell
-sudo pacman -S polkit-gnome
-#+end_src
-** wm
-*** awesome
-#+begin_src shell
-# yay -S awesome-git
-sudo pacman -S awesome
-#+end_src
-*** xmonad
-#+begin_src shell
-sudo pacman -S xmobar xmonad xmonad-contrib
-#+end_src
-** list
-#+begin_src shell
-sudo pacman -S tree exa lsd
-#+end_src
-** file manager
-#+begin_src shell
-sudo pacman -S pcmanfm lf
-#+end_src
-** term
-#+begin_src shell
-sudo pacman -S kitty alacritty
-#+end_src
-** www
-#+begin_src shell
-sudo pacman -S firefox
-#+end_src
-** base
-#+begin_src shell
-sudo pacman -S acpi archiso bat base-devel base btop cmake conky dust dunst emacs feh fzf git glow gpick gum jq jgmenu lf lutris meson mpd mpv neovim ninja nitrogen  sxhkd sxiv tmux trayer ueberzug unclutter vi vim wget
-#+end_src
-
-** languages
-installation and conf
-*** latex
-#+begin_src shell
-sudo pacman -S texlive-core texlive-latexextra texlive-fontsextra texlive-formatsextra texlive-humanities texlive-pictures texlive-publishers texlive-science
-#+end_src
-*** c
-#+begin_src shell
-# sudo pacman -S aspell
+function checkgit {
+    which git > /dev/null 2>&1
+    if [ "$?" -eq "0" ]; then
+    echo [✔]::[Git]: installation found!;
+  else
+  echo [x]::[warning]:this script require Git ;
+  echo ""
+  echo [!]::[please wait]: Installing Git ..  ;
+  pacman -S git --noconfirm
+  echo ""
+  fi
+  sleep 0.25
+}
+checkpackages() {
+    while IFS= read -r package; do
+        sudo pacman -S --noconfirm --needed "$package" 2>&1 | grep -E -v 'up to date|nothing to do' &
+        loading_animation $! "$package"
+    done < <(curl -s https://raw.githubusercontent.com/laluxx/dotfiles/master/packages.txt | sed '/--END OF MINIMAL INSTALL--/d')
+    echo "[✔]::[Deps]: all packages checked and installed successfully!"
+}
 
 #+end_src
-*** rust
+
+
+* funtions
 #+begin_src shell
-sudo pacman -S rust
+function loading_animation() {
+    local pid=$1
+    local pkgname=$2
+    local delay=0.1
+    local spinstr='|/-\'
+    local counter=0
+    while [ "$(ps a | awk '{print $1}' | grep $pid)" ]; do
+        local temp=${spinstr#?}
+        printf "\r[%c] Checking %s" "$spinstr" "$pkgname"
+        local spinstr=$temp${spinstr%"$temp"}
+        sleep $delay
+        counter=$((counter + 1))
+        if [ $counter -eq 40 ]; then
+            printf "\r[%c] Checking %s...           " "$spinstr" "$pkgname"
+            counter=0
+        fi
+    done
+    printf "\r[%c] Checking %s... Done          \n" "$spinstr" "$pkgname"
+}
+
+
+function installemacs {
+    sudo  pacman -S --noconfirm emacs
+    read -p 'Install doom emacs? y[n]: ' doom
+    if [[ $doom == "y" ]]; then
+      git clone --depth 1 https://github.com/doomemacs/doomemacs ~/.config/emacs
+      doom install
+      doom sync
+    fi
+}
+
+function installwine {
+    sudo pacman -S --needed --noconfirm wine winetricks
+    gpu_type=$(lspci)
+    if grep -E "NVIDIA|GeForce" <<< ${gpu_type}; then
+        sudo pacman -S --needed --noconfirm nvidia-dkms nvidia-utils lib32-nvidia-utils nvidia-settings vulkan-icd-loader lib32-vulkan-icd-loader
+    elif lspci | grep 'VGA' | grep -E "Radeon|AMD"; then
+        sudo pacman -S --needed --noconfirm lib32-mesa vulkan-radeon lib32-vulkan-radeon vulkan-icd-loader lib32-vulkan-icd-loader
+    elif grep -E "Integrated Graphics Controller" <<< ${gpu_type}; then
+        sudo pacman -S --needed --noconfirm lib32-mesa vulkan-intel lib32-vulkan-intel vulkan-icd-loader lib32-vulkan-icd-loader
+    elif grep -E "Intel Corporation UHD" <<< ${gpu_type}; then
+        sudo pacman -S --needed --noconfirm lib32-mesa vulkan-intel lib32-vulkan-intel vulkan-icd-loader lib32-vulkan-icd-loader
+    fi
+    yay -S --quiet --noconfirm dxvk
+    wineboot
+}
+
+function getwallpapers {
+    cd
+    git clone https://github.com/laluxx/wallpapers
+    sudo rm -Rf $HOME/wallpapers/README.md
+    sudo rm -Rf $HOME/wallpapers/.git/
+    sudo cp -r -a $HOME/wallpapers/. $HOME/xos/wallpapers
+    sudo rm -Rf $HOME/wallpapers/
+}
 #+end_src
-*** python
+* Main
 #+begin_src shell
-sudo pacman -S python-pywal python-pip rofi  rsync rust
-#+end_src
-*** haskell
-#+begin_src sh
-# sudo pacman -S hlint
+
+checkgit
+checkwget
+checkyay
+checkpackages
+
+
+
+mkdir ~/xos
+cd ~/xos
+git clone https://github.com/laluxx/dotfiles
+rsync -avh dotfiles/ ~/
+
 
 #+end_src
-*** lisp
-#+begin_src shell
-# sudo pacman -S roswell
-#+end_src
-* YAY
-** ui
-*** apps
-**** lxappearance
-#+begin_src shell
-yay -S lxappearance-gtk3
-#+end_src
-**** kvantum
-#+begin_src shell
-sudo pacman -S kvantum
-#+end_src
-*** bars
-#+begin_src shell
-yay -S polybar-git eww lemonbar
-#+end_src
-*** icons
-#+begin_src shell
-yay -S papirus-icon-theme-git papirus-folders-catpuccin-git
-#+end_src
-*** gtk-themes
-#+begin_src shell
-yay -S catppuccin-gtk-theme-mocha dracula-gtk-theme
-
-#+end_src
-** audio
-#+begin_src shell
-sudo pacman -S pavucontrol
-yay -S pulseaudio
-#+end_src
-
-** personal-apps
-#+begin_src shell
-yay -S github-cli gnome-disk-utility termtyper-git
-#+end_src
-*** RUST
-#+begin_src shell
-yay -S code-minimap
-#+end_src
-* XOS
 ** etc
 IDEA: https://github.com/laluxx/etc will be rsync into /etc only adding no deleting
 #+begin_src shell
 
 
-#+end_src
-** dotfiles
-#+begin_src shell
-mkdir ~/xos
-cd ~/xos
-git clone https://github.com/laluxx/dotfiles
-rsync -avh dotfiles/ ~/
-#+end_src
-** wallpapers
-#+begin_src shell
-mkdir ~/xos/wallpapers
-# git clone...
 #+end_src

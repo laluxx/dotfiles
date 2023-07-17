@@ -56,7 +56,7 @@ bindkey -M menuselect 'j' vi-down-line-or-history
 bindkey -v '^?' backward-delete-char
 
 bindkey -s '^r' 'lfcd\n'
-bindkey -s '^e' 'pcmanfm\n'
+bindkey -s '^e' 'thunar\n'
 
 # below opens a new terminal in current dir
 # case "$TERM" in (rxvt|rxvt-*|st|st-*|*xterm*|(dt|k|E)term)
@@ -1572,6 +1572,39 @@ instant_menu() {
 # Usage: instant_menu 'dracula'
 #        instant_menu 'doom-one'
 
+gtkset () {
+    new_color=$(awk '/color5/{print $2}' $HOME/.cache/wal/colors-kitty.conf)
+    if [ -n "$new_color" ]; then
+        sed -i "s/@define-color accent #[^;]*;/@define-color accent $new_color;/g" $HOME/.local/share/themes/darkarch/gtk-3.0/gtk.css
+    else
+        echo "No color5 found in colors-kitty.conf"
+    fi
+}
+
+gtkset2 () {
+    file_path="$HOME/.cache/wal/colors-kitty.conf"
+    theme_file="$HOME/.local/share/themes/FlatColor/gtk-3.0/gtk.css"
+
+    declare -a css_color_names=("bg_color" "fg_color" "base_color" "text_color" "selected_bg_color"
+                                "selected_fg_color" "tooltip_bg_color" "tooltip_fg_color" "light_shadow"
+                                "dark_shadow" "info_fg_color" "info_bg_color" "warning_fg_color"
+                                "warning_bg_color" "question_fg_color" "question_bg_color" "error_fg_color"
+                                "error_bg_color" "border_color" "button_normal_color" "button_info_color"
+                                "entry_border_color" "frame_border_bottom_color" "sel_color" "switch_bg_color"
+                                "panel_bg_color" "panel_fg_color" "scrollbar_trough" "osd_separator" "osd_fg"
+                                "osd_bg" "wm_bg" "wm_title_focused" "wm_title_unfocused" "wm_border_focused"
+                                "wm_border_unfocused")
+
+    for i in {0..15}; do
+        color=$(awk -v color="color$i" '$1==color{print $2}' $file_path)
+        if [ -n "$color" ]; then
+            sed -i "s/@define-color ${css_color_names[$i]} #[^;]*;/@define-color ${css_color_names[$i]} $color;/g" $theme_file
+        else
+            echo "No color$i found in colors-kitty.conf"
+        fi
+    done
+}
+
 wal-set () {
     local dir=~/xos/wallpapers/static
     local wallpaper=$(find "$dir" \( -name "*.png" -o -name "*.jpg" -o -name "*.jpeg" -o -name "*.webp" \) -type f | fzf --height 40% -m --reverse --ansi --cycle)
@@ -1583,6 +1616,7 @@ wal-set () {
     fi
 
     theme pywal --no-random
+    gtkset
 }
 
 wal-set () {
@@ -1597,6 +1631,7 @@ wal-set () {
     fi
 
     theme pywal --no-random
+    gtkset
 }
 
 qr-gen() {       if [ -z "$1" ]; then
@@ -1948,9 +1983,7 @@ theme() {
     "dracula"
     "catppuccin"
     "pywal"
-    "rose"
-    "nord"
-    "adventure"
+    "rosepine"
     "oxocarbon"
   )
 
@@ -1963,7 +1996,7 @@ theme() {
 
   # Themes that require picom
   local picom_themes=(
-    "rose"
+    "pywal"
     "dracula"
     # Add more themes as necessary
   )
@@ -2043,7 +2076,7 @@ fzf_theme() {
       --color=fg:#cdd6f4,header:#f38ba8,info:#33B1FF,pointer:#FF7EB6 \
       --color=marker:#f5e0dc,fg+:#cdd6f4,prompt:#cba6f7,hl+:#f38ba8"
       ;;
-    "rose")
+    "rosepine")
       export FZF_DEFAULT_OPTS="\
       --color=bg+:#191724,bg:#191724,spinner:#9CCFD8,hl:#EB6F92 \
       --color=fg:#cdd6f4,header:#f38ba8,info:#EABBB9,pointer:#F6C177 \
@@ -2074,7 +2107,7 @@ lxappearance_theme () {
         case $selected_theme in
             ("palenight") gtk_theme="palenight"
                 icon_theme="palenight"
-                cursor_theme="palenight"  ;;
+                cursor_theme="palenight" ;;
             ("dracula") gtk_theme="Dracula"
                 icon_theme="Dracula"
                 cursor_theme="Dracula-cursors"  ;;
@@ -2082,19 +2115,15 @@ lxappearance_theme () {
                 icon_theme="Papirus-Dark"
                 cursor_theme="Catppuccin-Mocha-Dark"  ;;
             ("oxocarbon") gtk_theme="SomeGtkTheme"
-                icon_theme="SomeIconTheme"
-                cursor_theme="SomeCursorTheme"  ;;
-            ("rose") gtk_theme="SomeGtkTheme"
-                icon_theme="SomeIconTheme"
-                cursor_theme="SomeCursorTheme"  ;;
-            ("pywal")
-                # Call Oomox CLI tool to generate theme
-                local wallpaper=$(cat ~/xos/theme/.wallpaper)
-                /opt/oomox/plugins/theme_oomox/change_color.sh "$wallpaper" --output FlatColor
-                gtk_theme="FlatColor"
-                icon_theme="FlatColor"
-                cursor_theme="FlatColor"  ;;
-            (*) echo "Unknown theme. Please specify one of: palenight, dracula, catppuccin, oxocarbon, rose, pywal."
+                icon_theme="candy-icons"
+                cursor_theme="adwaita"  ;;
+            ("rosepine") gtk_theme="rose-pine-gtk"
+                icon_theme="candy-icons"
+                cursor_theme="adwaita"  ;;
+            ("pywal") gtk_theme="darkwal"
+                icon_theme="Papirus"
+                cursor_theme="adwaita"  ;;
+            (*) echo "Unknown theme. Please specify one of: palenight, dracula, catppuccin, oxocarbon, rosepine, pywal."
                 return ;;
         esac
 
@@ -2123,12 +2152,12 @@ wallpaper_theme () {
 			("dracula") wallpaper="$wallpapers_dir/ship/Ship.png"  ;;
 			("catppuccin") wallpaper="$wallpapers_dir/catppuccin/waves.png"  ;;
 			("oxocarbon") wallpaper="$wallpapers_dir/oxocarbon/wallpaper.jpg"  ;;
-			("rose") wallpaper="$wallpapers_dir/rose/wallpaper.jpg"  ;;
+			("rosepine") wallpaper="$wallpapers_dir/rose/wallpaper.jpg"  ;;
 			("pywal")
 				wallpaper=$(find $wallpapers_dir -type f | shuf -n 1)
 				wal -i "$wallpaper"
 				;;
-			(*) echo "Unknown theme. Please specify one of: palenight, dracula, catppuccin, oxocarbon, rose, pywal."
+			(*) echo "Unknown theme. Please specify one of: palenight, dracula, catppuccin, oxocarbon, rosepine, pywal."
 				return ;;
 		esac
 		if [[ $selected_theme != "pywal" ]]; then
@@ -2150,9 +2179,9 @@ nvim_theme () {
 			("dracula") nvim_theme="chadracula"  ;;
 			("catppuccin") nvim_theme="catppuccin"  ;;
 			("oxocarbon") nvim_theme="oxocarbon"  ;;
-			("rose") nvim_theme="rosepine"  ;;
+			("rosepine") nvim_theme="rosepine"  ;;
 			("pywal") nvim_theme="pywal"  ;;
-			(*) echo "Unknown theme. Please specify one of: palenight, dracula, catppuccin, oxocarbon, rose, pywal."
+			(*) echo "Unknown theme. Please specify one of: palenight, dracula, catppuccin, oxocarbon, rosepine, pywal."
 				return ;;
 		esac
 		sed -i "s/^  theme = .*$/  theme = \"$nvim_theme\",/" ~/.config/nvim/lua/custom/chadrc.lua
@@ -2194,7 +2223,7 @@ dmenu_theme() {
       DMENU_POSITION="-X 0"
       DMENU_Y_POSITION="-Y 0"
       ;;
-    "rose")
+    "rosepine")
       DMENU_COLORS="-nb #191724 -nf #cdd6f4 -sb #9CCFD8 -sf #EB6F92"
       DMENU_POSITION="-X 1239"
       DMENU_Y_POSITION="-Y 500"
@@ -2206,7 +2235,7 @@ dmenu_theme() {
       DMENU_Y_POSITION="-Y 0"
       ;;
     *)
-      echo "Unknown theme. Please specify one of: palenight, dracula, catppuccin, oxocarbon, rose, pywal."
+      echo "Unknown theme. Please specify one of: palenight, dracula, catppuccin, oxocarbon, rosepine, pywal."
       return 1
       ;;
   esac
@@ -2215,6 +2244,35 @@ dmenu_theme() {
   echo "${DMENU_COLORS[@]}" > ~/xos/theme/.dmenu_theme
   echo "${DMENU_POSITION}" > ~/xos/theme/.dmenu_position
   echo "${DMENU_Y_POSITION}" > ~/xos/theme/.dmenu_y_position
+}
+
+doom_theme() {
+  local selected_theme
+
+  if [[ -z $1 ]]; then
+    echo "Please specify a theme"
+  else
+    selected_theme=$1
+    case $selected_theme in
+      "palenight") doom_theme="doom-palenight"  ;;
+      "dracula") doom_theme="doom-dracula"  ;;
+      "catppuccin") doom_theme="doom-catppuccin"  ;; # Please replace with a valid Doom Emacs theme
+      "oxocarbon") doom_theme="doom-oxocarbon"  ;; # Please replace with a valid Doom Emacs theme
+      "rosepine") doom_theme="doom-rosepine"  ;; # Please replace with a valid Doom Emacs theme
+      "pywal") doom_theme="doom-one"  ;; # Using Doom One as the default theme for pywal
+      *)
+        echo "Unknown theme. Please specify one of: palenight, dracula, catppuccin, oxocarbon, rosepine, pywal."
+        return ;;
+    esac
+
+    # Change the theme in the Doom Emacs configuration file
+    sed -i "s/^  (setq doom-theme '.*$/  (setq doom-theme '$doom_theme')/" ~/.doom.d/config.el
+
+    # Refresh Doom Emacs configuration
+    \emacs --batch -l ~/.emacs.d/init.el --eval="(doom/reload)"
+
+    echo "Doom Emacs theme updated to $doom_theme"
+  fi
 }
 
 if [ -f ~/xos/theme/.theme ]; then
