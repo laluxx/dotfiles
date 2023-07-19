@@ -8,12 +8,19 @@
   - [[#general-key][General-key]]
   - [[#update-dotfiles][update-dotfiles]]
   - [[#gptel][gptel]]
-  - [[#keybinds][keybinds]]
+- [[#keybinds][keybinds]]
+  - [[#dmenu][dmenu]]
+  - [[#help-hooks][help-hooks]]
+  - [[#movement][movement]]
+  - [[#toggle][toggle]]
   - [[#resize-window][resize-window]]
   - [[#look-and-feel][look and feel]]
-  - [[#functions][functions]]
+- [[#functions][Functions]]
+  - [[#doom-wal][Doom-wal]]
+  - [[#set-wallpaper-to-match-doom-theme][set-wallpaper-to-match-doom-theme]]
   - [[#org][org]]
-  - [[#editing][editing]]
+  - [[#smart-delimiters][smart-delimiters]]
+  - [[#insert][INSERT]]
 - [[#beacon][BEACON]]
 - [[#bookmarks-and-buffers][BOOKMARKS AND BUFFERS]]
   - [[#bookmarks][Bookmarks]]
@@ -71,7 +78,7 @@
 * XOS
 ** General-key
 Keybinds that execute other keybinds, cuz im lazy aka efficent
-*** Dired
+*** Dir-split-jump
 #+begin_src emacs-lisp
 (map! :leader
       :desc "Custom Keybind"
@@ -81,6 +88,7 @@ Keybinds that execute other keybinds, cuz im lazy aka efficent
               (execute-kbd-macro (kbd "SPC w v"))
               (execute-kbd-macro (kbd "SPC d j"))))
 #+end_src
+
 ** update-dotfiles
 whenever you save a file inside "~/Desktop/pulls/dotfiles"
 or one of its subdirectories && if that file is a org file
@@ -105,6 +113,7 @@ or one of its subdirectories && if that file is a org file
 
 (add-hook 'after-save-hook 'laluxx/run-update-dotfiles)
 #+end_src
+
 ** gptel
 #+begin_src emacs-lisp
 (use-package! gptel
@@ -112,12 +121,12 @@ or one of its subdirectories && if that file is a org file
   (setq! gptel-api-key (getenv "OPENAI_API_KEY")))
 #+end_src
 
-** keybinds
-*** dmenu
+* keybinds
+** dmenu
 #+begin_src emacs-lisp
 (global-set-key (kbd "M-p") 'dmenu)
 #+end_src
-*** help-hooks
+** help-hooks
 #+begin_src emacs-lisp
 (defun my-list-hooks ()
   "List all hooks in a completing-read interface."
@@ -138,8 +147,8 @@ or one of its subdirectories && if that file is a org file
       "hh" #'my-list-hooks)
 #+end_src
 
-*** movement
-**** lfcd
+** movement
+*** lfcd
 #+begin_src emacs-lisp
 (defun vterm-toggle-cd-lfcd ()
   "Open a vterm buffer in the bottom window running zsh, cd to current directory, execute 'lfcd', and focus it."
@@ -169,7 +178,7 @@ or one of its subdirectories && if that file is a org file
       (:prefix ("d" . "custom")
        :desc "Toggle vterm with lfcd" "l" #'vterm-toggle-cd-lfcd))
 #+end_src
-**** perosnal config
+*** perosnal config
 this will overwrite the default doom emacs SPC f p keybind
 it will also open dired inside a window
 #+begin_src emacs-lisp
@@ -178,27 +187,30 @@ it will also open dired inside a window
       "f p" (lambda () (interactive) (dired "~/Desktop/pulls/dotfiles/.config/doom")))
 
 #+end_src
-**** test
+*** test
 #+begin_src emacs-lisp
 (map! :leader
-      :desc "Open dotfiles directory"
+      :desc "Open test directory"
       "f t" (lambda () (interactive) (dired "~/Desktop/test")))
 #+end_src
-**** xos
+*** xos
 #+begin_src emacs-lisp
 (map! :leader
-      :desc "Open dotfiles directory"
+      :desc "Open xos directory"
       "f x" (lambda () (interactive) (dired "~/xos")))
 #+end_src
-*** toggle
-**** treemacs
+*** Zsh
+#+begin_src emacs-lisp
+(map! :leader
+      :desc "Open dotfiles zsh directory"
+      "f z" (lambda () (interactive) (dired "~/Desktop/pulls/dotfiles/.config/zsh")))
+#+end_src
+** toggle
+*** treemacs
 #+begin_src emacs-lisp
 (map! :leader
       :desc "Toggle treemacs"
       "t e" #'treemacs)
-
-;; (map! :g "M-n" #'treemacs)
-
 #+end_src
 ** resize-window
 #TODO
@@ -247,53 +259,112 @@ when focused and not focused
 (set-frame-parameter (selected-frame) 'alpha '(95 100))
 (add-to-list 'default-frame-alist '(alpha 95 100))
 #+end_src
-** functions
-*** TODO zsh
-#+begin_src shell
-(defun edit-zsh-function (name)
-  (interactive "sEnter function name: ")
-  (find-file "~/.zshrc")
-  (goto-char (point-min))
-  (search-forward-regexp (concat "function " name " "))
-  (narrow-to-defun)
-  (beginning-of-buffer))
+* Functions
+** Doom-wal
+#+begin_src emacs-lisp
+;; TODO: set a specific wallpaper based on the theme,                                   [x]  new function
+;; TODO: org bullets should use those colors too,                                       []
+;; TODO: make a version of this function that let you pick a theme and do everything,   []
+;; TODO: make this function send a signal to xmonad to set all workspaces to "threecol" []
+
+;; DONE
+(defun laluxx-doom-wal ()
+  "Run theme-magic-from-emacs, PyWal scripts and execute PyWal scripts."
+  (interactive)
+  (theme-magic-from-emacs)
+  ;; (shell-command "pkill picom")
+  (shell-command "python3 /home/l/xos/pywal-scripts/xmonad-dark-wal.py")    ;; dark  theme
+  ;; (shell-command "python3 /home/l/xos/pywal-scripts/xmonad-dark-wal.py") ;; light theme
+  (laluxx/set-wallpaper-to-match-doom-theme)
+  (shell-command "xmonad --restart"))
+  (shell-command "python3 /home/l/xos/pywal-scripts/nvim-wal.py")
+#+end_src
+** set-wallpaper-to-match-doom-theme
+will look into =~/xos/wallpaper/doom= for wallpapers called like doom-one.png or ef-summer.jpg
+#+begin_src emacs-lisp
+(defun laluxx/set-wallpaper-to-match-doom-theme ()
+  "Set the desktop wallpaper based on the current Doom Emacs theme."
+
+  (interactive)
+
+  (let* ((theme-name (symbol-name doom-theme))
+         (wallpaper-base-path "~/xos/wallpapers/doom/")
+         (png-wallpaper (concat wallpaper-base-path theme-name ".png"))
+         (jpg-wallpaper (concat wallpaper-base-path theme-name ".jpg"))
+         (wallpaper nil))
+
+    ;; Check for PNG and then JPG wallpaper
+    (if (file-exists-p png-wallpaper)
+        (setq wallpaper png-wallpaper)
+      (if (file-exists-p jpg-wallpaper)
+          (setq wallpaper jpg-wallpaper)))
+
+    ;; If a matching wallpaper was found, set it using feh
+    (if wallpaper
+        (shell-command (concat "feh --bg-scale " wallpaper))
+      (message "No matching wallpaper found for theme '%s'" theme-name))))
 #+end_src
 ** org
+*** Org-jump
+Jump to tangled file if exist
+#+begin_src emacs-lisp
+(map! :leader
+      :desc "Jump to tangled file"
+      "o j" #'org-jump-to-tangled)
+
+(defun org-jump-to-tangled ()
+  "Jump to the tangled file corresponding to the current Org mode file."
+  (interactive)
+  (let ((tangled-file (org-jump-to-tangled-file-name)))
+    (if tangled-file
+        (find-file (expand-file-name tangled-file (file-name-directory buffer-file-name)))
+      (message "Tangled file not specified in the document."))))
+
+(defun org-jump-to-tangled-file-name ()
+  "Extract the tangled file name from the Org mode file properties.
+If not specified, return nil."
+  (save-excursion
+    (goto-char (point-min))
+    (when (re-search-forward "^#\\+PROPERTY: header-args :tangle \\(.+\\)$" nil t)
+      (match-string 1))))
+#+end_src
+*** Org-split-jump
+Jump, vsplit and set zoom if tangled file exist
+#+begin_src emacs-lisp
+(defun org-jump-to-tangled-split-and-zoom ()
+  "Split the window vertically, jump to the tangled file corresponding to the current Org mode file in the new window, and adjust the zoom level."
+  (interactive)
+  (let ((tangled-file (org-jump-to-tangled-file-name)))
+    (if tangled-file
+        (progn
+          (text-scale-set -1)  ;; Set the desired zoom level here
+          (execute-kbd-macro (kbd "SPC w v"))  ;; Split window vertically
+          (execute-kbd-macro (kbd "SPC o j"))) ;; Jump to tangled
+      (message "Tangled file not specified in the document."))))
+
+(map! :leader
+      :desc "Split and jump to tangled file with zoom"
+      "o J" #'org-jump-to-tangled-split-and-zoom)
+#+end_src
+*** update-and-refresh
+#+begin_src emacs-lisp
+;; (defun laluxx/update-org-colors-and-refresh ()
+;;   "Reload the config file and refresh the color scheme."
+;;   (interactive)
+;;   ;; Load the file
+;;   (load-file (expand-file-name "~/.config/doom/config.org"))
+;;   ;; Then call your function to refresh the color scheme
+;;   (laluxx/org-colors-wal))
+#+end_src
 *** detect-double-asterisk
 *DONT WORK*
 #+begin_src emacs-lisp
-(defun laluxx/detect-double-asterisk ()
-  "If the last two characters typed are '**', move cursor in between."
-  (message "Running laluxx/detect-double-asterisk")
-  (when (and (eq major-mode 'org-mode)
-             (string= "**" (buffer-substring-no-properties (- (point) 2) (point))))
-    (backward-char 1)))
-#+end_src
-*** C-to-org
-dont really work, maybe i will do bash to org
-#+begin_src shell
-(defun laluxx/c-to-org ()
-  (interactive)
-  (let* ((buffer-contents (buffer-string))
-         (org-buffer (get-buffer-create (concat (file-name-base (buffer-name)) ".org")))
-         (includes (s-match-strings-all "^#include .*" buffer-contents))
-         (functions (s-match-strings-all "^\\(.*\\)\\(\\w+ \\*?\\w+\\)(.*)\n{" buffer-contents))
-         (main (s-match "^int main.*" buffer-contents)))
-    (with-current-buffer org-buffer
-      (insert "* Imports\n")
-      (insert "#+BEGIN_SRC c\n")
-      (mapc (lambda (include) (insert (car include) "\n")) includes)
-      (insert "#+END_SRC\n")
-      (insert "* Functions\n")
-      (mapc (lambda (function)
-              (insert (format "* %s\n" (second (split-string (cadr function))))))
-            functions)
-      (when main
-        (insert "* Main\n")
-        (insert "#+BEGIN_SRC c\n")
-        (insert (car main) "\n")
-        (insert "#+END_SRC\n")))
-    (switch-to-buffer org-buffer)))
+;; (defun laluxx/detect-double-asterisk ()
+;;   "If the last two characters typed are '**', move cursor in between."
+;;   (message "Running laluxx/detect-double-asterisk")
+;;   (when (and (eq major-mode 'org-mode)
+;;              (string= "**" (buffer-substring-no-properties (- (point) 2) (point))))
+;;     (backward-char 1)))
 #+end_src
 *** insert-header-tags
 #+begin_src emacs-lisp
@@ -310,9 +381,7 @@ dont really work, maybe i will do bash to org
   (message "Header tags inserted.")
   (evil-goto-first-line) ; Move cursor to the top of the buffer
   (evil-append-line 0)) ; Move cursor to the end of the line (after TITLE) and enter insert mode (Evil)
-#+end_src
 
-#+begin_src emacs-lisp
 (map! :leader
       :desc "Insert header tags"
       "i o" #'org-insert-header-tags)
@@ -336,15 +405,8 @@ dont really work, maybe i will do bash to org
                        (progn (org-end-of-subtree t t)
                               (point)))))))
 #+end_src
-** editing
-*** jump-definition
-#+begin_src emacs-lisp
-(map! :leader
-      (:prefix "j"
-       :desc "Jump to definition" "d" #'xref-find-definitions))
-#+end_src
-*** smart-delimiters
-**** delete-empty-delimiters
+** smart-delimiters
+*** delete-empty-delimiters
 #+begin_src emacs-lisp
 (defun laluxx/delete-empty-delimiters ()
   (interactive)
@@ -364,7 +426,7 @@ dont really work, maybe i will do bash to org
 
 (global-set-key (kbd "<backspace>") 'laluxx/delete-empty-delimiters)
 #+end_src
-**** tab-out-delimiters
+*** tab-out-delimiters
 #+begin_src emacs-lisp
 (defun laluxx/tab-out-of-delimiters-or-indent (orig-fun &rest args)
   (if (and (eq evil-state 'insert)
@@ -380,62 +442,8 @@ dont really work, maybe i will do bash to org
 
 (advice-add 'indent-for-tab-command :around #'laluxx/tab-out-of-delimiters-or-indent)
 #+end_src
-**** TODO wrap
-# first we test visual mode
-[cacapupu
-{cacapupu
-(cacapupu
-)
-# it made an hole here
-'cacapupu
-'
-# it made an hole here
-"cacapupu
-"
-# it made an hole here
-# now we test visual line
-[cacapupu # also [ { should complete }]
-{cacapupu
-(cacapupu
-) # it should be here but at the end of upper line same for all other
-# it made an hole here
-'cacapupu
-'
-# it made an hole here
-
-#+begin_src emacs-lisp
-(defun wrap (delimiter)
-  "Wrap region with DELIMITER if region is active."
-  (interactive
-   (list (read-char "Enter a character to wrap with: ")))
-  (if (region-active-p)
-      (let ((beg (region-beginning))
-            (end (region-end))
-            (selected-text (buffer-substring-no-properties (region-beginning) (region-end))))
-        (goto-char beg)
-        (insert-char delimiter)
-        (goto-char (1+ end))
-        (insert-char (get-matching-delimiter delimiter))
-        (when (or (and (string-match-p "\n" selected-text)
-                       (not (eq (char-after end) ?\n)))
-                  (eq (char-before beg) ?\n))
-          (newline-and-indent)
-          (goto-char (1+ end))
-          (newline-and-indent)))
-    (message "No region selected!")))
-
-(defun get-matching-delimiter (delimiter)
-  "Return the matching delimiter for DELIMITER."
-  (pcase delimiter
-    (?\( ?\))
-    (?\" ?\")
-    (?\' ?\')))
-
-(map! :leader
-      :nv "i w" #'wrap)
-#+end_src
-*** INSERT
-**** noob-mode
+** INSERT
+*** noob-mode
 #+begin_src emacs-lisp
 (after! evil
   (define-key evil-insert-state-map (kbd "C-v") 'yank)
@@ -445,17 +453,13 @@ dont really work, maybe i will do bash to org
   (define-key evil-insert-state-map (kbd "C-z") 'undo)
   (define-key evil-insert-state-map (kbd "C-y") 'redo))
 #+end_src
-
 * BEACON
 Never lose your cursor.  When you scroll, your cursor will shine!  This is a global minor-mode. Turn it on everywhere with:
-
 #+begin_src emacs-lisp
 (beacon-mode -1)
 #+end_src
-
 * BOOKMARKS AND BUFFERS
 Doom Emacs uses 'SPC b' for keybindings related to bookmarks and buffers.
-
 ** Bookmarks
 Bookmarks are somewhat like registers in that they record positions you can jump to.  Unlike registers, they have long names, and they persist automatically from one Emacs session to the next. The prototypical use of bookmarks is to record where you were reading in various files.
 
@@ -1284,9 +1288,27 @@ I wrapped most of this block in (after! org).  Without this, my settings might b
 #+end_src
 
 ** Org fonts
-I have created an interactive function for each color scheme (M-x dt/org-colors-*).  These functions will set appropriate colors and font attributes for org-level fonts and the org-table font.
+I have created an interactive function for each color scheme (M-x dt/org-colors-*).
+These functions will set appropriate colors and font attributes for org-level fonts and the org-table font.
+*TODO:* make org-colors-wal work make a python script
 
 #+begin_src emacs-lisp
+(defun laluxx/org-colors-wal ()
+  "Enable wal colors for Org headers."
+  (interactive)
+  (dolist
+      (face
+       '((org-level-1 1.7 "#51afef" ultra-bold)
+         (org-level-2 1.6 "#c678dd" extra-bold)
+         (org-level-3 1.5 "#98be65" bold)
+         (org-level-4 1.4 "#da8548" semi-bold)
+         (org-level-5 1.3 "#5699af" normal)
+         (org-level-6 1.2 "#a9a1e1" normal)
+         (org-level-7 1.1 "#46d9ff" normal)
+         (org-level-8 1.0 "#ff6c6b" normal)))
+    (set-face-attribute (nth 0 face) nil :font doom-variable-pitch-font :weight (nth 3 face) :height (nth 1 face) :foreground (nth 2 face)))
+    (set-face-attribute 'org-table nil :font doom-font :weight 'normal :height 1.0 :foreground "#bfafdf"))
+
 (defun dt/org-colors-doom-one ()
   "Enable Doom One colors for Org headers."
   (interactive)

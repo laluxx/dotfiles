@@ -35,6 +35,7 @@
 (package! nano-theme)
 (package! xresources-theme)
 (package! ewal)
+(package! theme-magic)
 
 ;; (package! ewal)
 ;; (package! ewal-spacemacs-themes)

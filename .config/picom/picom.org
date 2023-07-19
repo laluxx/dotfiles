@@ -46,10 +46,11 @@ enable-fading-next-tag = false;
 animation-exclude = [
    "class_g = 'xmobar'",
    "class_g = 'xmonad'",
+   "class_g = 'dmenu'",
+   # "class_g = 'kitty'",
    # "class_g = 'Emacs'",
    # "class_g = 'kitty'",
    # "class_g = 'scrot'",
-#  "class_g = 'kitty'",
 #  "class_g = 'awesome'",
 ];
 #+end_src
@@ -69,7 +70,8 @@ corner-radius = 12;
 rounded-corners-exclude = [
   "window_type = 'dock'",
  "class_g = 'xmobar'",
- "class_g = 'Emacs'"
+ "class_g = 'Emacs'",
+ "class_g = 'dmenu'",
  # "class_g = 'kitty'",
  # "class_g = 'code-oss'",
  # "class_g = 'scrot'",

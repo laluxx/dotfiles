@@ -56,7 +56,8 @@ bindkey -M menuselect 'j' vi-down-line-or-history
 bindkey -v '^?' backward-delete-char
 
 bindkey -s '^r' 'lfcd\n'
-bindkey -s '^e' 'thunar\n'
+bindkey -s '^e' 'pcmanfm\n'
+bindkey -s '^w' 'wal-set\n'
 
 # below opens a new terminal in current dir
 # case "$TERM" in (rxvt|rxvt-*|st|st-*|*xterm*|(dt|k|E)term)
@@ -940,36 +941,6 @@ function pullpkg() {
   done
 }
 
-# get() {
-#   no_reinstall=0
-#   while getopts "n" opt; do
-#     case ${opt} in
-#       n)
-#         no_reinstall=1
-#         ;;
-#       \?)
-#         echo "Invalid option: $OPTARG" 1>&2
-#         ;;
-#     esac
-#   done
-#   shift $((OPTIND -1))
-
-#   for pkg in "$@"
-#   do
-#     if [[ $no_reinstall -eq 1 && $(yay -Qe $pkg 2>/dev/null) ]]
-#     then
-#       echo "Package $pkg is already installed and no reinstall is needed."
-#     else
-#       if yay -S "$pkg"
-#       then
-#         echo "Package $pkg installed successfully with yay."
-#       else
-#         echo "yay could not find the package $pkg."
-#       fi
-#     fi
-#   done
-# }
-
 get() {
   PACKAGE=$1
   FLAG=$2
@@ -990,6 +961,7 @@ get() {
 
 getall() {
   FILE_PATH="${1}.txt"
+  FLAG=$2
 
   if [ ! -f "$FILE_PATH" ]; then
     echo "File $FILE_PATH does not exist."
@@ -998,7 +970,7 @@ getall() {
 
   while IFS= read -r PACKAGE
   do
-    get "$PACKAGE" --no-reinstall
+    get "$PACKAGE" "$FLAG"
   done < "$FILE_PATH"
 }
 
@@ -1145,6 +1117,11 @@ function set-wm() {
         echo "No 'exec' line found in $xinitrc_file"
     fi
 }
+
+# function reset_xinit() {
+#   nohup zsh -i -c "pkill -9 xinit; sleep 2; sudo chvt 1; openvt -s your_alias_here" >/dev/null 2>&1 &
+#   disown
+# }
 
 function autologin() {
         if [[ "$1" == "info" ]]; then
@@ -1575,7 +1552,7 @@ instant_menu() {
 gtkset () {
     new_color=$(awk '/color5/{print $2}' $HOME/.cache/wal/colors-kitty.conf)
     if [ -n "$new_color" ]; then
-        sed -i "s/@define-color accent #[^;]*;/@define-color accent $new_color;/g" $HOME/.local/share/themes/darkarch/gtk-3.0/gtk.css
+        sed -i "s/@define-color accent #[^;]*;/@define-color accent $new_color;/g" $HOME/.local/share/themes/darkwal/gtk-3.0/gtk.css
     else
         echo "No color5 found in colors-kitty.conf"
     fi
@@ -1610,28 +1587,19 @@ wal-set () {
     local wallpaper=$(find "$dir" \( -name "*.png" -o -name "*.jpg" -o -name "*.jpeg" -o -name "*.webp" \) -type f | fzf --height 40% -m --reverse --ansi --cycle)
     if [[ -n "$wallpaper" ]]
     then
-        wpg -s "${wallpaper}" # -q #wal -i
-    else
-        echo "No wallpaper selected."
-    fi
-
-    theme pywal --no-random
-    gtkset
-}
-
-wal-set () {
-    local dir=~/xos/wallpapers/static
-    local wallpaper=$(find "$dir" \( -name "*.png" -o -name "*.jpg" -o -name "*.jpeg" -o -name "*.webp" \) -type f | fzf --height 40% -m --reverse --ansi --cycle)
-    if [[ -n "$wallpaper" ]]
-    then
-        wpg -s "${wallpaper}" # -q #wal -i
+        wal -i "${wallpaper}" # -q
         echo "${wallpaper}" > ~/xos/theme/.wallpaper
+        theme pywal --no-random  #set gtk theme cursor icons, and picom : ON
+        python3 ~/xos/pywal-scripts/xmonad-dark-wal.py   # DARK THEME
+        # python3 ~/xos/pywal-scripts/xmonad-light-wal.py # DARK LIGHT THEME
+        python3 ~/xos/pywal-scripts/nvim-wal.py          # GEN NVCHAD THEME
+        python3 ~/xos/pywal-scripts/org-bullets.py       # GEN org-colors-wal
+        xmonad --restart
+        # gtkset
     else
-        echo "No wallpaper selected."
+        # echo "No wallpaper selected."
     fi
 
-    theme pywal --no-random
-    gtkset
 }
 
 qr-gen() {       if [ -z "$1" ]; then
@@ -2229,7 +2197,7 @@ dmenu_theme() {
       DMENU_Y_POSITION="-Y 500"
       ;;
     "pywal")
-      # Default to original purple theme for the border, use neutral colors for the rest
+      # Default to original purple theme for the border, use neutral colors for the rest # TODO use wal colors
       DMENU_COLORS="-nb #282a36 -nf #f8f8f2 -sb #BD93F9 -sf #000000"
       DMENU_POSITION="-X 0"
       DMENU_Y_POSITION="-Y 0"
@@ -2246,35 +2214,52 @@ dmenu_theme() {
   echo "${DMENU_Y_POSITION}" > ~/xos/theme/.dmenu_y_position
 }
 
-doom_theme() {
+function xmonad_theme() {
   local selected_theme
-
-  if [[ -z $1 ]]; then
-    echo "Please specify a theme"
+  if [[ -z $1 ]]
+  then
+      echo "Please specify a theme"
   else
-    selected_theme=$1
-    case $selected_theme in
-      "palenight") doom_theme="doom-palenight"  ;;
-      "dracula") doom_theme="doom-dracula"  ;;
-      "catppuccin") doom_theme="doom-catppuccin"  ;; # Please replace with a valid Doom Emacs theme
-      "oxocarbon") doom_theme="doom-oxocarbon"  ;; # Please replace with a valid Doom Emacs theme
-      "rosepine") doom_theme="doom-rosepine"  ;; # Please replace with a valid Doom Emacs theme
-      "pywal") doom_theme="doom-one"  ;; # Using Doom One as the default theme for pywal
-      *)
-        echo "Unknown theme. Please specify one of: palenight, dracula, catppuccin, oxocarbon, rosepine, pywal."
-        return ;;
-    esac
+      selected_theme=$(echo "$1" | awk '{print tolower($0)}')
+      filepath="$HOME/.config/xmonad/xmonad.hs"
+      available_themes="doomone dracula gruvboxdark monokaipro nord oceanicnext palenight solarizeddark solarizedlight tomorrownight wal oxoterm mocha"
+      correct_case="DoomOne Dracula GruvboxDark MonokaiPro Nord OceanicNext Palenight SolarizedDark SolarizedLight TomorrowNight Wal Oxoterm Mocha"
 
-    # Change the theme in the Doom Emacs configuration file
-    sed -i "s/^  (setq doom-theme '.*$/  (setq doom-theme '$doom_theme')/" ~/.doom.d/config.el
-
-    # Refresh Doom Emacs configuration
-    \emacs --batch -l ~/.emacs.d/init.el --eval="(doom/reload)"
-
-    echo "Doom Emacs theme updated to $doom_theme"
+      if [[ $available_themes =~ (^|[[:space:]])"$selected_theme"($|[[:space:]]) ]]; then
+          for available_theme in $available_themes; do
+              correct_case_theme=$(echo "${correct_case}" | awk -v idx=$(expr index "$available_themes" $available_theme) '{print $idx}')
+              if grep -q "import Colors.${correct_case_theme}" "${filepath}"; then
+                  sed -i "s/^import Colors.${correct_case_theme}/-- import Colors.${correct_case_theme}/" "${filepath}"
+              fi
+              if [[ "${available_theme}" == "${selected_theme}" ]]; then
+                  sed -i "s/^-- import Colors.${correct_case_theme}/import Colors.${correct_case_theme}/" "${filepath}"
+              fi
+          done
+          xmonad --restart
+      else
+          echo "Invalid theme: ${selected_theme}"
+          echo "Valid themes are: ${available_themes}"
+          return 1
+      fi
   fi
 }
 
 if [ -f ~/xos/theme/.theme ]; then
   fzf_theme $(cat ~/xos/theme/.theme)
 fi
+
+function color-to-wallpaper() {
+  # Call gpick to pick a color
+  echo "Please pick a color using the gpick interface that pops up."
+  color=$(gpick --single)
+
+  # Validate if color was picked or not
+  if [ -z "$color" ]; then
+    echo "No color was picked. Please try again."
+  else
+    # Use Imagemagick to create an image of that color
+    echo "Generating a 1920x1080 image of color $color..."
+    convert -size 1920x1080 xc:"$color" color_image.png
+    echo "Image 'color_image.png' of color $color generated successfully!"
+  fi
+}

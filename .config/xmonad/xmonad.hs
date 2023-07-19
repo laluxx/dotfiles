@@ -1,3 +1,17 @@
+-- import Colors.DoomOne
+-- import Colors.GruvboxDark
+-- import Colors.MonokaiPro
+-- import Colors.Nord
+-- import Colors.OceanicNext
+-- import Colors.SolarizedDark
+-- import Colors.SolarizedLight
+-- import Colors.TomorrowNight
+-- import Colors.Dracula
+-- import Colors.Palenight
+import Colors.Wal
+-- import Colors.Oxoterm
+-- import Colors.Mocha
+
   -- Base
 import XMonad
 import System.Directory
@@ -72,25 +86,6 @@ import XMonad.Util.SpawnOnce
 
 import XMonad.Layout.PerWorkspace (onWorkspace)
 
-   -- ColorScheme module (SET ONLY ONE!)
-      -- Possible choice are:
-      -- DoomOne
-      -- Dracula
-      -- GruvboxDark
-      -- MonokaiPro
-      -- Nord
-      -- OceanicNext
-      -- Palenight
-      -- SolarizedDark
-      -- SolarizedLight
-      -- TomorrowNight
-import Colors.Dracula
--- import Colors.Palenight
--- import Colors.Oxoterm
--- import Colors.Mocha
-
--- import Colors.Pywal
-
 myFont :: String
 myFont = "xft:SauceCodePro Nerd Font Mono:regular:size=9:antialias=true:hinting=true"
 
@@ -108,7 +103,7 @@ myEmacs = "emacsclient -c -a 'emacs' "  -- Makes emacs keybindings easier to typ
 
 myEditor :: String
 -- myEditor = "emacsclient -c -a 'emacs' "  -- Sets emacs as editor
-myEditor = myTerminal ++ " -e nvim "    -- Sets vim as editor
+myEditor = myTerminal ++ " -e nvim "    -- Sets neovim as editor
 
 myBorderWidth :: Dimension
 myBorderWidth = 2           -- Sets border width for windows
@@ -134,7 +129,7 @@ myStartupHook = do
 
   spawnOnce "xrandr --output \"$(xrandr | awk '/ connected/ {print $1; exit}')\" --mode 1920x1080 --rate 144"
   spawnOnce "xset r rate 160 60"
-  spawnOnce "python3 /home/l/xos/typetune/original.py"
+  spawnOnce "python3 /home/l/xos/typetune/2.py"
 
   spawnOnce "lxsession"
   -- spawnonce "/usr/lib/polkit-gnome/polkit-gnome-authentication-agent-1"
@@ -143,13 +138,12 @@ myStartupHook = do
   spawnOnce "volumeicon"
   spawnOnce "notify-log $HOME/.log/notify.log"
 
-  spawn "xdotool keydown Super_L && xdotool key Tab key Tab key Tab key Tab key Tab key Tab && xdotool keyup Super_L"
+  -- spawn "xdotool keydown Super_L && xdotool key Tab key Tab key Tab key Tab key Tab key Tab && xdotool keyup Super_L"
   spawn "/usr/bin/emacs --daemon" -- emacs daemon for the emacsclient
   spawn "doom sync"
   -- spawn "pgrep -u $USER -x emacsclient > /dev/null || emacsclient -c -a 'emacs'" -- emacs client
-  spawn "emacsclient -c -a 'emacs'" -- emacs client
-  spawn "discord" -- discord
-  spawn "zsh -c 'ded'"  --drammtic
+  -- spawn "emacsclient -c -a 'emacs'" -- emacs client
+  -- spawn "discord" -- discord
 
   spawn ("sleep 2 && conky -c $HOME/.config/conky/xmonad/" ++ colorScheme ++ "-01.conkyrc")
   spawn ("sleep 2 && trayer --edge top --align right --widthtype request --padding 6 --SetDockType true --SetPartialStrut true --expand true --monitor 1 --transparent true --alpha 0 " ++ colorTrayer ++ " --height 22")
@@ -159,6 +153,8 @@ myStartupHook = do
   -- spawnOnce "feh --randomize --bg-fill /usr/share/backgrounds/dtos-backgrounds/*"  -- feh set random wallpaper
   -- spawnOnce "nitrogen --restore &"   -- if you prefer nitrogen to feh
   spawnOnce "wal -R -q" --pywall
+  -- spawnOnce "kitty -e 'zsh -i -c \"theme palenight; zsh\"'"
+
   setWMName "LG3D"
 
 myNavigation :: TwoD a (Maybe a)
@@ -715,9 +711,26 @@ myKeys c =
     where nonNSP          = WSIs (return (\ws -> W.tag ws /= "NSP"))
           nonEmptyNonNSP  = WSIs (return (\ws -> isJust (W.stack ws) && W.tag ws /= "NSP"))
 
---  myMouseBindings :: XConfig t -> M.Map (KeyMask, Button) (Window -> X ())
--- myMouseBindings (XConfig {XMonad.modMask = modm}) = M.fromList
---     [ ((0, button3), (\_ -> spawn "jgmenu_run")) ] -- Right click spawns jgmenu
+-- myAdditionalKeysP :: [(String, X ())]
+-- myAdditionalKeysP = [ ("M-S-t", setAllToThreeCol) ]
+
+-- Then, you would add the keybindings to your xmonad configuration:
+-- myConfig = def
+--     { modMask = mod4Mask -- Use Super instead of Alt (optional)
+--     , layoutHook = myLayoutHook -- This is just an example, replace with your actual layoutHook
+--     -- Other settings...
+--     } `additionalKeysP` myAdditionalKeysP
+
+
+-- This is just an example. You'll need to define 'threeCol' to be whatever layout you actually want
+
+-- Set the layout of all workspaces to 'threeCol'
+-- setAllThreeCol :: X ()
+-- setAllThreeCol = windows $ \ws -> ws { layout = ThreeCol 1 (3/100) (1/2) }
+
+myMouseBindings :: XConfig t -> M.Map (KeyMask, Button) (Window -> X ())
+myMouseBindings (XConfig {XMonad.modMask = modm}) = M.fromList
+    [ ((0, button3), (\_ -> spawn "jgmenu_run")) ] -- Right click spawns jgmenu
 
 main :: IO ()
 main = do
@@ -763,3 +776,51 @@ main = do
         , ppOrder  = \(ws:l:t:ex) -> [ws,l]++ex++[t]
         }
     }
+
+
+-- main :: IO ()
+-- main = do
+--   -- Launching three instances of xmobar on their monitors.
+--   xmproc0 <- spawnPipe ("xmobar -x 0 $HOME/.config/xmobar/" ++ colorScheme ++ "-xmobarrc")
+--   xmproc1 <- spawnPipe ("xmobar -x 1 $HOME/.config/xmobar/" ++ colorScheme ++ "-xmobarrc")
+--   xmproc2 <- spawnPipe ("xmobar -x 2 $HOME/.config/xmobar/" ++ colorScheme ++ "-xmobarrc")
+--   -- the xmonad, ya know...what the WM is named after!
+
+--   xmonad $ addDescrKeys' ((mod4Mask, xK_F1), showKeybindings) myKeys $ ewmh $ docks $ def
+--     { manageHook         = myManageHook <+> manageDocks
+--     , handleEventHook    = windowedFullscreenFixEventHook <> swallowEventHook (className =? "kitty"  <||> className =? "st-256color" <||> className =? "XTerm") (return True) <> trayerPaddingXmobarEventHook
+--     , modMask            = myModMask
+--     , terminal           = myTerminal
+--     , startupHook        = myStartupHook
+--     , layoutHook         = showWName' myShowWNameTheme $ myLayoutHook
+--     , workspaces         = myWorkspaces
+--     , borderWidth        = myBorderWidth
+--     , normalBorderColor  = myNormColor
+--     , focusedBorderColor = myFocusColor
+--     , keys               = myAdditionalKeysP <+> keys def
+--     , mouseBindings      = myMouseBindings <+> mouseBindings def
+--     , logHook = dynamicLogWithPP $  filterOutWsPP [scratchpadWorkspaceTag] $ xmobarPP
+--         { ppOutput = \x -> hPutStrLn xmproc0 x   -- xmobar on monitor 1
+--                         >> hPutStrLn xmproc1 x   -- xmobar on monitor 2
+--                         >> hPutStrLn xmproc2 x   -- xmobar on monitor 3
+--         , ppCurrent = xmobarColor color06 "" . wrap
+--                       ("<box type=Bottom width=2 mb=2 color=" ++ color06 ++ ">") "</box>"
+--           -- Visible but not current workspace
+--         , ppVisible = xmobarColor color06 "" . clickable
+--           -- Hidden workspace
+--         , ppHidden = xmobarColor color05 "" . wrap
+--                      ("<box type=Top width=2 mt=2 color=" ++ color05 ++ ">") "</box>" . clickable
+--           -- Hidden workspaces (no windows)
+--         , ppHiddenNoWindows = xmobarColor color05 ""  . clickable
+--           -- Title of active window
+--         , ppTitle = xmobarColor color16 "" . shorten 60
+--           -- Separator character
+--         , ppSep =  "<fc=" ++ color09 ++ "> <fn=1>|</fn> </fc>"
+--           -- Urgent workspace
+--         , ppUrgent = xmobarColor color02 "" . wrap "!" "!"
+--           -- Adding # of windows on current workspace to the bar
+--         , ppExtras  = [windowCount]
+--           -- order of things in xmobar
+--         , ppOrder  = \(ws:l:t:ex) -> [ws,l]++ex++[t]
+--         }
+--     }
