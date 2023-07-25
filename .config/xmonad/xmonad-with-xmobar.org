@@ -216,8 +216,8 @@ myStartupHook = do
   spawnOnce "notify-log $HOME/.log/notify.log"
 
   -- spawn "xdotool keydown Super_L && xdotool key Tab key Tab key Tab key Tab key Tab key Tab && xdotool keyup Super_L"
-  spawn "/usr/bin/emacs --daemon" -- emacs daemon for the emacsclient
   spawn "doom sync"
+  spawn "/usr/bin/emacs --daemon" -- emacs daemon for the emacsclient
   -- spawn "pgrep -u $USER -x emacsclient > /dev/null || emacsclient -c -a 'emacs'" -- emacs client
   -- spawn "emacsclient -c -a 'emacs'" -- emacs client
   -- spawn "discord" -- discord

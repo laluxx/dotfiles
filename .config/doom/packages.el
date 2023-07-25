@@ -34,9 +34,12 @@
 (package! notmuch)
 (package! nano-theme)
 (package! xresources-theme)
-(package! ewal)
 (package! theme-magic)
 
-;; (package! ewal)
-;; (package! ewal-spacemacs-themes)
-;; (package! ewal-evil-cursors)
+(package! ewal)
+(package! ewal-spacemacs-themes)
+(package! ewal-evil-cursors)
+(package! ewal-doom-themes)
+;; (package! spaceline)
+
+(package! eat)

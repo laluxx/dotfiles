@@ -1583,7 +1583,7 @@ gtkset2 () {
     done
 }
 
-# TODO: set emacs theme too []
+# TODO: set emacs theme too [x]
 wal-set () {
     local dir=~/xos/wallpapers/static
     local wallpaper=$(find "$dir" \( -name "*.png" -o -name "*.jpg" -o -name "*.jpeg" -o -name "*.webp" \) -type f | fzf --height 40% -m --reverse --ansi --cycle)
@@ -1602,7 +1602,6 @@ wal-set () {
         xmonad --restart
         oomox-gtk-gen
         papirus-wal # set icon                             # TODO ask for sudo password and slow
-        # gtkset #TODO
     else
         # echo "No wallpaper selected."
     fi

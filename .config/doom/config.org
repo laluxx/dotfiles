@@ -5,20 +5,22 @@
 
 * TABLE OF CONTENTS :toc:
 - [[#xos][XOS]]
+  - [[#functions][Functions]]
   - [[#general-key][General-key]]
   - [[#update-dotfiles][update-dotfiles]]
-  - [[#gptel][gptel]]
-- [[#keybinds][keybinds]]
-  - [[#dmenu][dmenu]]
-  - [[#help-hooks][help-hooks]]
+- [[#ewal][Ewal]]
+  - [[#ewal-doom-themes][Ewal-Doom-Themes]]
+  - [[#ewal-evil-cursor][Ewal-Evil-Cursor]]
+  - [[#spaceline][Spaceline]]
+- [[#gptel][Gptel]]
+- [[#keybinds][Keybinds]]
+  - [[#dmenu][Dmenu]]
+  - [[#help-hooks][Help-hooks]]
   - [[#movement][movement]]
   - [[#toggle][toggle]]
   - [[#resize-window][resize-window]]
   - [[#look-and-feel][look and feel]]
-- [[#functions][Functions]]
-  - [[#doom-wal][Doom-wal]]
-  - [[#set-wallpaper-to-match-doom-theme][set-wallpaper-to-match-doom-theme]]
-  - [[#org][org]]
+- [[#org][org]]
   - [[#smart-delimiters][smart-delimiters]]
   - [[#insert][INSERT]]
 - [[#beacon][BEACON]]
@@ -78,6 +80,108 @@
 - [[#zap-to-char][ZAP TO CHAR]]
 
 * XOS
+** Functions
+*** Wal-Set
+#+begin_src emacs-lisp
+(defun laluxx/wal-set ()
+  (interactive)
+  (let* ((default-directory "~/xos/wallpapers/static")
+         (theme-directory "~/xos/theme")
+         (pywal-scripts-directory "~/xos/pywal-scripts")
+         (counsel-find-file (counsel--find-return-list
+                             (lambda (x)
+                               (let ((ext (file-name-extension x)))
+                                 (and ext (member ext '("png" "jpg" "jpeg" "webp"))))))))
+    (ivy-read "Choose wallpaper: "
+              counsel-find-file
+              :action (lambda (wallpaper)
+                        (when (and (not (string-empty-p wallpaper))
+                                   (file-exists-p wallpaper))
+                          (let ((abs-wallpaper (expand-file-name wallpaper default-directory)))
+                            (shell-command-to-string (concat "wal -i " abs-wallpaper))
+                            (with-temp-file (concat theme-directory "/.wallpaper")
+                              (insert abs-wallpaper))
+                            (shell-command-to-string "theme pywal --no-random")
+                            (dolist (script '("xmonad-dark-wal.py" "nvim-wal.py" "nvim-wal-dark.py"))
+                              (shell-command-to-string (concat "python3 " pywal-scripts-directory "/" script)))
+                            (shell-command-to-string "xmonad --restart")
+                            ;; (shell-command "papirus-wal")
+                            (shell-command-to-string "oomox-gtk-gen")
+                            (laluxx/load-org-wal-colors)))))))
+
+#+end_src
+*** Theme-Realod
+Setup file watcher for ~/.cache/wal/colors
+#+begin_src emacs-lisp
+(run-with-idle-timer
+ 1 nil
+ (lambda ()
+   (file-notify-add-watch
+    "~/.cache/wal/colors"
+    '(change)
+    (lambda (event)
+      (load-theme 'ewal-doom-one t)
+      (enable-theme 'ewal-doom-one)))))
+#+end_src
+*** Load-Org-Colors
+#+begin_src emacs-lisp
+(defun laluxx/load-org-wal-colors ()
+  "Load colors from the wal cache and apply them to org levels."
+  (interactive)
+  (let* ((wal-colors (with-temp-buffer
+                       (insert-file-contents "~/.cache/wal/colors")
+                       (split-string (buffer-string) "\n" t)))
+         (wal-colors (cdr wal-colors))) ;; remove the black color (first one)
+    (dotimes (level (min 8 (length wal-colors)))
+      (let ((color (nth level wal-colors)))
+        (set-face-attribute (intern (format "org-level-%d" (1+ level))) nil :foreground color)))))
+#+end_src
+
+*** Doom-wal
+#+begin_src emacs-lisp
+;; TODO: set a specific wallpaper based on the theme,                                            [x]  set-wallpaper-to-match-doom-theme
+;; TODO: org bullets should use those colors too,                                                []
+;; TODO: make a version of this function that let you consuel a theme and do everything,         []
+;; TODO: make this function send a signal to xmonad to set all workspaces to "threecol"          []
+
+;; DONE
+(defun laluxx-doom-wal ()
+  "Run theme-magic-from-emacs, PyWal scripts and execute PyWal scripts."
+  (interactive)
+  (theme-magic-from-emacs)
+  (shell-command "pkill picom")
+  (shell-command "python3 /home/l/xos/pywal-scripts/xmonad-dark-wal.py")    ;; dark  theme
+  ;; (shell-command "python3 /home/l/xos/pywal-scripts/xmonad-light-wal.py") ;; light theme
+  (laluxx/set-wallpaper-to-match-doom-theme)
+  (shell-command "xmonad --restart"))
+  (shell-command "python3 /home/l/xos/pywal-scripts/nvim-wal.py")
+#+end_src
+*** set-wallpaper-to-match-doom-theme
+will look into =~/xos/wallpaper/doom= for wallpapers called like doom-one.png or ef-summer.jpg
+#+begin_src emacs-lisp
+(defun laluxx/set-wallpaper-to-match-doom-theme ()
+  "Set the desktop wallpaper based on the current Doom Emacs theme."
+
+  (interactive)
+
+  (let* ((theme-name (symbol-name doom-theme))
+         (wallpaper-base-path "~/xos/wallpapers/doom/")
+         (png-wallpaper (concat wallpaper-base-path theme-name ".png"))
+         (jpg-wallpaper (concat wallpaper-base-path theme-name ".jpg"))
+         (wallpaper nil))
+
+    ;; Check for PNG and then JPG wallpaper
+    (if (file-exists-p png-wallpaper)
+        (setq wallpaper png-wallpaper)
+      (if (file-exists-p jpg-wallpaper)
+          (setq wallpaper jpg-wallpaper)))
+
+    ;; If a matching wallpaper was found, set it using feh
+    (if wallpaper
+        (shell-command (concat "feh --bg-scale " wallpaper))
+      (message "No matching wallpaper found for theme '%s'" theme-name))))
+#+end_src
+
 ** General-key
 Keybinds that execute other keybinds, cuz im lazy aka efficent
 *** Dir-split-jump
@@ -116,19 +220,67 @@ or one of its subdirectories && if that file is a org file
 (add-hook 'after-save-hook 'laluxx/run-update-dotfiles)
 #+end_src
 
-** gptel
+* Ewal
+Ewal configuration
+#+begin_src emacs-lisp
+(use-package! ewal
+  :init
+  (setq ewal-use-built-in-always-p nil
+        ewal-use-built-in-on-failure-p t
+        ewal-built-in-palette "sexy-material"))
+
+#+end_src
+** Ewal-Doom-Themes
+#+begin_src emacs-lisp
+(use-package! ewal-doom-themes
+  :init
+  ;; If you've set ewal-use-built-in-always-p to nil in ewal configuration
+  ;; This might be unnecessary, but doesn't hurt to ensure.
+  (setq ewal-use-built-in-always-p nil
+        ewal-use-built-in-on-failure-p t
+        ewal-built-in-palette "sexy-material")
+  :config
+  (load-theme 'ewal-doom-one t)
+  (enable-theme 'ewal-doom-one))
+#+end_src
+** Ewal-Evil-Cursor
+#+begin_src emacs-lisp
+(use-package! ewal-evil-cursors
+  :after ewal-doom-themes
+  :config
+  (ewal-evil-cursors-get-colors :apply t :spaceline t))
+#+end_src
+** Spaceline
+#+begin_src emacs-lisp
+;; (use-package! spaceline
+;;   :after ewal-evil-cursors
+;;   :init
+;;   (setq powerline-default-separator nil)
+;;   :config
+;;   (spaceline-spacemacs-theme))
+
+;; Font and theme settings
+(setq my:rice:font (font-spec :family "Source Code Pro" :weight 'semi-bold :size 11.0))
+(set-frame-font my:rice:font nil t)
+(add-to-list  'default-frame-alist `(font . ,(font-xlfd-name my:rice:font)))
+
+;; Enable certain modes
+(show-paren-mode +1)
+(global-hl-line-mode)
+#+end_src
+* Gptel
 #+begin_src emacs-lisp
 (use-package! gptel
   :config
   (setq! gptel-api-key (getenv "OPENAI_API_KEY")))
 #+end_src
 
-* keybinds
-** dmenu
+* Keybinds
+** Dmenu
 #+begin_src emacs-lisp
 (global-set-key (kbd "M-p") 'dmenu)
 #+end_src
-** help-hooks
+** Help-hooks
 #+begin_src emacs-lisp
 (defun my-list-hooks ()
   "List all hooks in a completing-read interface."
@@ -261,52 +413,7 @@ when focused and not focused
 (set-frame-parameter (selected-frame) 'alpha '(95 100))
 (add-to-list 'default-frame-alist '(alpha 95 100))
 #+end_src
-* Functions
-** Doom-wal
-#+begin_src emacs-lisp
-;; TODO: set a specific wallpaper based on the theme,                                   [x]  new function
-;; TODO: org bullets should use those colors too,                                       []
-;; TODO: make a version of this function that let you consuel a theme and do everything,   []
-;; TODO: make this function send a signal to xmonad to set all workspaces to "threecol" []
-
-;; DONE
-(defun laluxx-doom-wal ()
-  "Run theme-magic-from-emacs, PyWal scripts and execute PyWal scripts."
-  (interactive)
-  (theme-magic-from-emacs)
-  (shell-command "pkill picom")
-  (shell-command "python3 /home/l/xos/pywal-scripts/xmonad-dark-wal.py")    ;; dark  theme
-  ;; (shell-command "python3 /home/l/xos/pywal-scripts/xmonad-light-wal.py") ;; light theme
-  (laluxx/set-wallpaper-to-match-doom-theme)
-  (shell-command "xmonad --restart"))
-  (shell-command "python3 /home/l/xos/pywal-scripts/nvim-wal.py")
-#+end_src
-** set-wallpaper-to-match-doom-theme
-will look into =~/xos/wallpaper/doom= for wallpapers called like doom-one.png or ef-summer.jpg
-#+begin_src emacs-lisp
-(defun laluxx/set-wallpaper-to-match-doom-theme ()
-  "Set the desktop wallpaper based on the current Doom Emacs theme."
-
-  (interactive)
-
-  (let* ((theme-name (symbol-name doom-theme))
-         (wallpaper-base-path "~/xos/wallpapers/doom/")
-         (png-wallpaper (concat wallpaper-base-path theme-name ".png"))
-         (jpg-wallpaper (concat wallpaper-base-path theme-name ".jpg"))
-         (wallpaper nil))
-
-    ;; Check for PNG and then JPG wallpaper
-    (if (file-exists-p png-wallpaper)
-        (setq wallpaper png-wallpaper)
-      (if (file-exists-p jpg-wallpaper)
-          (setq wallpaper jpg-wallpaper)))
-
-    ;; If a matching wallpaper was found, set it using feh
-    (if wallpaper
-        (shell-command (concat "feh --bg-scale " wallpaper))
-      (message "No matching wallpaper found for theme '%s'" theme-name))))
-#+end_src
-** org
+* org
 *** Org-jump
 Jump to tangled file if exist
 #+begin_src emacs-lisp
@@ -774,7 +881,7 @@ ln -s ~/.local/share/Trash .
 
 * DOOM THEME
 #+BEGIN_SRC emacs-lisp
-(setq doom-theme 'doom-palenight)
+;; (setq doom-theme 'doom-palenight)
 
 ;; TODO
 ;; Set ewal options
@@ -967,21 +1074,23 @@ Settings related to fonts within Doom Emacs:
 + 'font-lock-comment-face' -- for comments.
 + 'font-lock-keyword-face' -- for keywords with special significance like 'setq' in elisp.
 ** Variable-fon
+
 #+begin_src emacs-lisp
-(defface my-variable-face
-  '((t :family "OCR B" :height 120))  ;; Adjust size as needed
-  "My face for variable identifiers.")
+;; TODO
+;; (defface my-variable-face
+;;   '((t :family "OCR B" :height 120))  ;; Adjust size as needed
+;;   "My face for variable identifiers.")
 
-(defun my-variable-highlighter (limit)
-  (while (re-search-forward "\\_<[a-z_][a-zA-Z0-9_]*\\_>" limit t)
-    (let ((face (get-text-property (match-beginning 0) 'face)))
-      (when (and (listp face) (member 'font-lock-variable-name-face face))
-        (put-text-property (match-beginning 0) (match-end 0) 'face 'my-variable-face)))))
+;; (defun my-variable-highlighter (limit)
+;;   (while (re-search-forward "\\_<[a-z_][a-zA-Z0-9_]*\\_>" limit t)
+;;     (let ((face (get-text-property (match-beginning 0) 'face)))
+;;       (when (and (listp face) (member 'font-lock-variable-name-face face))
+;;         (put-text-property (match-beginning 0) (match-end 0) 'face 'my-variable-face)))))
 
-(defun my-variable-hook ()
-  (font-lock-add-keywords nil '((my-variable-highlighter)) 'append))
+;; (defun my-variable-hook ()
+;;   (font-lock-add-keywords nil '((my-variable-highlighter)) 'append))
 
-(add-hook 'emacs-lisp-mode-hook 'my-variable-hook)
+;; (add-hook 'emacs-lisp-mode-hook 'my-variable-hook)
 #+end_src
 
 ** Doom-fonts
