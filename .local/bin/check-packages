@@ -1,0 +1,34 @@
+#!/usr/bin/env bash
+
+#TODO: make this be usable only with sudo []
+# make this look cooler                   []
+
+checkpackages() {
+    while IFS= read -r package; do
+        sudo pacman -S --noconfirm --needed "$package" 2>&1 | grep -E -v 'up to date|nothing to do' &
+        loading_animation $! "$package"
+    done < <(curl -s https://raw.githubusercontent.com/laluxx/dotfiles/master/packages.txt | sed '/--END OF MINIMAL INSTALL--/d')
+    echo "[✔]::[Deps]: all packages checked and installed successfully!"
+}
+
+function loading_animation() {
+    local pid=$1
+    local pkgname=$2
+    local delay=0.1
+    local spinstr='|/-\'
+    local counter=0
+    while [ "$(ps a | awk '{print $1}' | grep $pid)" ]; do
+        local temp=${spinstr#?}
+        printf "\r[%c] Checking %s" "$spinstr" "$pkgname"
+        local spinstr=$temp${spinstr%"$temp"}
+        sleep $delay
+        counter=$((counter + 1))
+        if [ $counter -eq 40 ]; then
+            printf "\r[%c] Checking %s...           " "$spinstr" "$pkgname"
+            counter=0
+        fi
+    done
+    printf "\r[%c] Checking %s... Done          \n" "$spinstr" "$pkgname"
+}
+
+checkpackages

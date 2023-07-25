@@ -45,6 +45,8 @@
 - [[#eww][EWW]]
 - [[#exwm][EXWM]]
 - [[#fonts][FONTS]]
+  - [[#variable-fon][Variable-fon]]
+  - [[#doom-fonts][Doom-fonts]]
 - [[#imenu][IMENU]]
 - [[#insert-date][INSERT DATE]]
 - [[#ivy][IVY]]
@@ -264,7 +266,7 @@ when focused and not focused
 #+begin_src emacs-lisp
 ;; TODO: set a specific wallpaper based on the theme,                                   [x]  new function
 ;; TODO: org bullets should use those colors too,                                       []
-;; TODO: make a version of this function that let you pick a theme and do everything,   []
+;; TODO: make a version of this function that let you consuel a theme and do everything,   []
 ;; TODO: make this function send a signal to xmonad to set all workspaces to "threecol" []
 
 ;; DONE
@@ -272,9 +274,9 @@ when focused and not focused
   "Run theme-magic-from-emacs, PyWal scripts and execute PyWal scripts."
   (interactive)
   (theme-magic-from-emacs)
-  ;; (shell-command "pkill picom")
+  (shell-command "pkill picom")
   (shell-command "python3 /home/l/xos/pywal-scripts/xmonad-dark-wal.py")    ;; dark  theme
-  ;; (shell-command "python3 /home/l/xos/pywal-scripts/xmonad-dark-wal.py") ;; light theme
+  ;; (shell-command "python3 /home/l/xos/pywal-scripts/xmonad-light-wal.py") ;; light theme
   (laluxx/set-wallpaper-to-match-doom-theme)
   (shell-command "xmonad --restart"))
   (shell-command "python3 /home/l/xos/pywal-scripts/nvim-wal.py")
@@ -964,7 +966,25 @@ Settings related to fonts within Doom Emacs:
 + 'doom-big-font' -- used in doom-big-font-mode; useful for presentations.
 + 'font-lock-comment-face' -- for comments.
 + 'font-lock-keyword-face' -- for keywords with special significance like 'setq' in elisp.
+** Variable-fon
+#+begin_src emacs-lisp
+(defface my-variable-face
+  '((t :family "OCR B" :height 120))  ;; Adjust size as needed
+  "My face for variable identifiers.")
 
+(defun my-variable-highlighter (limit)
+  (while (re-search-forward "\\_<[a-z_][a-zA-Z0-9_]*\\_>" limit t)
+    (let ((face (get-text-property (match-beginning 0) 'face)))
+      (when (and (listp face) (member 'font-lock-variable-name-face face))
+        (put-text-property (match-beginning 0) (match-end 0) 'face 'my-variable-face)))))
+
+(defun my-variable-hook ()
+  (font-lock-add-keywords nil '((my-variable-highlighter)) 'append))
+
+(add-hook 'emacs-lisp-mode-hook 'my-variable-hook)
+#+end_src
+
+** Doom-fonts
 #+BEGIN_SRC emacs-lisp
 (setq doom-font (font-spec :family "JetBrains Mono" :size 15)
       doom-variable-pitch-font (font-spec :family "Ubuntu" :size 15)
@@ -976,7 +996,6 @@ Settings related to fonts within Doom Emacs:
   '(font-lock-comment-face :slant italic)
   '(font-lock-keyword-face :slant italic))
 #+END_SRC
-
 * IMENU
 Imenu produces menus for accessing locations in documents, typically in the current buffer. You can access the locations using an ordinary menu (menu bar or other) or using minibuffer completion, or you can install 'imenu-list' and have the imenu displayed as a vertical split that you can toggle show/hide.
 

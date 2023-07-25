@@ -1,5 +1,6 @@
 #+TITLE: XOS Bootstrap
 #+AUTHOR: laluxx
+#+PROPERTY: header-args :tangle bootstrap.sh
 #+DESCRIPTION:
 #+STARTUP: showeverything
 #+PROPERTY: header-args :tangle
@@ -48,6 +49,7 @@ function checkgit {
   fi
   sleep 0.25
 }
+
 checkpackages() {
     while IFS= read -r package; do
         sudo pacman -S --noconfirm --needed "$package" 2>&1 | grep -E -v 'up to date|nothing to do' &
@@ -57,8 +59,6 @@ checkpackages() {
 }
 
 #+end_src
-
-
 * funtions
 #+begin_src shell
 function loading_animation() {
@@ -109,26 +109,31 @@ function installwine {
 }
 
 function getwallpapers {
-    cd
+    cd ~/xos
     git clone https://github.com/laluxx/wallpapers
-    sudo rm -Rf $HOME/wallpapers/README.md
-    sudo rm -Rf $HOME/wallpapers/.git/
-    sudo cp -r -a $HOME/wallpapers/. $HOME/xos/wallpapers
-    sudo rm -Rf $HOME/wallpapers/
+    cd wallpapers
+    sudo rm -Rf README.md # check if is org
+    sudo rm -Rf .git
 }
 #+end_src
 * Main
 #+begin_src shell
-
 checkgit
 checkwget
 checkyay
 checkpackages
 
-
-
 mkdir ~/xos
+getwallpapers
+
 cd ~/xos
+git clone https://github.com/laluxx/typetune.git
+git clone https://github.com/laluxx/pywal-scripts.git
+
+installemacs
+
+mkdir ~/Desktop/pulls
+cd ~/Desktop/pulls
 git clone https://github.com/laluxx/dotfiles
 rsync -avh dotfiles/ ~/
 

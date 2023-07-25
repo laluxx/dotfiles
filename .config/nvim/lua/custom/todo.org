@@ -1,4 +1,0 @@
-* TODO
-* council
-ctrl -j
-ctrl -k

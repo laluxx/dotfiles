@@ -1,0 +1,11 @@
+#!/bin/bash
+
+# Define paths
+colors_path="$HOME/.cache/wal/colors-oomox"
+themes_path="$HOME/.themes"
+
+# Define theme name
+theme_name="pywall"
+
+# Generate the theme
+/opt/oomox/plugins/theme_oomox/change_color.sh -o $theme_name -t $themes_path $colors_path

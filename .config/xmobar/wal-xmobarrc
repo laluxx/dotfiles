@@ -17,8 +17,8 @@ Config { font            = "Ubuntu Bold 9"
                            , "Font Awesome 6 Free Solid 12"
                            , "Font Awesome 6 Brands 12"
                            ]
-       , bgColor      = "#c7c6eb"
-       , fgColor      = "#10121b"
+       , bgColor      = "#111019"
+       , fgColor      = "#aeb1c8"
        -- Position TopSize and BottomSize take 3 arguments:
        --   an alignment parameter (L/R/C) for Left, Right or Center.
        --   an integer for the percentage width, so 100 would be 100%.
@@ -62,5 +62,5 @@ Config { font            = "Ubuntu Bold 9"
                     ]
        , sepChar = "%"
        , alignSep = "}{"
-       , template = " %UnsafeStdinReader% }{ <box type=Bottom width=2 mb=2 color=#10121b><fc=#8b8aa4>%penguin%  %kernel%</fc></box>    <box type=Bottom width=2 mb=2 color=#666796><fc=#666796><action=`alacritty -e htop`>%cpu%</action></fc></box>    <box type=Bottom width=2 mb=2 color=#7776AE><fc=#7776AE><action=`alacritty -e htop`>%memory%</action></fc></box>    <box type=Bottom width=2 mb=2 color=#807FBC><fc=#807FBC>%disku%</fc></box>    <box type=Bottom width=2 mb=2 color=#8281BE><fc=#8281BE>%uparrow%  %uptime%</fc></box>    <box type=Bottom width=2 mb=2 color=#9795DB><fc=#9795DB>%bell%  <action=`alacritty -e sudo pacman -Syu`>%pacupdate%</action></fc></box>   <box type=Bottom width=2 mb=2 color=#9B98E0><fc=#9B98E0>%baticon%  %battery%</fc></box>    <box type=Bottom width=2 mb=2 color=#c7c6eb><fc=#c7c6eb><action=`emacsclient -c -a 'emacs' --eval '(doom/window-maximize-buffer(dt/year-calendar))'`>%date%</action></fc></box> %trayerpad%"
+       , template = " %UnsafeStdinReader% }{ <box type=Bottom width=2 mb=2 color=#111019><fc=#797b8c>%penguin%  %kernel%</fc></box>    <box type=Bottom width=2 mb=2 color=#514874><fc=#514874><action=`alacritty -e htop`>%cpu%</action></fc></box>    <box type=Bottom width=2 mb=2 color=#67797C><fc=#67797C><action=`alacritty -e htop`>%memory%</action></fc></box>    <box type=Bottom width=2 mb=2 color=#A77F72><fc=#A77F72>%disku%</fc></box>    <box type=Bottom width=2 mb=2 color=#5D5287><fc=#5D5287>%uparrow%  %uptime%</fc></box>    <box type=Bottom width=2 mb=2 color=#675B92><fc=#675B92>%bell%  <action=`alacritty -e sudo pacman -Syu`>%pacupdate%</action></fc></box>   <box type=Bottom width=2 mb=2 color=#6C6498><fc=#6C6498>%baticon%  %battery%</fc></box>    <box type=Bottom width=2 mb=2 color=#aeb1c8><fc=#aeb1c8><action=`emacsclient -c -a 'emacs' --eval '(doom/window-maximize-buffer(dt/year-calendar))'`>%date%</action></fc></box> %trayerpad%"
        }

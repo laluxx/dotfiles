@@ -38,7 +38,6 @@ _Underline_
   - double ckick on a tag should open a predefined app [] (emacs for dev firefox for www ....)
     - make emacs open only if not already open and then doom-wal ?
 
-
 * About This Config
 #+CAPTION: XMonad Scrot
 #+ATTR_HTML: :alt XMonad Scrot :title XMonad Scrot :align left
@@ -52,7 +51,6 @@ This is one xmonad configuration for XOS
 
 
 NOTE: You will also need the xmobar config, which is located here: https://gitlab.com/dwt1/dotfiles/-/tree/master/.config/xmobar
-
 
 * Colorscheme
 set only one
@@ -72,7 +70,6 @@ import Colors.Wal
 -- import Colors.Mocha
 
 #+end_src
-
 
 * Imports
 These are Haskell modules that we must import so that we can use their functions later in the config.
@@ -209,7 +206,7 @@ myStartupHook = do
 #+BEGIN_SRC haskell
   spawnOnce "xrandr --output \"$(xrandr | awk '/ connected/ {print $1; exit}')\" --mode 1920x1080 --rate 144"
   spawnOnce "xset r rate 160 60"
-  spawnOnce "python3 /home/l/xos/typetune/2.py"
+  spawnOnce "python3 /home/l/xos/typetune/typetune.py"
 
   spawnOnce "lxsession"
   -- spawnonce "/usr/lib/polkit-gnome/polkit-gnome-authentication-agent-1"
@@ -553,11 +550,11 @@ myLayoutHook = avoidStruts
                $ T.toggleLayouts floats
                $ mkToggle (NBFULL ?? NOBORDERS ?? EOT) myDefaultLayout
   where
-    myDefaultLayout = grid
+    myDefaultLayout = withBorder myBorderWidth tall
                                            ||| noBorders monocle
                                            ||| noBorders floats
                                            ||| noBorders tabs
-                                           ||| tall
+                                           ||| grid
                                            ||| spirals
                                            ||| threeCol
                                            ||| threeRow
@@ -599,6 +596,7 @@ myManageHook = composeAll
   -- I'm doing it this way because otherwise I would have to write out the full
   -- name of my workspaces and the names would be very long if using clickable workspaces.
   [ className =? "confirm"         --> doFloat
+  , className =? "missioncenter"   --> doFloat
   , className =? "file_progress"   --> doFloat
   , className =? "dialog"          --> doFloat
   , className =? "download"        --> doFloat
@@ -696,6 +694,8 @@ myKeys c =
   subKeys "Xmonad Essentials"
   [ ("M-C-r", addName "Recompile XMonad"       $ spawn "xmonad --recompile")
   , ("M-S-r", addName "Restart XMonad"         $ spawn "xmonad --restart")
+  , ("M-p", addName "Run custom Python script" $ spawn "python3 ~/xos/pywal-scripts/instantmenu/instant-zsh.py")
+  , ("M-x", addName "Run custom Python script" $ spawn "python3 ~/xos/pywal-scripts/instantmenu/main.py")
   --, ("M-S-q", addName "Quit XMonad"            $ sequence_ [spawn (mySoundPlayer ++ shutdownSound), io exitSuccess])
   , ("M-S-q", addName "Quit XMonad"            $ spawn "dm-logout")
   , ("M-S-c", addName "Kill focused window"    $ kill1)
@@ -744,23 +744,23 @@ myKeys c =
   -- Dmenu scripts (dmscripts)
   -- In Xmonad and many tiling window managers, M-p is the default keybinding to
   -- launch dmenu_run, so I've decided to use M-p plus KEY for these dmenu scripts.
-  ^++^ subKeys "Dmenu scripts"
-  [ ("M-c", addName "List all dmscripts"       $ spawn "jgmenu --at-pointer")
-  , ("M-p a", addName "Choose ambient sound"   $ spawn "dm-sounds")
-  , ("M-p b", addName "Set background"         $ spawn "dm-setbg")
-  , ("M-p c", addName "Choose color scheme"    $ spawn "~/.local/bin/dtos-colorscheme")
-  , ("M-p C", addName "Pick color from scheme" $ spawn "dm-colpick")
-  , ("M-p e", addName "Edit config files"      $ spawn "dm-confedit")
-  , ("M-p i", addName "Take a screenshot"      $ spawn "dm-maim")
-  , ("M-p k", addName "Kill processes"         $ spawn "dm-kill")
-  , ("M-p m", addName "View manpages"          $ spawn "dm-man")
-  , ("M-p n", addName "Store and copy notes"   $ spawn "dm-note")
-  , ("M-p o", addName "Browser bookmarks"      $ spawn "dm-bookman")
-  , ("M-p p", addName "Passmenu"               $ spawn "passmenu -p \"Pass: \"")
-  , ("M-p q", addName "Logout Menu"            $ spawn "dm-logout")
-  , ("M-p r", addName "Listen to online radio" $ spawn "dm-radio")
-  , ("M-p s", addName "Search various engines" $ spawn "dm-websearch")
-  , ("M-p t", addName "Translate text"         $ spawn "dm-translate")]
+  -- ^++^ subKeys "Dmenu scripts"
+  -- [ ("M-c", addName "List all dmscripts"       $ spawn "jgmenu --at-pointer")
+  -- , ("M-p a", addName "Choose ambient sound"   $ spawn "dm-sounds")
+  -- , ("M-p b", addName "Set background"         $ spawn "dm-setbg")
+  -- , ("M-p c", addName "Choose color scheme"    $ spawn "~/.local/bin/dtos-colorscheme")
+  -- , ("M-p C", addName "Pick color from scheme" $ spawn "dm-colpick")
+  -- , ("M-p e", addName "Edit config files"      $ spawn "dm-confedit")
+  -- , ("M-p i", addName "Take a screenshot"      $ spawn "dm-maim")
+  -- , ("M-p k", addName "Kill processes"         $ spawn "dm-kill")
+  -- , ("M-p m", addName "View manpages"          $ spawn "dm-man")
+  -- , ("M-p n", addName "Store and copy notes"   $ spawn "dm-note")
+  -- , ("M-p o", addName "Browser bookmarks"      $ spawn "dm-bookman")
+  -- , ("M-p p", addName "Passmenu"               $ spawn "passmenu -p \"Pass: \"")
+  -- , ("M-p q", addName "Logout Menu"            $ spawn "dm-logout")
+  -- , ("M-p r", addName "Listen to online radio" $ spawn "dm-radio")
+  -- , ("M-p s", addName "Search various engines" $ spawn "dm-websearch")
+  -- , ("M-p t", addName "Translate text"         $ spawn "dm-translate")]
 
   ^++^ subKeys "Favorite programs"
   [ ("M-<Return>", addName "Launch terminal"   $ spawn (myTerminal))
@@ -906,7 +906,11 @@ myKeys c =
 #+begin_src haskell
 myMouseBindings :: XConfig t -> M.Map (KeyMask, Button) (Window -> X ())
 myMouseBindings (XConfig {XMonad.modMask = modm}) = M.fromList
-    [ ((0, button3), (\_ -> spawn "jgmenu_run")) ] -- Right click spawns jgmenu
+    [ ((0, button3), \_ -> spawn "if [ \"$(xdotool getwindowfocus getwindowname)\" = 'Desktop' ]; then jgmenu_run; rm .jgmenu-lockfile; fi > log.txt 2>&1") ]
+
+-- myMouseBindings :: XConfig t -> M.Map (KeyMask, Button) (Window -> X ())
+-- myMouseBindings (XConfig {XMonad.modMask = modm}) = M.fromList
+--     [ ((0, button3), (\_ -> spawn "jgmenu_run")) ] -- Right click spawns jgmenu
 #+end_src
 * Main
 This is the "main" of XMonad. This where everything in our configs comes together and works.
@@ -956,54 +960,4 @@ main = do
         , ppOrder  = \(ws:l:t:ex) -> [ws,l]++ex++[t]
         }
     }
-
-
--- main :: IO ()
--- main = do
---   -- Launching three instances of xmobar on their monitors.
---   xmproc0 <- spawnPipe ("xmobar -x 0 $HOME/.config/xmobar/" ++ colorScheme ++ "-xmobarrc")
---   xmproc1 <- spawnPipe ("xmobar -x 1 $HOME/.config/xmobar/" ++ colorScheme ++ "-xmobarrc")
---   xmproc2 <- spawnPipe ("xmobar -x 2 $HOME/.config/xmobar/" ++ colorScheme ++ "-xmobarrc")
---   -- the xmonad, ya know...what the WM is named after!
-
---   xmonad $ addDescrKeys' ((mod4Mask, xK_F1), showKeybindings) myKeys $ ewmh $ docks $ def
---     { manageHook         = myManageHook <+> manageDocks
---     , handleEventHook    = windowedFullscreenFixEventHook <> swallowEventHook (className =? "kitty"  <||> className =? "st-256color" <||> className =? "XTerm") (return True) <> trayerPaddingXmobarEventHook
---     , modMask            = myModMask
---     , terminal           = myTerminal
---     , startupHook        = myStartupHook
---     , layoutHook         = showWName' myShowWNameTheme $ myLayoutHook
---     , workspaces         = myWorkspaces
---     , borderWidth        = myBorderWidth
---     , normalBorderColor  = myNormColor
---     , focusedBorderColor = myFocusColor
---     , keys               = myAdditionalKeysP <+> keys def
---     , mouseBindings      = myMouseBindings <+> mouseBindings def
---     , logHook = dynamicLogWithPP $  filterOutWsPP [scratchpadWorkspaceTag] $ xmobarPP
---         { ppOutput = \x -> hPutStrLn xmproc0 x   -- xmobar on monitor 1
---                         >> hPutStrLn xmproc1 x   -- xmobar on monitor 2
---                         >> hPutStrLn xmproc2 x   -- xmobar on monitor 3
---         , ppCurrent = xmobarColor color06 "" . wrap
---                       ("<box type=Bottom width=2 mb=2 color=" ++ color06 ++ ">") "</box>"
---           -- Visible but not current workspace
---         , ppVisible = xmobarColor color06 "" . clickable
---           -- Hidden workspace
---         , ppHidden = xmobarColor color05 "" . wrap
---                      ("<box type=Top width=2 mt=2 color=" ++ color05 ++ ">") "</box>" . clickable
---           -- Hidden workspaces (no windows)
---         , ppHiddenNoWindows = xmobarColor color05 ""  . clickable
---           -- Title of active window
---         , ppTitle = xmobarColor color16 "" . shorten 60
---           -- Separator character
---         , ppSep =  "<fc=" ++ color09 ++ "> <fn=1>|</fn> </fc>"
---           -- Urgent workspace
---         , ppUrgent = xmobarColor color02 "" . wrap "!" "!"
---           -- Adding # of windows on current workspace to the bar
---         , ppExtras  = [windowCount]
---           -- order of things in xmobar
---         , ppOrder  = \(ws:l:t:ex) -> [ws,l]++ex++[t]
---         }
---     }
-
-
 #+END_SRC
