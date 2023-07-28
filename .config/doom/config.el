@@ -1,140 +1,79 @@
-(setq ewal-use-built-in-always-p nil
-      ewal-use-built-in-on-failure-p t
-      ewal-built-in-palette "sexy-material")
+;;; $DOOMDIR/config.el -*- lexical-binding: t; -*-
 
-;; Enable ewal-spacemacs-theme
-(after! ewal-spacemacs-themes
-  (setq spacemacs-theme-underline-parens t)
-  (load-theme 'ewal-spacemacs-modern t)
-  (enable-theme 'ewal-spacemacs-modern))
+;; Place your private configuration here! Remember, you do not need to run 'doom
+;; sync' after modifying this file!
 
-;; Ewal Evil Cursors Configuration
-(after! ewal-evil-cursors
-  (ewal-evil-cursors-get-colors :apply t :spaceline t))
 
-;; Enable show-paren-mode
-(show-paren-mode +1)
+;; Some functionality uses this to identify you, e.g. GPG configuration, email
+;; clients, file templates and snippets. It is optional.
+;; (setq user-full-name "John Doe"
+;;       user-mail-address "john@doe.com")
 
-;; Enable global-hl-line-mode
-(global-hl-line-mode)
+;; Doom exposes five (optional) variables for controlling fonts in Doom:
+;;
+;; - `doom-font' -- the primary font to use
+;; - `doom-variable-pitch-font' -- a non-monospace font (where applicable)
+;; - `doom-big-font' -- used for `doom-big-font-mode'; use this for
+;;   presentations or streaming.
+;; - `doom-unicode-font' -- for unicode glyphs
+;; - `doom-serif-font' -- for the `fixed-pitch-serif' face
+;;
+;; See 'C-h v doom-font' for documentation and more examples of what they
+;; accept. For example:
+;;
+;;(setq doom-font (font-spec :family "Fira Code" :size 12 :weight 'semi-light)
+;;      doom-variable-pitch-font (font-spec :family "Fira Sans" :size 13))
+;;
+;; If you or Emacs can't find your font, use 'M-x describe-font' to look them
+;; up, `M-x eval-region' to execute elisp code, and 'M-x doom/reload-font' to
+;; refresh your font settings. If Emacs still can't find your font, it likely
+;; wasn't installed correctly. Font issues are rarely Doom issues!
 
-;; Doom modeline settings, Doom Emacs uses doom-modeline by default, let's configure it.
-(setq doom-modeline-height 25)
-(setq doom-modeline-bar-width 3)
-(setq doom-modeline-lsp t)
-(setq doom-modeline-github nil)
-(setq doom-modeline-mu4e nil)
-(setq doom-modeline-irc nil)
-(setq doom-modeline-icon t)
-(setq doom-modeline-major-mode-icon nil)
-(setq doom-modeline-major-mode-color-icon t)
-(setq doom-modeline-persp-name t)
-(setq doom-modeline-buffer-state-icon t)
-(setq doom-modeline-buffer-modification-icon t)
-(setq doom-modeline-modal-icon nil)
+;; There are two ways to load a theme. Both assume the theme is installed and
+;; available. You can either set `doom-theme' or manually load a theme with the
+;; `load-theme' function. This is the default:
+;;(setq doom-theme 'doom-one)
 
-;; Additional customization can be added below
+;; This determines the style of line numbers in effect. If set to `nil', line
+;; numbers are disabled. For relative line numbers, set this to `relative'.
+(setq display-line-numbers-type t)
 
-(defun laluxx/update-dotfiles ()
-  "Update dotfiles."
-  (interactive)
-  (let* ((dotfiles-path (expand-file-name "~/Desktop/pulls/dotfiles"))
-         (command (concat "rsync -a " dotfiles-path "/. $HOME/")))
-    (shell-command command)
-    (message "Updated dotfiles")))
+;; If you use `org' and don't want your org files in the default location below,
+;; change `org-directory'. It must be set before org loads!
+(setq org-directory "~/org/")
 
-(defun laluxx/run-update-dotfiles ()
-  "Run `laluxx/update-dotfiles` if the current file is inside ~/Desktop/pulls/dotfiles or its subdirectories."
-  (when (and buffer-file-name
-             (string-prefix-p (expand-file-name "~/Desktop/pulls/dotfiles") buffer-file-name)
-             (string= (file-name-extension buffer-file-name) "org"))
-    (laluxx/update-dotfiles)))
 
-(add-hook 'after-save-hook 'laluxx/run-update-dotfiles)
-
-(defun load-pywal-theme ()
-  "Load the Pywal colors into the current theme."
-  (interactive)
-  (when (f-exists? "~/.cache/wal/colors.el")
-    (load-file "~/.cache/wal/colors.el")
-    (doom/reload-theme)))
-
-(add-hook 'window-setup-hook #'load-pywal-theme)
-
-(use-package! gptel
-  :config
-  (setq! gptel-api-key (getenv "OPENAI_API_KEY")))
-
-(global-set-key (kbd "M-p") 'dmenu)
-
-(defun my-list-hooks ()
-  "List all hooks in a completing-read interface."
-  (interactive)
-  (let* ((hook-symbols (sort
-                        (seq-filter (lambda (sym)
-                                      (and (symbolp sym)
-                                           (string-suffix-p "-hook" (symbol-name sym))))
-                                    (append obarray nil))
-                        #'string-lessp))
-         (hooks (mapcar #'symbol-name hook-symbols))
-         (selected-hook (completing-read "Hooks: " hooks)))
-    (when selected-hook
-      (describe-variable (intern selected-hook)))))
-
-(map! :leader
-      :desc "Show all hooks"
-      "hh" #'my-list-hooks)
-
-(defun vterm-toggle-cd-lfcd ()
-  "Open a vterm buffer in the bottom window running zsh, cd to current directory, execute 'lfcd', and focus it."
-  (interactive)
-  (let ((buffer-name "lfcd-vterm")
-        (current-directory default-directory)
-        (shell-file-name "/bin/zsh")
-        (window-height-fraction 0.3)) ; Adjust this value for desired height
-    (if (get-buffer buffer-name)
-        (if (get-buffer-window buffer-name)
-            (progn
-              (delete-window (get-buffer-window buffer-name))
-              (other-window -1))
-          (let ((new-window (display-buffer-in-side-window (get-buffer buffer-name) '((side . bottom)))))
-            (set-window-text-height new-window (round (* (frame-height) window-height-fraction)))
-            (select-window new-window)
-            (vterm-send-string (concat "cd " (shell-quote-argument current-directory) " && lfcd"))
-            (vterm-send-return)))
-      (progn
-        (split-window-below (round (* (frame-height) (- 1 window-height-fraction))))
-        (other-window 1)
-        (vterm buffer-name)
-        (vterm-send-string (concat "cd " (shell-quote-argument current-directory) " && lfcd"))
-        (vterm-send-return)))))
-
-(map! :leader
-      (:prefix ("d" . "custom")
-       :desc "Toggle vterm with lfcd" "l" #'vterm-toggle-cd-lfcd))
-
-(map! :leader
-      :desc "Open dotfiles directory"
-      "f p" (lambda () (interactive) (dired "~/Desktop/pulls/dotfiles/.config/doom")))
-
-(map! :leader
-      :desc "Open dotfiles directory"
-      "f t" (lambda () (interactive) (dired "~/Desktop/test")))
-
-(map! :leader
-      :desc "Toggle treemacs"
-      "t e" #'treemacs)
-
-;; (after! resize-window
-;;   (map! :map resize-window-mode-map
-;;         "h" nil
-;;         "j" nil
-;;         "k" nil
-;;         "l" nil
-;;         "h" (lambda () (interactive) (resize-window--enlarge-horizontally -1))
-;;         "l" (lambda () (interactive) (resize-window--enlarge-horizontally 1))
-;;         "j" (lambda () (interactive) (resize-window--enlarge-vertically 1))
-;;         "k" (lambda () (interactive) (resize-window--enlarge-vertically -1))))
+;; Whenever you reconfigure a package, make sure to wrap your config in an
+;; `after!' block, otherwise Doom's defaults may override your settings. E.g.
+;;
+;;   (after! PACKAGE
+;;     (setq x y))
+;;
+;; The exceptions to this rule:
+;;
+;;   - Setting file/directory variables (like `org-directory')
+;;   - Setting variables which explicitly tell you to set them before their
+;;     package is loaded (see 'C-h v VARIABLE' to look up their documentation).
+;;   - Setting doom variables (which start with 'doom-' or '+').
+;;
+;; Here are some additional functions/macros that will help you configure Doom.
+;;
+;; - `load!' for loading external *.el files relative to this one
+;; - `use-package!' for configuring packages
+;; - `after!' for running code after a package has loaded
+;; - `add-load-path!' for adding directories to the `load-path', relative to
+;;   this file. Emacs searches the `load-path' when you load packages with
+;;   `require' or `use-package'.
+;; - `map!' for binding new keys
+;;
+;; To get information about any of these functions/macros, move the cursor over
+;; the highlighted symbol at press 'K' (non-evil users must press 'C-c c k').
+;; This will open documentation for it, including demos of how they are used.
+;; Alternatively, use `C-h o' to look up a symbol (functions, variables, faces,
+;; etc).
+;;
+;; You can also try 'gd' (or 'C-c c d') to jump to their definition and see how
+;; they are implemented. #+end_src
 
 (tool-bar-mode  -1)
 (scroll-bar-mode  -1)
@@ -155,6 +94,238 @@
 (set-frame-parameter (selected-frame) 'alpha '(95 100))
 (add-to-list 'default-frame-alist '(alpha 95 100))
 
+;; (setq doom-font (font-spec :family "JetBrains Mono" :size 15)
+;;       doom-variable-pitch-font (font-spec :family "Ubuntu" :size 15)
+;;       doom-big-font (font-spec :family "JetBrains Mono" :size 24))
+;; (after! doom-themes
+;;   (setq doom-themes-enable-bold t
+;;         doom-themes-enable-italic t))
+;; (custom-set-faces!
+;;   '(font-lock-comment-face :slant italic)
+;;   '(font-lock-keyword-face :slant italic))
+
+(defun my-set-org-mode-font ()
+  "Set the font to JetBrains Mono NF ExtraBold when in org mode."
+  (interactive)
+  (when (derived-mode-p 'org-mode)
+    (setq buffer-face-mode-face '(:family "JetBrains Mono NF ExtraBold" :height 1.1))
+    (buffer-face-mode)))
+
+(add-hook 'org-mode-hook 'my-set-org-mode-font)
+
+(require 'dashboard)
+(setq dashboard-startup-banner 'logo)
+(setq dashboard-center-content t)
+(setq dashboard-show-shortcuts nil)
+
+;; Set the title
+(setq dashboard-banner-logo-title "Welcome to Emacs Dashboard")
+
+;; Set the footer
+(setq dashboard-footer-icon (all-the-icons-octicon "dash" :height 1.1 :v-adjust -0.05 :face 'font-lock-keyword-face))
+(setq dashboard-footer-messages '("Dashboard is a minimal and nice looking startup screen."))
+
+;; Set the content
+(setq dashboard-items '((recents  . 5)
+                        (projects . 5)))
+
+;; Enable the dashboard at startup
+(dashboard-setup-startup-hook)
+
+;; Config for recent files
+(require 'recentf)
+(setq recentf-exclude '("/tmp/" "/ssh:"))
+(setq recentf-max-saved-items 50)
+(recentf-mode 1)
+
+;; Config for projectile
+(require 'projectile)
+(setq projectile-completion-system 'ivy)
+(projectile-mode 1)
+
+;; Define the function to open the dashboard manually
+(defun open-dashboard ()
+  (interactive)
+  (setq initial-buffer-choice (lambda () (get-buffer-create "*dashboard*"))))
+(global-set-key (kbd "C-x d") 'dashboard-open)
+
+(setq initial-buffer-choice (lambda () (get-buffer-create "*dashboard*")))
+
+(use-package! ewal
+  :init
+  (setq ewal-use-built-in-always-p nil
+        ewal-use-built-in-on-failure-p t
+        ewal-built-in-palette "sexy-material"))
+
+(use-package! ewal-doom-themes
+  :init
+  ;; If you've set ewal-use-built-in-always-p to nil in ewal configuration
+  ;; This might be unnecessary, but doesn't hurt to ensure.
+  (setq ewal-use-built-in-always-p nil
+        ewal-use-built-in-on-failure-p t
+        ewal-built-in-palette "sexy-material")
+  :config
+  (load-theme 'ewal-doom-one t)
+  (enable-theme 'ewal-doom-one))
+
+(map! :leader
+      :desc "Eshell"                 "e s" #'eshell
+      :desc "Eshell popup toggle"    "t e" #'+eshell/toggle
+      :desc "Counsel eshell history" "e h" #'counsel-esh-history
+      :desc "Vterm popup toggle"     "v t" #'+vterm/toggle)
+
+(map! :leader
+      :desc "Kill buffer and open dashboard if last buffer"
+      "b k" 'kill-buffer-and-maybe-open-dashboard)
+
+(map! :leader
+      :desc "Custom Keybind"
+      "d J" (lambda ()
+              (interactive)
+              (text-scale-set -1)  ;; Set the desired zoom level here
+              (execute-kbd-macro (kbd "SPC w v"))
+              (execute-kbd-macro (kbd "SPC d j"))))
+
+(map! :leader
+      :desc "Insert header tags"
+      "i o" #'org-insert-header-tags)
+
+(map! :leader
+      :desc "Jump to tangled file"
+      "o j" #'org-jump-to-tangled)
+
+(map! :leader
+      :desc "Split and jump to tangled file with zoom"
+      "o J" #'org-jump-to-tangled-split-and-zoom)
+
+(global-set-key (kbd "M-p") 'dmenu)
+
+(map! :leader
+      :desc "Show all hooks"
+      "hh" #'laluxx/list-hooks)
+
+(defun kill-buffer-and-maybe-open-dashboard ()
+  "Kill current buffer if it's not dashboard, and open dashboard if it was the last user buffer."
+  (interactive)
+  (let ((buffer (current-buffer)))
+    (when (string-equal (buffer-name buffer) "*dashboard*")
+      (error "Cannot kill *dashboard* buffer"))
+    (when (and (not (string-equal (buffer-name buffer) "*dashboard*"))
+               (= 1 (length (delq nil (mapcar (lambda (buf)
+                                                (and (buffer-live-p buf)
+                                                     (not (string-prefix-p " " (buffer-name buf)))))
+                                              (buffer-list))))))
+      (dashboard-refresh-buffer))
+    (kill-buffer (current-buffer))))
+
+(run-with-idle-timer
+ 1 nil
+ (lambda ()
+   (file-notify-add-watch
+    "~/.cache/wal/colors"
+    '(change)
+    (lambda (event)
+      (load-theme 'ewal-doom-one t)
+      (enable-theme 'ewal-doom-one)))))
+
+(defun laluxx/load-org-wal-colors ()
+  "Load colors from the wal cache and apply them to org levels."
+  (interactive)
+  (let* ((wal-colors (with-temp-buffer
+                       (insert-file-contents "~/.cache/wal/colors")
+                       (split-string (buffer-string) "\n" t)))
+         (wal-colors (cdr wal-colors))) ;; remove the black color (first one)
+    (dotimes (level (min 8 (length wal-colors)))
+      (let ((color (nth level wal-colors)))
+        (set-face-attribute (intern (format "org-level-%d" (1+ level))) nil :foreground color)))))
+
+(defun laluxx/wal-set ()
+  (interactive)
+  (let* ((default-directory "~/xos/wallpapers/static")
+         (theme-directory "~/xos/theme")
+         (pywal-scripts-directory "~/xos/pywal-scripts")
+         (image-files (directory-files-recursively default-directory "\\.\\(png\\|jpg\\|jpeg\\|webp\\)$")))
+    (ivy-read "Choose wallpaper: "
+              image-files
+              :action (lambda (wallpaper)
+                        (when (and (not (string-empty-p wallpaper))
+                                   (file-exists-p wallpaper))
+                          (let ((abs-wallpaper (expand-file-name wallpaper)))
+                            (shell-command-to-string (concat "wal -i " abs-wallpaper))
+                            (with-temp-file (concat theme-directory "/.wallpaper")
+                              (insert abs-wallpaper))
+                            (shell-command-to-string "theme pywal --no-random")
+                            (dolist (script '("xmonad-dark-wal.py" "nvim-wal.py" "nvim-wal-dark.py"))
+                              (shell-command-to-string (concat "python3 " pywal-scripts-directory "/" script)))
+                            (shell-command-to-string "xmonad --restart")
+                            ;; (shell-command "papirus-wal")
+                            (shell-command-to-string "oomox-gtk-gen")
+                            (laluxx/load-org-wal-colors)
+                            (run-at-time "1 sec" nil 'spaceline-compile)))))))  ; Delay spaceline-compile
+
+(defun set-wallpaper ()
+  (interactive)
+  (let* ((default-directory "~/xos/wallpapers/static/")
+         (image-files (directory-files-recursively default-directory "\\.\\(png\\|jpg\\|jpeg\\|webp\\)$")))
+    (ivy-read "Choose wallpaper: "
+              image-files
+              :action (lambda (wallpaper)
+                        (when (file-exists-p wallpaper)
+                          (start-process-shell-command "feh" nil (format "feh --bg-scale '%s'" (shell-quote-argument wallpaper))))))))
+
+;; TODO: set a specific wallpaper based on the theme,                                            [x]  set-wallpaper-to-match-doom-theme
+;; TODO: org bullets should use those colors too,                                                []
+;; TODO: make a version of this function that let you consuel a theme and do everything,         []
+;; TODO: make this function send a signal to xmonad to set all workspaces to "threecol"          []
+
+(defun laluxx/doom-wal ()
+  "Run theme-magic-from-emacs, PyWal scripts and execute PyWal scripts."
+  (interactive)
+  (theme-magic-from-emacs)
+  (shell-command "pkill picom")
+  (shell-command "python3 /home/l/xos/pywal-scripts/xmonad-dark-wal.py")    ;; Xmonad dark  theme
+  ;; (shell-command "python3 /home/l/xos/pywal-scripts/xmonad-light-wal.py") ;; light theme
+  (laluxx/set-wallpaper-to-match-doom-theme)
+  (shell-command "xmonad --restart"))
+  (shell-command "python3 /home/l/xos/pywal-scripts/nvim-wal.py")
+
+;; TODO: set a specific wallpaper based on the theme,                                            [x]  set-wallpaper-to-match-doom-theme
+;; TODO: org bullets should use those colors too,                                                []
+;; TODO: make a version of this function that let you consuel a theme and do everything,         []
+;; TODO: make this function send a signal to xmonad to set all workspaces to "threecol"          []
+
+(defun laluxx/doom-wal-light ()
+  "Run theme-magic-from-emacs, PyWal scripts and execute PyWal scripts."
+  (interactive)
+  (theme-magic-from-emacs)
+  (shell-command "pkill picom")
+  (shell-command "python3 /home/l/xos/pywal-scripts/xmonad-light-wal.py") ;; xmonad light theme
+  (laluxx/set-wallpaper-to-match-doom-theme)
+  (shell-command "xmonad --restart"))
+  (shell-command "python3 /home/l/xos/pywal-scripts/nvim-wal.py")
+
+(defun laluxx/set-wallpaper-to-match-doom-theme ()
+  "Set the desktop wallpaper based on the current Doom Emacs theme."
+
+  (interactive)
+
+  (let* ((theme-name (symbol-name doom-theme))
+         (wallpaper-base-path "~/xos/wallpapers/doom/")
+         (png-wallpaper (concat wallpaper-base-path theme-name ".png"))
+         (jpg-wallpaper (concat wallpaper-base-path theme-name ".jpg"))
+         (wallpaper nil))
+
+    ;; Check for PNG and then JPG wallpaper
+    (if (file-exists-p png-wallpaper)
+        (setq wallpaper png-wallpaper)
+      (if (file-exists-p jpg-wallpaper)
+          (setq wallpaper jpg-wallpaper)))
+
+    ;; If a matching wallpaper was found, set it using feh
+    (if wallpaper
+        (shell-command (concat "feh --bg-scale " wallpaper))
+      (message "No matching wallpaper found for theme '%s'" theme-name))))
+
 (defun org-insert-header-tags ()
   "Insert personalized header tags at the beginning of the current Org file."
   (interactive)
@@ -169,75 +340,79 @@
   (evil-goto-first-line) ; Move cursor to the top of the buffer
   (evil-append-line 0)) ; Move cursor to the end of the line (after TITLE) and enter insert mode (Evil)
 
-(map! :leader
-      :desc "Insert header tags"
-      "i o" #'org-insert-header-tags)
-
-(map! :leader
-      (:prefix "j"
-       :desc "Jump to definition" "d" #'xref-find-definitions))
-
-(defun laluxx/delete-empty-delimiters ()
+(defun org-jump-to-tangled ()
+  "Jump to the tangled file corresponding to the current Org mode file."
   (interactive)
-  (let* ((prev-char (char-before))
-         (next-char (char-after)))
-    (cond ((and (eq prev-char ?\() (eq next-char ?\)))
-           (delete-char 1) (delete-char -1))
-          ((and (eq prev-char ?\[) (eq next-char ?\]))
-           (delete-char 1) (delete-char -1))
-          ((and (eq prev-char ?\{) (eq next-char ?\}))
-           (delete-char 1) (delete-char -1))
-          ((and (eq prev-char ?\") (eq next-char ?\"))
-           (delete-char 1) (delete-char -1))
-          ((and (eq prev-char ?\') (eq next-char ?\'))
-           (delete-char 1) (delete-char -1))
-          (t (call-interactively 'backward-delete-char-untabify)))))
+  (let ((tangled-file (org-jump-to-tangled-file-name)))
+    (if tangled-file
+        (find-file (expand-file-name tangled-file (file-name-directory buffer-file-name)))
+      (message "Tangled file not specified in the document."))))
 
-(global-set-key (kbd "<backspace>") 'laluxx/delete-empty-delimiters)
+(defun org-jump-to-tangled-file-name ()
+  "Extract the tangled file name from the Org mode file properties.
+If not specified, return nil."
+  (save-excursion
+    (goto-char (point-min))
+    (when (re-search-forward "^#\\+PROPERTY: header-args :tangle \\(.+\\)$" nil t)
+      (match-string 1))))
 
-(defun laluxx/tab-out-of-delimiters-or-indent (orig-fun &rest args)
-  (if (and (eq evil-state 'insert)
-           (or (member (char-before) '(?\( ?\" ?\' ?\[ ?\{))
-               (member (char-after) '(?\) ?\" ?\' ?\] ?\}))))
-      (progn
-        (when (member (char-before) '(?\( ?\" ?\' ?\[ ?\{))
-          (while (not (member (char-after) '(?\) ?\" ?\' ?\] ?\})))
-            (forward-char 1)))
-        (when (member (char-after) '(?\) ?\" ?\' ?\] ?\}))
-          (forward-char 1)))
-    (apply orig-fun args)))
+(defun org-jump-to-tangled-split-and-zoom ()
+  "Split the window vertically, jump to the tangled file corresponding to the current Org mode file in the new window, and adjust the zoom level."
+  (interactive)
+  (let ((tangled-file (org-jump-to-tangled-file-name)))
+    (if tangled-file
+        (progn
+          (text-scale-set -1)  ;; Set the desired zoom level here
+          (execute-kbd-macro (kbd "SPC w v"))  ;; Split window vertically
+          (execute-kbd-macro (kbd "SPC o j"))) ;; Jump to tangled
+      (message "Tangled file not specified in the document."))))
 
-(advice-add 'indent-for-tab-command :around #'laluxx/tab-out-of-delimiters-or-indent)
+(defun laluxx/list-hooks ()
+  "List all hooks in a completing-read interface."
+  (interactive)
+  (let* ((hook-symbols (sort
+                        (seq-filter (lambda (sym)
+                                      (and (symbolp sym)
+                                           (string-suffix-p "-hook" (symbol-name sym))))
+                                    (append obarray nil))
+                        #'string-lessp))
+         (hooks (mapcar #'symbol-name hook-symbols))
+         (selected-hook (completing-read "Hooks: " hooks)))
+    (when selected-hook
+      (describe-variable (intern selected-hook)))))
 
-(defun wrap (delimiter)
-  "Wrap region with DELIMITER if region is active."
-  (interactive
-   (list (read-char "Enter a character to wrap with: ")))
-  (if (region-active-p)
-      (let ((beg (region-beginning))
-            (end (region-end))
-            (selected-text (buffer-substring-no-properties (region-beginning) (region-end))))
-        (goto-char beg)
-        (insert-char delimiter)
-        (goto-char (1+ end))
-        (insert-char (get-matching-delimiter delimiter))
-        (when (or (and (string-match-p "\n" selected-text)
-                       (not (eq (char-after end) ?\n)))
-                  (eq (char-before beg) ?\n))
-          (newline-and-indent)
-          (goto-char (1+ end))
-          (newline-and-indent)))
-    (message "No region selected!")))
+(defun open-dir (key desc dir)
+  (map! :leader
+        :desc desc
+        key (lambda () (interactive) (dired dir))))
 
-(defun get-matching-delimiter (delimiter)
-  "Return the matching delimiter for DELIMITER."
-  (pcase delimiter
-    (?\( ?\))
-    (?\" ?\")
-    (?\' ?\')))
+(open-dir "f P" "Open dotfiles directory" "~/Desktop/pulls/dotfiles/.config/doom")
+(open-dir "f t" "Open test directory" "~/Desktop/test")
+(open-dir "f x" "Open xos directory" "~/xos")
+(open-dir "f z" "Open dotfiles zsh directory" "~/Desktop/pulls/dotfiles/.config/zsh")
+
+(setq ivy-posframe-display-functions-alist
+      '((swiper                     . ivy-posframe-display-at-point)
+        (complete-symbol            . ivy-posframe-display-at-point)
+        ;; (counsel-M-x                . ivy-display-function-fallback)
+        (counsel-esh-history        . ivy-posframe-display-at-window-center)
+        (counsel-describe-function  . ivy-display-function-fallback)
+        (counsel-describe-variable  . ivy-display-function-fallback)
+        (counsel-find-file          . ivy-display-function-fallback)
+        (counsel-recentf            . ivy-display-function-fallback)
+        (counsel-register           . ivy-posframe-display-at-frame-bottom-window-center)
+        (dmenu                      . ivy-posframe-display-at-frame-top-center)
+        (nil                        . ivy-posframe-display))
+      ivy-posframe-height-alist
+      '((swiper . 20)
+        (dmenu . 20)
+        (t . 10)))
+(ivy-posframe-mode 1) ; 1 enables posframe-mode, 0 disables it.
 
 (map! :leader
-      :nv "i w" #'wrap)
+      (:prefix ("v" . "Ivy")
+       :desc "Ivy push view" "v p" #'ivy-push-view
+       :desc "Ivy switch view" "v s" #'ivy-switch-view))
 
 (after! evil
   (define-key evil-insert-state-map (kbd "C-v") 'yank)
@@ -247,119 +422,14 @@
   (define-key evil-insert-state-map (kbd "C-z") 'undo)
   (define-key evil-insert-state-map (kbd "C-y") 'redo))
 
-(beacon-mode -1)
-
-(setq bookmark-default-file "~/.config/doom/bookmarks")
-
-(map! :leader
-      (:prefix ("b". "buffer")
-       :desc "List bookmarks"                          "L" #'list-bookmarks
-       :desc "Set bookmark"                            "m" #'bookmark-set
-       :desc "Delete bookmark"                         "M" #'bookmark-set
-       :desc "Save current bookmarks to bookmark file" "w" #'bookmark-save))
-
-(global-auto-revert-mode 1)
-(setq global-auto-revert-non-file-buffers t)
-
-(evil-define-key 'normal ibuffer-mode-map
-  (kbd "f c") 'ibuffer-filter-by-content
-  (kbd "f d") 'ibuffer-filter-by-directory
-  (kbd "f f") 'ibuffer-filter-by-filename
-  (kbd "f m") 'ibuffer-filter-by-mode
-  (kbd "f n") 'ibuffer-filter-by-name
-  (kbd "f x") 'ibuffer-filter-disable
-  (kbd "g h") 'ibuffer-do-kill-lines
-  (kbd "g H") 'ibuffer-update)
-
-;; https://stackoverflow.com/questions/9547912/emacs-calendar-show-more-than-3-months
-(defun dt/year-calendar (&optional year)
-  (interactive)
-  (require 'calendar)
-  (let* (
-      (current-year (number-to-string (nth 5 (decode-time (current-time)))))
-      (month 0)
-      (year (if year year (string-to-number (format-time-string "%Y" (current-time))))))
-    (switch-to-buffer (get-buffer-create calendar-buffer))
-    (when (not (eq major-mode 'calendar-mode))
-      (calendar-mode))
-    (setq displayed-month month)
-    (setq displayed-year year)
-    (setq buffer-read-only nil)
-    (erase-buffer)
-    ;; horizontal rows
-    (dotimes (j 4)
-      ;; vertical columns
-      (dotimes (i 3)
-        (calendar-generate-month
-          (setq month (+ month 1))
-          year
-          ;; indentation / spacing between months
-          (+ 5 (* 25 i))))
-      (goto-char (point-max))
-      (insert (make-string (- 10 (count-lines (point-min) (point-max))) ?\n))
-      (widen)
-      (goto-char (point-max))
-      (narrow-to-region (point-max) (point-max)))
-    (widen)
-    (goto-char (point-min))
-    (setq buffer-read-only t)))
-
-(defun dt/scroll-year-calendar-forward (&optional arg event)
-  "Scroll the yearly calendar by year in a forward direction."
-  (interactive (list (prefix-numeric-value current-prefix-arg)
-                     last-nonmenu-event))
-  (unless arg (setq arg 0))
-  (save-selected-window
-    (if (setq event (event-start event)) (select-window (posn-window event)))
-    (unless (zerop arg)
-      (let* (
-              (year (+ displayed-year arg)))
-        (dt/year-calendar year)))
-    (goto-char (point-min))
-    (run-hooks 'calendar-move-hook)))
-
-(defun dt/scroll-year-calendar-backward (&optional arg event)
-  "Scroll the yearly calendar by year in a backward direction."
-  (interactive (list (prefix-numeric-value current-prefix-arg)
-                     last-nonmenu-event))
-  (dt/scroll-year-calendar-forward (- (or arg 1)) event))
-
-(map! :leader
-      :desc "Scroll year calendar backward" "<left>" #'dt/scroll-year-calendar-backward
-      :desc "Scroll year calendar forward" "<right>" #'dt/scroll-year-calendar-forward)
-
-(defalias 'year-calendar 'dt/year-calendar)
-
-(use-package! calfw)
-(use-package! calfw-org)
-
-(setq centaur-tabs-set-bar 'over
-      centaur-tabs-set-icons t
-      centaur-tabs-gray-out-icons 'buffer
-      centaur-tabs-height 24
-      centaur-tabs-set-modified-marker t
-      centaur-tabs-style "bar"
-      centaur-tabs-modified-marker "•")
-(map! :leader
-      :desc "Toggle tabs globally" "t c" #'centaur-tabs-mode
-      :desc "Toggle tabs local display" "t C" #'centaur-tabs-local-mode)
-(evil-define-key 'normal centaur-tabs-mode-map (kbd "g <right>") 'centaur-tabs-forward        ; default Doom binding is 'g t'
-                                               (kbd "g <left>")  'centaur-tabs-backward       ; default Doom binding is 'g T'
-                                               (kbd "g <down>")  'centaur-tabs-forward-group
-                                               (kbd "g <up>")    'centaur-tabs-backward-group)
-
-(map! :leader
-      (:prefix ("c h" . "Help info from Clippy")
-       :desc "Clippy describes function under point" "f" #'clippy-describe-function
-       :desc "Clippy describes variable under point" "v" #'clippy-describe-variable))
-
 (map! :leader
       (:prefix ("d" . "dired")
        :desc "Open dired" "d" #'dired
        :desc "Dired jump to current" "j" #'dired-jump)
+       ;; :desc "Dired split jump" "J" #'dired-jump)
       (:after dired
        (:map dired-mode-map
-        :desc "Peep-dired image previews" "d p" #'peep-dired
+        :desc "Peep-dired image previews" "d p" #'peep-dired ;; HALF WORKING
         :desc "Dired view file"           "d v" #'dired-view-file)))
 
 (evil-define-key 'normal dired-mode-map
@@ -404,634 +474,180 @@
   (kbd "k") 'peep-dired-prev-file)
 (add-hook 'peep-dired-hook 'evil-normalize-keymaps)
 
-(setq delete-by-moving-to-trash t
-      trash-directory "~/.local/share/Trash/files/")
-
-(setq doom-theme 'doom-palenight)
-
-;; TODO
-;; Set ewal options
-;; (setq ewal-use-built-in-on-failure-p t
-;;       ewal-use-built-in-always-p nil)
-
-;; ;; Load the ewal-doom-themes
-;; (require 'ewal-doom-themes)
-
-;; ;; Set the doom theme to use the ewal doom theme
-;; (setq doom-theme 'ewal-doom-one)
-
-;; ;; Set up the theme after loading doom-themes
-;; (after! doom-themes
-;;   (ewal-doom-themes-get-spaceline-faces)
-;;   (ewal-doom-themes-get-unicode-fonts)
-;;   (setq ewal-doom-themes t))
-
-;; ;; Load the theme
-;; (load-theme 'ewal-doom-one t)
-
-(ednc-mode 1)
-
-(defun show-notification-in-buffer (old new)
-  (let ((name (format "Notification %d" (ednc-notification-id (or old new)))))
-    (with-current-buffer (get-buffer-create name)
-      (if new (let ((inhibit-read-only t))
-                (if old (erase-buffer) (ednc-view-mode))
-                (insert (ednc-format-notification new t))
-                (pop-to-buffer (current-buffer)))
-        (kill-buffer)))))
-
-(add-hook 'ednc-notification-presentation-functions
-          #'show-notification-in-buffer)
-
-(evil-define-key 'normal ednc-view-mode-map
-  (kbd "d")   'ednc-dismiss-notification
-  (kbd "RET") 'ednc-invoke-action
-  (kbd "e")   'ednc-toggle-expanded-view)
-
-(setq elfeed-goodies/entry-pane-size 0.5)
-
-(evil-define-key 'normal elfeed-show-mode-map
-  (kbd "J") 'elfeed-goodies/split-show-next
-  (kbd "K") 'elfeed-goodies/split-show-prev)
-(evil-define-key 'normal elfeed-search-mode-map
-  (kbd "J") 'elfeed-goodies/split-show-next
-  (kbd "K") 'elfeed-goodies/split-show-prev)
-(setq elfeed-feeds (quote
-                    (("https://www.reddit.com/r/linux.rss" reddit linux)
-                     ("https://www.reddit.com/r/commandline.rss" reddit commandline)
-                     ("https://www.reddit.com/r/distrotube.rss" reddit distrotube)
-                     ("https://www.reddit.com/r/emacs.rss" reddit emacs)
-                     ("https://www.gamingonlinux.com/article_rss.php" gaming linux)
-                     ("https://hackaday.com/blog/feed/" hackaday linux)
-                     ("https://opensource.com/feed" opensource linux)
-                     ("https://linux.softpedia.com/backend.xml" softpedia linux)
-                     ("https://itsfoss.com/feed/" itsfoss linux)
-                     ("https://www.zdnet.com/topic/linux/rss.xml" zdnet linux)
-                     ("https://www.phoronix.com/rss.php" phoronix linux)
-                     ("http://feeds.feedburner.com/d0od" omgubuntu linux)
-                     ("https://www.computerworld.com/index.rss" computerworld linux)
-                     ("https://www.networkworld.com/category/linux/index.rss" networkworld linux)
-                     ("https://www.techrepublic.com/rssfeeds/topic/open-source/" techrepublic linux)
-                     ("https://betanews.com/feed" betanews linux)
-                     ("http://lxer.com/module/newswire/headlines.rss" lxer linux))))
-
-(emms-all)
-(emms-default-players)
-(emms-mode-line 1)
-(emms-playing-time 1)
-(setq emms-source-file-default-directory "~/Music/"
-      emms-playlist-buffer-name "*Music*"
-      emms-info-asynchronously t
-      emms-source-file-directory-tree-function 'emms-source-file-directory-tree-find)
-(map! :leader
-      (:prefix ("a" . "EMMS audio player")
-       :desc "Go to emms playlist"      "a" #'emms-playlist-mode-go
-       :desc "Emms pause track"         "x" #'emms-pause
-       :desc "Emms stop track"          "s" #'emms-stop
-       :desc "Emms play previous track" "p" #'emms-previous
-       :desc "Emms play next track"     "n" #'emms-next))
-
-(use-package emojify
-  :hook (after-init . global-emojify-mode))
-
-(map! :leader
-      (:prefix ("e". "evaluate/ERC/EWW")
-       :desc "Launch ERC with TLS connection" "E" #'erc-tls))
-
-(setq erc-prompt (lambda () (concat "[" (buffer-name) "]"))
-      erc-server "irc.libera.chat"
-      erc-nick "distrotube"
-      erc-user-full-name "Derek Taylor"
-      erc-track-shorten-start 24
-      erc-autojoin-channels-alist '(("irc.libera.chat" "#archlinux" "#linux" "#emacs"))
-      erc-kill-buffer-on-part t
-      erc-fill-column 100
-      erc-fill-function 'erc-fill-static
-      erc-fill-static-center 20
-      ;; erc-auto-query 'bury
-      )
-
-(map! :leader
-      (:prefix ("e". "evaluate/ERC/EWW")
-       :desc "Evaluate elisp in buffer"  "b" #'eval-buffer
-       :desc "Evaluate defun"            "d" #'eval-defun
-       :desc "Evaluate elisp expression" "e" #'eval-expression
-       :desc "Evaluate last sexpression" "l" #'eval-last-sexp
-       :desc "Evaluate elisp in region"  "r" #'eval-region))
-
-(setq browse-url-browser-function 'eww-browse-url)
-(map! :leader
-      :desc "Search web for text between BEG/END"
-      "s w" #'eww-search-words
-      (:prefix ("e" . "evaluate/ERC/EWW")
-       :desc "Eww web browser" "w" #'eww
-       :desc "Eww reload page" "R" #'eww-reload))
-
-(autoload 'exwm-enable "exwm-config.el")
-
-(setq doom-font (font-spec :family "JetBrains Mono" :size 15)
-      doom-variable-pitch-font (font-spec :family "Ubuntu" :size 15)
-      doom-big-font (font-spec :family "JetBrains Mono" :size 24))
-(after! doom-themes
-  (setq doom-themes-enable-bold t
-        doom-themes-enable-italic t))
-(custom-set-faces!
-  '(font-lock-comment-face :slant italic)
-  '(font-lock-keyword-face :slant italic))
-
-(setq imenu-list-focus-after-activation t)
-
-(map! :leader
-      (:prefix ("s" . "Search")
-       :desc "Menu to jump to places in buffer" "i" #'counsel-imenu))
-
-(map! :leader
-      (:prefix ("t" . "Toggle")
-       :desc "Toggle imenu shown in a sidebar" "i" #'imenu-list-smart-toggle))
-
-(defun dt/insert-todays-date (prefix)
-  (interactive "P")
-  (let ((format (cond
-                 ((not prefix) "%A, %B %d, %Y")
-                 ((equal prefix '(4)) "%m-%d-%Y")
-                 ((equal prefix '(16)) "%Y-%m-%d"))))
-    (insert (format-time-string format))))
-
-(require 'calendar)
-(defun dt/insert-any-date (date)
-  "Insert DATE using the current locale."
-  (interactive (list (calendar-read-date)))
-  (insert (calendar-date-string date)))
-
-(map! :leader
-      (:prefix ("i d" . "Insert date")
-        :desc "Insert any date"    "a" #'dt/insert-any-date
-        :desc "Insert todays date" "t" #'dt/insert-todays-date))
-
-(setq ivy-posframe-display-functions-alist
-      '((swiper                     . ivy-posframe-display-at-point)
-        (complete-symbol            . ivy-posframe-display-at-point)
-        (counsel-M-x                . ivy-display-function-fallback)
-        (counsel-esh-history        . ivy-posframe-display-at-window-center)
-        (counsel-describe-function  . ivy-display-function-fallback)
-        (counsel-describe-variable  . ivy-display-function-fallback)
-        (counsel-find-file          . ivy-display-function-fallback)
-        (counsel-recentf            . ivy-display-function-fallback)
-        (counsel-register           . ivy-posframe-display-at-frame-bottom-window-center)
-        (dmenu                      . ivy-posframe-display-at-frame-top-center)
-        (nil                        . ivy-posframe-display))
-      ivy-posframe-height-alist
-      '((swiper . 20)
-        (dmenu . 20)
-        (t . 10)))
-(ivy-posframe-mode 1) ; 1 enables posframe-mode, 0 disables it.
-
-(map! :leader
-      (:prefix ("v" . "Ivy")
-       :desc "Ivy push view" "v p" #'ivy-push-view
-       :desc "Ivy switch view" "v s" #'ivy-switch-view))
-
-(setq display-line-numbers-type t)
-(map! :leader
-      :desc "Comment or uncomment lines"      "TAB TAB" #'comment-line
-      (:prefix ("t" . "toggle")
-       :desc "Toggle line numbers"            "l" #'doom/toggle-line-numbers
-       :desc "Toggle line highlight in frame" "h" #'hl-line-mode
-       :desc "Toggle line highlight globally" "H" #'global-hl-line-mode
-       :desc "Toggle truncate lines"          "t" #'toggle-truncate-lines))
-
-(custom-set-faces
- '(markdown-header-face ((t (:inherit font-lock-function-name-face :weight bold :family "variable-pitch"))))
- '(markdown-header-face-1 ((t (:inherit markdown-header-face :height 1.7))))
- '(markdown-header-face-2 ((t (:inherit markdown-header-face :height 1.6))))
- '(markdown-header-face-3 ((t (:inherit markdown-header-face :height 1.5))))
- '(markdown-header-face-4 ((t (:inherit markdown-header-face :height 1.4))))
- '(markdown-header-face-5 ((t (:inherit markdown-header-face :height 1.3))))
- '(markdown-header-face-6 ((t (:inherit markdown-header-face :height 1.2)))))
-
-(setq minimap-window-location 'right)
-(map! :leader
-      (:prefix ("t" . "toggle")
-       :desc "Toggle minimap-mode" "m" #'minimap-mode))
-
-(set-face-attribute 'mode-line nil :font "Ubuntu Mono-13")
-(setq doom-modeline-height 30     ;; sets modeline height
-      doom-modeline-bar-width 5   ;; sets right bar width
-      doom-modeline-persp-name t  ;; adds perspective name to modeline
-      doom-modeline-persp-icon t) ;; adds folder icon next to persp name
-
-(xterm-mouse-mode 1)
-
-(after! neotree
-  (setq neo-smart-open t
-        neo-window-fixed-size nil))
-(after! doom-themes
-  (setq doom-neotree-enable-variable-pitch t))
-(map! :leader
-      :desc "Toggle neotree file viewer" "t n" #'neotree-toggle
-      :desc "Open directory in neotree"  "d n" #'neotree-dir)
-
-(map! :leader
-      (:prefix ("=" . "open file")
-       :desc "Edit agenda file"      "=" #'(lambda () (interactive) (find-file "~/.config/doom/start.org"))
-       :desc "Edit agenda file"      "a" #'(lambda () (interactive) (find-file "~/nc/Org/agenda.org"))
-       :desc "Edit doom config.org"  "c" #'(lambda () (interactive) (find-file "~/.config/doom/config.org"))
-       :desc "Edit doom init.el"     "i" #'(lambda () (interactive) (find-file "~/.config/doom/init.el"))
-       :desc "Edit doom packages.el" "p" #'(lambda () (interactive) (find-file "~/.config/doom/packages.el"))))
-(map! :leader
-      (:prefix ("= e" . "open eshell files")
-       :desc "Edit eshell aliases"   "a" #'(lambda () (interactive) (find-file "~/.config/doom/eshell/aliases"))
-       :desc "Edit eshell profile"   "p" #'(lambda () (interactive) (find-file "~/.config/doom/eshell/profile"))))
-
-(map! :leader
-      :desc "Org babel tangle" "m B" #'org-babel-tangle)
-(after! org
-  (setq org-directory "~/nc/Org/"
-        org-default-notes-file (expand-file-name "notes.org" org-directory)
-        org-ellipsis " ▼ "
-        org-superstar-headline-bullets-list '("◉" "●" "○" "◆" "●" "○" "◆")
-        org-superstar-itembullet-alist '((?+ . ?➤) (?- . ?✦)) ; changes +/- symbols in item lists
-        org-log-done 'time
-        org-hide-emphasis-markers t
-        ;; ex. of org-link-abbrev-alist in action
-        ;; [[arch-wiki:Name_of_Page][Description]]
-        org-link-abbrev-alist    ; This overwrites the default Doom org-link-abbrev-list
-          '(("google" . "http://www.google.com/search?q=")
-            ("arch-wiki" . "https://wiki.archlinux.org/index.php/")
-            ("ddg" . "https://duckduckgo.com/?q=")
-            ("wiki" . "https://en.wikipedia.org/wiki/"))
-        org-table-convert-region-max-lines 20000
-        org-todo-keywords        ; This overwrites the default Doom org-todo-keywords
-          '((sequence
-             "TODO(t)"           ; A task that is ready to be tackled
-             "BLOG(b)"           ; Blog writing assignments
-             "GYM(g)"            ; Things to accomplish at the gym
-             "PROJ(p)"           ; A project that contains other tasks
-             "VIDEO(v)"          ; Video assignments
-             "WAIT(w)"           ; Something is holding up this task
-             "|"                 ; The pipe necessary to separate "active" states and "inactive" states
-             "DONE(d)"           ; Task has been completed
-             "CANCELLED(c)" )))) ; Task has been cancelled
-
-(after! org
-  (setq org-agenda-files '("~/nc/Org/agenda.org")))
-
-(setq
-   ;; org-fancy-priorities-list '("[A]" "[B]" "[C]")
-   ;; org-fancy-priorities-list '("❗" "[B]" "[C]")
-   org-fancy-priorities-list '("🟥" "🟧" "🟨")
-   org-priority-faces
-   '((?A :foreground "#ff6c6b" :weight bold)
-     (?B :foreground "#98be65" :weight bold)
-     (?C :foreground "#c678dd" :weight bold))
-   org-agenda-block-separator 8411)
-
-(setq org-agenda-custom-commands
-      '(("v" "A better agenda view"
-         ((tags "PRIORITY=\"A\""
-                ((org-agenda-skip-function '(org-agenda-skip-entry-if 'todo 'done))
-                 (org-agenda-overriding-header "High-priority unfinished tasks:")))
-          (tags "PRIORITY=\"B\""
-                ((org-agenda-skip-function '(org-agenda-skip-entry-if 'todo 'done))
-                 (org-agenda-overriding-header "Medium-priority unfinished tasks:")))
-          (tags "PRIORITY=\"C\""
-                ((org-agenda-skip-function '(org-agenda-skip-entry-if 'todo 'done))
-                 (org-agenda-overriding-header "Low-priority unfinished tasks:")))
-          (tags "customtag"
-                ((org-agenda-skip-function '(org-agenda-skip-entry-if 'todo 'done))
-                 (org-agenda-overriding-header "Tasks marked with customtag:")))
-
-          (agenda "")
-          (alltodo "")))))
-
-(use-package! org-auto-tangle
-  :defer t
-  :hook (org-mode . org-auto-tangle-mode)
+(use-package spaceline-config
+  :ensure spaceline
   :config
-  (setq org-auto-tangle-default t))
+  (setq spaceline-buffer-encoding-abbrev-p nil
+        spaceline-line-column-p nil
+        spaceline-line-p nil
+        spaceline-highlight-face-func 'spaceline-highlight-face-evil-state
+        powerline-default-separator 'wave)
 
-(defun dt/insert-auto-tangle-tag ()
-  "Insert auto-tangle tag in a literate config."
-  (interactive)
-  (evil-org-open-below 1)
-  (insert "#+auto_tangle: t ")
-  (evil-force-normal-state))
+  (spaceline-define-segment evil-state
+    "The current evil state.  Requires `evil-mode' to be enabled."
+    (when (bound-and-true-p evil-local-mode)
+      (s-trim (evil-state-property evil-state :tag t))))
 
-(map! :leader
-      :desc "Insert auto_tangle tag" "i a" #'dt/insert-auto-tangle-tag)
+  (spaceline-define-segment buffer-modified
+    "Replace the `buffer-modified' segment with an exclamation point for
+    modified buffers and an asterisk for read-only buffers."
+    (cond (buffer-read-only "*")
+          ((buffer-modified-p) "!")))
 
-(defun dt/org-colors-doom-one ()
-  "Enable Doom One colors for Org headers."
-  (interactive)
-  (dolist
-      (face
-       '((org-level-1 1.7 "#51afef" ultra-bold)
-         (org-level-2 1.6 "#c678dd" extra-bold)
-         (org-level-3 1.5 "#98be65" bold)
-         (org-level-4 1.4 "#da8548" semi-bold)
-         (org-level-5 1.3 "#5699af" normal)
-         (org-level-6 1.2 "#a9a1e1" normal)
-         (org-level-7 1.1 "#46d9ff" normal)
-         (org-level-8 1.0 "#ff6c6b" normal)))
-    (set-face-attribute (nth 0 face) nil :font doom-variable-pitch-font :weight (nth 3 face) :height (nth 1 face) :foreground (nth 2 face)))
-    (set-face-attribute 'org-table nil :font doom-font :weight 'normal :height 1.0 :foreground "#bfafdf"))
+  (setq spaceline-left
+        '((evil-state :face highlight-face)
+          (buffer-modified :face error-face)
+          anzu
+          auto-compile
+          ((buffer-id buffer-size) :separator " | ")
+          major-mode
+          ((flycheck-error flycheck-warning flycheck-info)
+           :when active)
+          (version-control :when active)
+          (org-pomodoro :when active)
+          (org-clock :when active)))
 
-(defun dt/org-colors-dracula ()
-  "Enable Dracula colors for Org headers."
-  (interactive)
-  (dolist
-      (face
-       '((org-level-1 1.7 "#8be9fd" ultra-bold)
-         (org-level-2 1.6 "#bd93f9" extra-bold)
-         (org-level-3 1.5 "#50fa7b" bold)
-         (org-level-4 1.4 "#ff79c6" semi-bold)
-         (org-level-5 1.3 "#9aedfe" normal)
-         (org-level-6 1.2 "#caa9fa" normal)
-         (org-level-7 1.1 "#5af78e" normal)
-         (org-level-8 1.0 "#ff92d0" normal)))
-    (set-face-attribute (nth 0 face) nil :font doom-variable-pitch-font :weight (nth 3 face) :height (nth 1 face) :foreground (nth 2 face)))
-    (set-face-attribute 'org-table nil :font doom-font :weight 'normal :height 1.0 :foreground "#bfafdf"))
+  (setq spaceline-right
+        '((global :when active)
+          buffer-position
+          hud))
 
-(defun dt/org-colors-gruvbox-dark ()
-  "Enable Gruvbox Dark colors for Org headers."
-  (interactive)
-  (dolist
-      (face
-       '((org-level-1 1.7 "#458588" ultra-bold)
-         (org-level-2 1.6 "#b16286" extra-bold)
-         (org-level-3 1.5 "#98971a" bold)
-         (org-level-4 1.4 "#fb4934" semi-bold)
-         (org-level-5 1.3 "#83a598" normal)
-         (org-level-6 1.2 "#d3869b" normal)
-         (org-level-7 1.1 "#d79921" normal)
-         (org-level-8 1.0 "#8ec07c" normal)))
-    (set-face-attribute (nth 0 face) nil :font doom-variable-pitch-font :weight (nth 3 face) :height (nth 1 face) :foreground (nth 2 face)))
-    (set-face-attribute 'org-table nil :font doom-font :weight 'normal :height 1.0 :foreground "#bfafdf"))
+  (spaceline-spacemacs-theme))
 
-(defun dt/org-colors-monokai-pro ()
-  "Enable Monokai Pro colors for Org headers."
-  (interactive)
-  (dolist
-      (face
-       '((org-level-1 1.7 "#78dce8" ultra-bold)
-         (org-level-2 1.6 "#ab9df2" extra-bold)
-         (org-level-3 1.5 "#a9dc76" bold)
-         (org-level-4 1.4 "#fc9867" semi-bold)
-         (org-level-5 1.3 "#ff6188" normal)
-         (org-level-6 1.2 "#ffd866" normal)
-         (org-level-7 1.1 "#78dce8" normal)
-         (org-level-8 1.0 "#ab9df2" normal)))
-    (set-face-attribute (nth 0 face) nil :font doom-variable-pitch-font :weight (nth 3 face) :height (nth 1 face) :foreground (nth 2 face)))
-    (set-face-attribute 'org-table nil :font doom-font :weight 'normal :height 1.0 :foreground "#bfafdf"))
+;; FIXME
+;; (defvar my-modeline-state 'doom)
 
-(defun dt/org-colors-nord ()
-  "Enable Nord colors for Org headers."
-  (interactive)
-  (dolist
-      (face
-       '((org-level-1 1.7 "#81a1c1" ultra-bold)
-         (org-level-2 1.6 "#b48ead" extra-bold)
-         (org-level-3 1.5 "#a3be8c" bold)
-         (org-level-4 1.4 "#ebcb8b" semi-bold)
-         (org-level-5 1.3 "#bf616a" normal)
-         (org-level-6 1.2 "#88c0d0" normal)
-         (org-level-7 1.1 "#81a1c1" normal)
-         (org-level-8 1.0 "#b48ead" normal)))
-    (set-face-attribute (nth 0 face) nil :font doom-variable-pitch-font :weight (nth 3 face) :height (nth 1 face) :foreground (nth 2 face)))
-    (set-face-attribute 'org-table nil :font doom-font :weight 'normal :height 1.0 :foreground "#bfafdf"))
+;; (defun laluxx/toggle-modeline ()
+;;   "Toggle between doom-modeline, spaceline, and no modeline."
+;;   (interactive)
+;;   (cond
+;;    ((eq my-modeline-state 'doom)
+;;     (doom-modeline-mode -1)
+;;     (spaceline-spacemacs-theme)
+;;     (setq my-modeline-state 'spaceline))
+;;    ((eq my-modeline-state 'spaceline)
+;;     (hide-mode-line-mode 1)
+;;     (setq my-modeline-state 'none))
+;;    ((eq my-modeline-state 'none)
+;;     (hide-mode-line-mode -1)
+;;     (doom-modeline-mode 1)
+;;     (setq my-modeline-state 'doom))))
 
-(defun dt/org-colors-oceanic-next ()
-  "Enable Oceanic Next colors for Org headers."
-  (interactive)
-  (dolist
-      (face
-       '((org-level-1 1.7 "#6699cc" ultra-bold)
-         (org-level-2 1.6 "#c594c5" extra-bold)
-         (org-level-3 1.5 "#99c794" bold)
-         (org-level-4 1.4 "#fac863" semi-bold)
-         (org-level-5 1.3 "#5fb3b3" normal)
-         (org-level-6 1.2 "#ec5f67" normal)
-         (org-level-7 1.1 "#6699cc" normal)
-         (org-level-8 1.0 "#c594c5" normal)))
-    (set-face-attribute (nth 0 face) nil :font doom-variable-pitch-font :weight (nth 3 face) :height (nth 1 face) :foreground (nth 2 face)))
-    (set-face-attribute 'org-table nil :font doom-font :weight 'normal :height 1.0 :foreground "#bfafdf"))
+1(use-package treemacs
+  :ensure t
+  :defer t
+  :init
+  (with-eval-after-load 'winum
+    (define-key winum-keymap (kbd "M-0") #'treemacs-select-window))
+  :config
+  (progn
+    (setq treemacs-collapse-dirs                   (if treemacs-python-executable 3 0)
+          treemacs-deferred-git-apply-delay        0.5
+          treemacs-directory-name-transformer      #'identity
+          treemacs-display-in-side-window          t
+          treemacs-eldoc-display                   'simple
+          treemacs-file-event-delay                2000
+          treemacs-file-extension-regex            treemacs-last-period-regex-value
+          treemacs-file-follow-delay               0.2
+          treemacs-file-name-transformer           #'identity
+          treemacs-follow-after-init               t
+          treemacs-expand-after-init               t
+          treemacs-find-workspace-method           'find-for-file-or-pick-first
+          treemacs-git-command-pipe                ""
+          treemacs-goto-tag-strategy               'refetch-index
+          treemacs-header-scroll-indicators        '(nil . "^^^^^^")
+          treemacs-hide-dot-git-directory          t
+          treemacs-indentation                     2
+          treemacs-indentation-string              " "
+          treemacs-is-never-other-window           nil
+          treemacs-max-git-entries                 5000
+          treemacs-missing-project-action          'ask
+          treemacs-move-forward-on-expand          nil
+          treemacs-no-png-images                   nil
+          treemacs-no-delete-other-windows         t
+          treemacs-project-follow-cleanup          nil
+          treemacs-persist-file                    (expand-file-name ".cache/treemacs-persist" user-emacs-directory)
+          treemacs-position                        'left
+          treemacs-read-string-input               'from-child-frame
+          treemacs-recenter-distance               0.1
+          treemacs-recenter-after-file-follow      nil
+          treemacs-recenter-after-tag-follow       nil
+          treemacs-recenter-after-project-jump     'always
+          treemacs-recenter-after-project-expand   'on-distance
+          treemacs-litter-directories              '("/node_modules" "/.venv" "/.cask")
+          treemacs-project-follow-into-home        nil
+          treemacs-show-cursor                     t
+          treemacs-show-hidden-files               t
+          treemacs-silent-filewatch                nil
+          treemacs-silent-refresh                  nil
+          treemacs-sorting                         'alphabetic-asc
+          treemacs-select-when-already-in-treemacs 'move-back
+          treemacs-space-between-root-nodes        t
+          treemacs-tag-follow-cleanup              t
+          treemacs-tag-follow-delay                1.5
+          treemacs-text-scale                      nil
+          treemacs-user-mode-line-format           nil
+          treemacs-user-header-line-format         nil
+          treemacs-wide-toggle-width               70
+          treemacs-width                           35
+          treemacs-width-increment                 1
+          treemacs-width-is-initially-locked       t
+          treemacs-workspace-switch-cleanup        nil)
 
-(defun dt/org-colors-palenight ()
-  "Enable Palenight colors for Org headers."
-  (interactive)
-  (dolist
-      (face
-       '((org-level-1 1.7 "#82aaff" ultra-bold)
-         (org-level-2 1.6 "#c792ea" extra-bold)
-         (org-level-3 1.5 "#c3e88d" bold)
-         (org-level-4 1.4 "#ffcb6b" semi-bold)
-         (org-level-5 1.3 "#a3f7ff" normal)
-         (org-level-6 1.2 "#e1acff" normal)
-         (org-level-7 1.1 "#f07178" normal)
-         (org-level-8 1.0 "#ddffa7" normal)))
-    (set-face-attribute (nth 0 face) nil :font doom-variable-pitch-font :weight (nth 3 face) :height (nth 1 face) :foreground (nth 2 face)))
-    (set-face-attribute 'org-table nil :font doom-font :weight 'normal :height 1.0 :foreground "#bfafdf"))
+    ;; The default width and height of the icons is 22 pixels. If you are
+    ;; using a Hi-DPI display, uncomment this to double the icon size.
+    ;;(treemacs-resize-icons 44)
 
-(defun dt/org-colors-solarized-dark ()
-  "Enable Solarized Dark colors for Org headers."
-  (interactive)
-  (dolist
-      (face
-       '((org-level-1 1.7 "#268bd2" ultra-bold)
-         (org-level-2 1.6 "#d33682" extra-bold)
-         (org-level-3 1.5 "#859900" bold)
-         (org-level-4 1.4 "#b58900" semi-bold)
-         (org-level-5 1.3 "#cb4b16" normal)
-         (org-level-6 1.2 "#6c71c4" normal)
-         (org-level-7 1.1 "#2aa198" normal)
-         (org-level-8 1.0 "#657b83" normal)))
-    (set-face-attribute (nth 0 face) nil :font doom-variable-pitch-font :weight (nth 3 face) :height (nth 1 face) :foreground (nth 2 face)))
-    (set-face-attribute 'org-table nil :font doom-font :weight 'normal :height 1.0 :foreground "#bfafdf"))
+    (treemacs-follow-mode t)
+    (treemacs-filewatch-mode t)
+    (treemacs-fringe-indicator-mode 'always)
+    (when treemacs-python-executable
+      (treemacs-git-commit-diff-mode t))
 
-(defun dt/org-colors-solarized-light ()
-  "Enable Solarized Light colors for Org headers."
-  (interactive)
-  (dolist
-      (face
-       '((org-level-1 1.7 "#268bd2" ultra-bold)
-         (org-level-2 1.6 "#d33682" extra-bold)
-         (org-level-3 1.5 "#859900" bold)
-         (org-level-4 1.4 "#b58900" semi-bold)
-         (org-level-5 1.3 "#cb4b16" normal)
-         (org-level-6 1.2 "#6c71c4" normal)
-         (org-level-7 1.1 "#2aa198" normal)
-         (org-level-8 1.0 "#657b83" normal)))
-    (set-face-attribute (nth 0 face) nil :font doom-variable-pitch-font :weight (nth 3 face) :height (nth 1 face) :foreground (nth 2 face)))
-    (set-face-attribute 'org-table nil :font doom-font :weight 'normal :height 1.0 :foreground "#bfafdf"))
+    (pcase (cons (not (null (executable-find "git")))
+                 (not (null treemacs-python-executable)))
+      (`(t . t)
+       (treemacs-git-mode 'deferred))
+      (`(t . _)
+       (treemacs-git-mode 'simple)))
 
-(defun dt/org-colors-tomorrow-night ()
-  "Enable Tomorrow Night colors for Org headers."
-  (interactive)
-  (dolist
-      (face
-       '((org-level-1 1.7 "#81a2be" ultra-bold)
-         (org-level-2 1.6 "#b294bb" extra-bold)
-         (org-level-3 1.5 "#b5bd68" bold)
-         (org-level-4 1.4 "#e6c547" semi-bold)
-         (org-level-5 1.3 "#cc6666" normal)
-         (org-level-6 1.2 "#70c0ba" normal)
-         (org-level-7 1.1 "#b77ee0" normal)
-         (org-level-8 1.0 "#9ec400" normal)))
-    (set-face-attribute (nth 0 face) nil :font doom-variable-pitch-font :weight (nth 3 face) :height (nth 1 face) :foreground (nth 2 face)))
-    (set-face-attribute 'org-table nil :font doom-font :weight 'normal :height 1.0 :foreground "#bfafdf"))
+    (treemacs-hide-gitignored-files-mode nil))
+  :bind
+  (:map global-map
+        ("M-0"       . treemacs-select-window)
+        ("C-x t 1"   . treemacs-delete-other-windows)
+        ("C-x t t"   . treemacs)
+        ("C-x t d"   . treemacs-select-directory)
+        ("C-x t B"   . treemacs-bookmark)
+        ("C-x t C-t" . treemacs-find-file)
+        ("C-x t M-t" . treemacs-find-tag)))
 
-;; Load our desired dt/org-colors-* theme on startup
-(dt/org-colors-doom-one)
+(use-package treemacs-evil
+  :after (treemacs evil)
+  :ensure t)
 
-(use-package ox-man)
-(use-package ox-gemini)
+(use-package treemacs-projectile
+  :after (treemacs projectile)
+  :ensure t)
 
-(setq org-journal-dir "~/nc/Org/journal/"
-      org-journal-date-prefix "* "
-      org-journal-time-prefix "** "
-      org-journal-date-format "%B %d, %Y (%A) "
-      org-journal-file-format "%Y-%m-%d.org")
+;; BREAK dirvish icons
+;; (use-package treemacs-icons-dired
+;;   :hook (dired-mode . treemacs-icons-dired-enable-once)
+;;   :ensure t)
 
-(setq org-publish-use-timestamps-flag nil)
-(setq org-export-with-broken-links t)
-(setq org-publish-project-alist
-      '(("distro.tube without manpages"
-         :base-directory "~/nc/gitlab-repos/distro.tube/"
-         :base-extension "org"
-         :publishing-directory "~/nc/gitlab-repos/distro.tube/html/"
-         :recursive t
-         :exclude "org-html-themes/.*\\|man-org/man*"
-         :publishing-function org-html-publish-to-html
-         :headline-levels 4             ; Just the default for this project.
-         :auto-preamble t)
-         ("man0p"
-         :base-directory "~/nc/gitlab-repos/distro.tube/man-org/man0p/"
-         :base-extension "org"
-         :publishing-directory "~/nc/gitlab-repos/distro.tube/html/man-org/man0p/"
-         :recursive t
-         :publishing-function org-html-publish-to-html
-         :headline-levels 4             ; Just the default for this project.
-         :auto-preamble t)
-         ("man1"
-         :base-directory "~/nc/gitlab-repos/distro.tube/man-org/man1/"
-         :base-extension "org"
-         :publishing-directory "~/nc/gitlab-repos/distro.tube/html/man-org/man1/"
-         :recursive t
-         :publishing-function org-html-publish-to-html
-         :headline-levels 4             ; Just the default for this project.
-         :auto-preamble t)
-         ("man1p"
-         :base-directory "~/nc/gitlab-repos/distro.tube/man-org/man1p/"
-         :base-extension "org"
-         :publishing-directory "~/nc/gitlab-repos/distro.tube/html/man-org/man1p/"
-         :recursive t
-         :publishing-function org-html-publish-to-html
-         :headline-levels 4             ; Just the default for this project.
-         :auto-preamble t)
-         ("man2"
-         :base-directory "~/nc/gitlab-repos/distro.tube/man-org/man2/"
-         :base-extension "org"
-         :publishing-directory "~/nc/gitlab-repos/distro.tube/html/man-org/man2/"
-         :recursive t
-         :publishing-function org-html-publish-to-html
-         :headline-levels 4             ; Just the default for this project.
-         :auto-preamble t)
-         ("man3"
-         :base-directory "~/nc/gitlab-repos/distro.tube/man-org/man3/"
-         :base-extension "org"
-         :publishing-directory "~/nc/gitlab-repos/distro.tube/html/man-org/man3/"
-         :recursive t
-         :publishing-function org-html-publish-to-html
-         :headline-levels 4             ; Just the default for this project.
-         :auto-preamble t)
-         ("man3p"
-         :base-directory "~/nc/gitlab-repos/distro.tube/man-org/man3p/"
-         :base-extension "org"
-         :publishing-directory "~/nc/gitlab-repos/distro.tube/html/man-org/man3p/"
-         :recursive t
-         :publishing-function org-html-publish-to-html
-         :headline-levels 4             ; Just the default for this project.
-         :auto-preamble t)
-         ("man4"
-         :base-directory "~/nc/gitlab-repos/distro.tube/man-org/man4/"
-         :base-extension "org"
-         :publishing-directory "~/nc/gitlab-repos/distro.tube/html/man-org/man4/"
-         :recursive t
-         :publishing-function org-html-publish-to-html
-         :headline-levels 4             ; Just the default for this project.
-         :auto-preamble t)
-         ("man5"
-         :base-directory "~/nc/gitlab-repos/distro.tube/man-org/man5/"
-         :base-extension "org"
-         :publishing-directory "~/nc/gitlab-repos/distro.tube/html/man-org/man5/"
-         :recursive t
-         :publishing-function org-html-publish-to-html
-         :headline-levels 4             ; Just the default for this project.
-         :auto-preamble t)
-         ("man6"
-         :base-directory "~/nc/gitlab-repos/distro.tube/man-org/man6/"
-         :base-extension "org"
-         :publishing-directory "~/nc/gitlab-repos/distro.tube/html/man-org/man6/"
-         :recursive t
-         :publishing-function org-html-publish-to-html
-         :headline-levels 4             ; Just the default for this project.
-         :auto-preamble t)
-         ("man7"
-         :base-directory "~/nc/gitlab-repos/distro.tube/man-org/man7/"
-         :base-extension "org"
-         :publishing-directory "~/nc/gitlab-repos/distro.tube/html/man-org/man7/"
-         :recursive t
-         :publishing-function org-html-publish-to-html
-         :headline-levels 4             ; Just the default for this project.
-         :auto-preamble t)
-         ("man8"
-         :base-directory "~/nc/gitlab-repos/distro.tube/man-org/man8/"
-         :base-extension "org"
-         :publishing-directory "~/nc/gitlab-repos/distro.tube/html/man-org/man8/"
-         :recursive t
-         :publishing-function org-html-publish-to-html
-         :headline-levels 4             ; Just the default for this project.
-         :auto-preamble t)
-         ("org-static"
-         :base-directory "~/Org/website"
-         :base-extension "css\\|js\\|png\\|jpg\\|gif\\|pdf\\|mp3\\|ogg\\|swf"
-         :publishing-directory "~/public_html/"
-         :recursive t
-         :exclude ".*/org-html-themes/.*"
-         :publishing-function org-publish-attachment)
-         ("dtos.dev"
-         :base-directory "~/nc/gitlab-repos/dtos.dev/"
-         :base-extension "org"
-         :publishing-directory "~/nc/gitlab-repos/dtos.dev/html/"
-         :recursive t
-         :publishing-function org-html-publish-to-html
-         :headline-levels 4             ; Just the default for this project.
-         :auto-preamble t)
+(use-package treemacs-magit
+  :after (treemacs magit)
+  :ensure t)
 
-      ))
+(use-package treemacs-persp ;;treemacs-perspective if you use perspective.el vs. persp-mode
+  :after (treemacs persp-mode) ;;or perspective vs. persp-mode
+  :ensure t
+  :config (treemacs-set-scope-type 'Perspectives))
 
-(after! org
-  (setq org-roam-directory "~/nc/Org/roam/"
-        org-roam-graph-viewer "/usr/bin/firefox"))
-
-(map! :leader
-      (:prefix ("n r" . "org-roam")
-       :desc "Completion at point" "c" #'completion-at-point
-       :desc "Find node"           "f" #'org-roam-node-find
-       :desc "Show graph"          "g" #'org-roam-graph
-       :desc "Insert node"         "i" #'org-roam-node-insert
-       :desc "Capture to node"     "n" #'org-roam-capture
-       :desc "Toggle roam buffer"  "r" #'org-roam-buffer-toggle))
-
-(use-package! password-store)
-
-(map! :leader
-      :desc "Switch to perspective NAME"       "DEL" #'persp-switch
-      :desc "Switch to buffer in perspective"  "," #'persp-switch-to-buffer
-      :desc "Switch to next perspective"       "]" #'persp-next
-      :desc "Switch to previous perspective"   "[" #'persp-prev
-      :desc "Add a buffer current perspective" "+" #'persp-add-buffer
-      :desc "Remove perspective by name"       "-" #'persp-remove-by-name)
+(use-package treemacs-tab-bar ;;treemacs-tab-bar if you use tab-bar-mode
+  :after (treemacs)
+  :ensure t
+  :config (treemacs-set-scope-type 'Tabs))
 
 (define-globalized-minor-mode global-rainbow-mode rainbow-mode
   (lambda ()
@@ -1040,66 +656,37 @@
      (rainbow-mode 1))))
 (global-rainbow-mode 1 )
 
-(map! :leader
-      (:prefix ("r" . "registers")
-       :desc "Copy to register" "c" #'copy-to-register
-       :desc "Frameset to register" "f" #'frameset-to-register
-       :desc "Insert contents of register" "i" #'insert-register
-       :desc "Jump to register" "j" #'jump-to-register
-       :desc "List registers" "l" #'list-registers
-       :desc "Number to register" "n" #'number-to-register
-       :desc "Interactively choose a register" "r" #'counsel-register
-       :desc "View a register" "v" #'view-register
-       :desc "Window configuration to register" "w" #'window-configuration-to-register
-       :desc "Increment register" "+" #'increment-register
-       :desc "Point to register" "SPC" #'point-to-register))
+(defun emacs-run-launcher ()
+  "Create and select a frame called emacs-run-launcher which consists only of a minibuffer and has specific dimensions. Runs app-launcher-run-app on that frame, which is an emacs command that prompts you to select an app and open it in a dmenu like behaviour. Delete the frame after that command has exited"
+  (interactive)
+  (with-selected-frame
+    (make-frame '((name . "emacs-run-launcher")
+                  (minibuffer . only)
+                  (fullscreen . 0) ; no fullscreen
+                  (undecorated . t) ; remove title bar
+                  ;;(auto-raise . t) ; focus on this frame
+                  ;;(tool-bar-lines . 0)
+                  ;;(menu-bar-lines . 0)
+                  (internal-border-width . 10)
+                  (width . 80)
+                  (height . 11)))
+                  (unwind-protect
+                    (app-launcher-run-app)
+                    (delete-frame))))
 
-(setq shell-file-name "/bin/fish"
-      vterm-max-scrollback 5000)
-(setq eshell-rc-script "~/.config/doom/eshell/profile"
-      eshell-aliases-file "~/.config/doom/eshell/aliases"
-      eshell-history-size 5000
-      eshell-buffer-maximum-lines 5000
-      eshell-hist-ignoredups t
-      eshell-scroll-to-bottom-on-input t
-      eshell-destroy-buffer-when-process-dies t
-      eshell-visual-commands'("bash" "fish" "htop" "ssh" "top" "zsh"))
-(map! :leader
-      :desc "Eshell"                 "e s" #'eshell
-      :desc "Eshell popup toggle"    "e t" #'+eshell/toggle
-      :desc "Counsel eshell history" "e h" #'counsel-esh-history
-      :desc "Vterm popup toggle"     "v t" #'+vterm/toggle)
+(defun laluxx/update-dotfiles ()
+  "Update dotfiles."
+  (interactive)
+  (let* ((dotfiles-path (expand-file-name "~/Desktop/pulls/dotfiles"))
+         (command (concat "rsync -a " dotfiles-path "/. $HOME/")))
+    (shell-command command)
+    (message "Updated dotfiles")))
 
-(defun prefer-horizontal-split ()
-  (set-variable 'split-height-threshold nil t)
-  (set-variable 'split-width-threshold 40 t)) ; make this as low as needed
-(add-hook 'markdown-mode-hook 'prefer-horizontal-split)
-(map! :leader
-      :desc "Clone indirect buffer other window" "b c" #'clone-indirect-buffer-other-window)
+(defun laluxx/run-update-dotfiles ()
+  "Run `laluxx/update-dotfiles` if the current file is inside ~/Desktop/pulls/dotfiles or its subdirectories."
+  (when (and buffer-file-name
+             (string-prefix-p (expand-file-name "~/Desktop/pulls/dotfiles") buffer-file-name)
+             (string= (file-name-extension buffer-file-name) "org"))
+    (laluxx/update-dotfiles)))
 
-;; (setq initial-buffer-choice "~/.config/doom/start.org")
-
-;; (define-minor-mode start-mode
-;;   "Provide functions for custom start page."
-;;   :lighter " start"
-;;   :keymap (let ((map (make-sparse-keymap)))
-;;           ;;(define-key map (kbd "M-z") 'eshell)
-;;             (evil-define-key 'normal start-mode-map
-;;               (kbd "1") '(lambda () (interactive) (find-file "~/.config/doom/config.org"))
-;;               (kbd "2") '(lambda () (interactive) (find-file "~/.config/doom/init.el"))
-;;               (kbd "3") '(lambda () (interactive) (find-file "~/.config/doom/packages.el"))
-;;               (kbd "4") '(lambda () (interactive) (find-file "~/.config/doom/eshell/aliases"))
-;;               (kbd "5") '(lambda () (interactive) (find-file "~/.config/doom/eshell/profile")))
-;;           map))
-
-;; (add-hook 'start-mode-hook 'read-only-mode) ;; make start.org read-only; use 'SPC t r' to toggle off read-only.
-;; (provide 'start-mode)
-
-(map! :leader
-      (:prefix ("w" . "window")
-       :desc "Winner redo" "<right>" #'winner-redo
-       :desc "Winner undo" "<left>"  #'winner-undo))
-
-(map! :leader
-      :desc "Zap to char"    "z" #'zap-to-char
-      :desc "Zap up to char" "Z" #'zap-up-to-char)
+(add-hook 'after-save-hook 'laluxx/run-update-dotfiles)

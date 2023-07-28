@@ -83,6 +83,8 @@ alias dotar="tar -czvf"
 
 alias unvim="rm -rf ~/.local/share/nvim && c"
 
+alias undoom="rm -rf ~/.config/doom && rm -rf ~/.config/emacs && c && echo "SUCCESS" | color green "
+
 alias ungo="rm go.mod"
 
 alias trans='wid=$(xdotool selectwindow); picom-trans -w $wid'

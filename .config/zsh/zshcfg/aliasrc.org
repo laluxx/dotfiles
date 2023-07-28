@@ -143,6 +143,10 @@ alias dotar="tar -czvf"
 #+begin_src shell
 alias unvim="rm -rf ~/.local/share/nvim && c"
 #+end_src
+** undoom
+#+begin_src shell
+alias undoom="rm -rf ~/.config/doom && rm -rf ~/.config/emacs && c && echo "SUCCESS" | color green "
+#+end_src
 ** ungo
 #+begin_src shell
 alias ungo="rm go.mod"
