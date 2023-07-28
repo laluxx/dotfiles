@@ -648,23 +648,23 @@ If peep-dired is enabled, you will get image previews as you go up/down with 'j'
 *** toggle-modeline
 #+begin_src emacs-lisp
 ;; FIXME
-;; (defvar my-modeline-state 'doom)
+(defvar my-modeline-state 'doom)
 
-;; (defun laluxx/toggle-modeline ()
-;;   "Toggle between doom-modeline, spaceline, and no modeline."
-;;   (interactive)
-;;   (cond
-;;    ((eq my-modeline-state 'doom)
-;;     (doom-modeline-mode -1)
-;;     (spaceline-spacemacs-theme)
-;;     (setq my-modeline-state 'spaceline))
-;;    ((eq my-modeline-state 'spaceline)
-;;     (hide-mode-line-mode 1)
-;;     (setq my-modeline-state 'none))
-;;    ((eq my-modeline-state 'none)
-;;     (hide-mode-line-mode -1)
-;;     (doom-modeline-mode 1)
-;;     (setq my-modeline-state 'doom))))
+(defun laluxx/toggle-modeline ()
+  "Toggle between doom-modeline, spaceline, and no modeline."
+  (interactive)
+  (cond
+   ((eq my-modeline-state 'doom)
+    (doom-modeline-mode -1)
+    (spaceline-spacemacs-theme)
+    (setq my-modeline-state 'spaceline))
+   ((eq my-modeline-state 'spaceline)
+    (hide-mode-line-mode 1)
+    (setq my-modeline-state 'none))
+   ((eq my-modeline-state 'none)
+    (hide-mode-line-mode -1)
+    (doom-modeline-mode 1)
+    (setq my-modeline-state 'doom))))
 #+end_src
 * TREEMACS
 #+begin_src emacs-lisp
@@ -796,7 +796,7 @@ The following creates a global minor mode for rainbow-mode and enables it (excep
      (rainbow-mode 1))))
 (global-rainbow-mode 1 )
 #+end_src
-* Emacs-app-launcher
+* Emacs-run
 #+begin_src emacs-lisp
 (defun emacs-run-launcher ()
   "Create and select a frame called emacs-run-launcher which consists only of a minibuffer and has specific dimensions. Runs app-launcher-run-app on that frame, which is an emacs command that prompts you to select an app and open it in a dmenu like behaviour. Delete the frame after that command has exited"
@@ -815,6 +815,43 @@ The following creates a global minor mode for rainbow-mode and enables it (excep
                   (unwind-protect
                     (app-launcher-run-app)
                     (delete-frame))))
+
+
+
+(defun emacs-run-wal-set ()
+  "Create and select a frame called emacs-run-launcher which consists only of a minibuffer and has specific dimensions. Runs app-launcher-run-app on that frame, which is an emacs command that prompts you to select an app and open it in a dmenu like behaviour. Delete the frame after that command has exited"
+  (interactive)
+  (with-selected-frame
+    (make-frame '((name . "emacs-run-wal-set")
+                  (minibuffer . only)
+                  (fullscreen . 0) ; no fullscreen
+                  (undecorated . t) ; remove title bar
+                  ;;(auto-raise . t) ; focus on this frame
+                  ;;(tool-bar-lines . 0)
+                  ;;(menu-bar-lines . 0)
+                  (internal-border-width . 10)
+                  (width . 80)
+                  (height . 11)))
+                  (unwind-protect
+                    (laluxx/wal-set)
+                    (delete-frame))))
+
+
+(defun emacs-run-M-x ()
+  "Create a new frame and prompt for an M-x command in it."
+  (interactive)
+  (with-selected-frame
+      (make-frame '((name . "emacs-run-M-x")
+                    (minibuffer . only)
+                    (fullscreen . 0)
+                    (undecorated . t)
+                    (internal-border-width . 10)
+                    (width . 80)
+                    (height . 11)))
+    (unwind-protect
+        (call-interactively 'execute-extended-command)
+      (delete-frame))))
+
 #+end_src
 * XOS
 ** update-dotfiles
