@@ -128,18 +128,52 @@ Settings related to fonts within Doom Emacs:
 ;;   '(font-lock-comment-face :slant italic)
 ;;   '(font-lock-keyword-face :slant italic))
 #+END_SRC
+** Dired
+#+begin_src emacs-lisp
+(defun use-ocr-b-bold ()
+  "Switch the current buffer to the OCR B-Bold font."
+  (face-remap-add-relative 'default '(:family "JetBrains Mono NF ExtraBold" :height 130)))
+
+(add-hook 'dired-mode-hook 'use-ocr-b-bold)
+#+end_src
+** Minibuffer
+*** Default
+TODO
+adding a function to minibuffer-setup-hook, which Emacs runs every time the minibuffer is entered
+#+begin_src emacs-lisp
+(defun set-minibuffer-font ()
+  "Set the font for the minibuffer."
+  (face-remap-add-relative 'default '(:family "JetBrains Mono NF ExtraBold" :height 90)))
+
+(add-hook 'minibuffer-setup-hook 'set-minibuffer-font)
+#+end_src
+*** Prompt
+#+begin_src emacs-lisp
+(custom-set-faces
+  '(minibuffer-prompt ((t (:family "JetBrains Mono NF ExtraBold" :height 120)))))
+#+end_src
 ** Org
 #+begin_src emacs-lisp
 (defun my-set-org-mode-font ()
   "Set the font to JetBrains Mono NF ExtraBold when in org mode."
   (interactive)
   (when (derived-mode-p 'org-mode)
-    (setq buffer-face-mode-face '(:family "JetBrains Mono NF ExtraBold" :height 1.1))
+    (setq buffer-face-mode-face '(:family "JetBrains Mono NF ExtraBold" :height 1.1)) ;;  NF ExtraBold
     (buffer-face-mode)))
 
 (add-hook 'org-mode-hook 'my-set-org-mode-font)
 #+end_src
+*** Markdown
+#+begin_src emacs-lisp
+(defun my-set-markdown-mode-font ()
+  "Set the font to JetBrains Mono NF ExtraBold when in markdown mode."
+  (interactive)
+  (when (derived-mode-p 'markdown-mode)
+    (setq buffer-face-mode-face '(:family "JetBrains Mono NF ExtraBold" :height 1.1))
+    (buffer-face-mode)))
 
+(add-hook 'markdown-mode-hook 'my-set-markdown-mode-font)
+#+end_src
 * Dashboard
 #+begin_src emacs-lisp
 (require 'dashboard)
@@ -207,6 +241,104 @@ this will set the theme
 #+end_src
 
 * Keybinds
+** Org
+*** Evil
+open org bullets with =l= and close them with =h=
+#+begin_src emacs-lisp
+(defun my-org-cycle-or-move-right ()
+  (interactive)
+  (if (and (bolp) (org-at-heading-p))
+      (org-cycle)
+    (evil-forward-char 1)))
+
+(defun my-org-close-or-move-left ()
+  (interactive)
+  (if (and (bolp) (org-at-heading-p))
+      (outline-hide-subtree)
+    (evil-backward-char 1)))
+
+(add-hook 'org-mode-hook
+          (lambda ()
+            (evil-define-key 'normal org-mode-map
+              (kbd "l") 'my-org-cycle-or-move-right)
+            (evil-define-key 'normal org-mode-map
+              (kbd "h") 'my-org-close-or-move-left)))
+#+end_src
+*** Mouse
+#+begin_src emacs-lisp
+;; OVERLAY DONE
+(defvar org-headline-overlay nil)
+(defvar org-last-highlighted-line nil)
+
+(defun org-highlight-headline ()
+  (when (org-at-heading-p)
+    (if org-headline-overlay
+        (move-overlay org-headline-overlay (line-beginning-position) (line-end-position))
+      (setq org-headline-overlay (make-overlay (line-beginning-position) (line-end-position))))
+    (overlay-put org-headline-overlay 'face 'highlight)
+    (setq org-last-highlighted-line (line-number-at-pos))))
+
+(defun org-unhighlight-headline ()
+  (when org-headline-overlay
+    (delete-overlay org-headline-overlay)))
+
+(defun org-next-headline-or-wrap ()
+  (interactive)
+  (org-unhighlight-headline)
+  (let ((initial-position (point)))
+    (org-next-visible-heading 1)
+    (when (= (point) initial-position)
+      (goto-char (point-min))))
+  (org-highlight-headline))
+
+(defun org-previous-headline-or-wrap ()
+  (interactive)
+  (org-unhighlight-headline)
+  (let ((initial-position (point)))
+    (unless (and (eobp) (looking-at-p "^$"))
+      (org-previous-visible-heading 1))
+    (when (= (point) initial-position)
+      (goto-char (point-max))
+      (org-previous-visible-heading 1)))
+  (org-highlight-headline))
+
+(defun org-go-to-last-highlighted-line ()
+  (interactive)
+  (when org-last-highlighted-line
+    (goto-line org-last-highlighted-line)
+    (org-highlight-headline)))
+
+(add-hook 'org-mode-hook
+          (lambda ()
+            (define-key org-mode-map (kbd "<S-mouse-4>") 'org-previous-headline-or-wrap)
+            (define-key org-mode-map (kbd "<S-mouse-5>") 'org-next-headline-or-wrap)
+            (define-key org-mode-map (kbd "<S-mouse-2>") 'org-go-to-last-highlighted-line)
+            (define-key org-mode-map (kbd "<S-mouse-8>") 'org-cycle)
+            (define-key org-mode-map (kbd "<M-mouse-4>") 'previous-line)
+            (define-key org-mode-map (kbd "<M-mouse-5>") 'next-line)
+            (define-key org-mode-map (kbd "M-C-j") 'org-next-headline-or-wrap)
+            (define-key org-mode-map (kbd "M-C-k") 'org-previous-headline-or-wrap)
+            (define-key org-mode-map (kbd "<S-mouse-9>") (lambda () (interactive) (org-cycle t)))))
+#+end_src
+*** Insert-header-tags
+#+begin_src emacs-lisp
+(map! :leader
+      :desc "Insert header tags"
+      "i o" #'org-insert-header-tags)
+#+end_src
+*** Jump
+#+begin_src emacs-lisp
+(map! :leader
+      :desc "Jump to tangled file"
+      "o j" #'org-jump-to-tangled)
+#+end_src
+*** Split-jump
+Jump, vsplit and set zoom if tangled file exist
+#+begin_src emacs-lisp
+(map! :leader
+      :desc "Split and jump to tangled file with zoom"
+      "o J" #'org-jump-to-tangled-split-and-zoom)
+#+end_src
 ** Shells
 #+begin_src emacs-lisp
 (map! :leader
@@ -232,26 +364,6 @@ Keybinds that execute other keybinds.
               (text-scale-set -1)  ;; Set the desired zoom level here
               (execute-kbd-macro (kbd "SPC w v"))
               (execute-kbd-macro (kbd "SPC d j"))))
-#+end_src
-** Org
-*** Insert-header-tags
-#+begin_src emacs-lisp
-(map! :leader
-      :desc "Insert header tags"
-      "i o" #'org-insert-header-tags)
-#+end_src
-*** Jump
-#+begin_src emacs-lisp
-(map! :leader
-      :desc "Jump to tangled file"
-      "o j" #'org-jump-to-tangled)
-#+end_src
-*** Split-jump
-Jump, vsplit and set zoom if tangled file exist
-#+begin_src emacs-lisp
-(map! :leader
-      :desc "Split and jump to tangled file with zoom"
-      "o J" #'org-jump-to-tangled-split-and-zoom)
 #+end_src
 ** Dmenu
 #+begin_src emacs-lisp
@@ -557,6 +669,7 @@ noob mode
 ** Condifuration
 #+begin_src emacs-lisp
 (evil-define-key 'normal dired-mode-map
+  (kbd "<escape>") 'delete-frame
   (kbd "M-RET") 'dired-display-file
   (kbd "h") 'dired-up-directory
   (kbd "l") 'dired-open-file ; use dired-find-file instead of dired-open.
@@ -797,6 +910,7 @@ The following creates a global minor mode for rainbow-mode and enables it (excep
 (global-rainbow-mode 1 )
 #+end_src
 * Emacs-run
+** Run-launcher
 #+begin_src emacs-lisp
 (defun emacs-run-launcher ()
   "Create and select a frame called emacs-run-launcher which consists only of a minibuffer and has specific dimensions. Runs app-launcher-run-app on that frame, which is an emacs command that prompts you to select an app and open it in a dmenu like behaviour. Delete the frame after that command has exited"
@@ -815,9 +929,9 @@ The following creates a global minor mode for rainbow-mode and enables it (excep
                   (unwind-protect
                     (app-launcher-run-app)
                     (delete-frame))))
-
-
-
+#+end_src
+** wal-set
+#+begin_src emacs-lisp
 (defun emacs-run-wal-set ()
   "Create and select a frame called emacs-run-launcher which consists only of a minibuffer and has specific dimensions. Runs app-launcher-run-app on that frame, which is an emacs command that prompts you to select an app and open it in a dmenu like behaviour. Delete the frame after that command has exited"
   (interactive)
@@ -835,8 +949,9 @@ The following creates a global minor mode for rainbow-mode and enables it (excep
                   (unwind-protect
                     (laluxx/wal-set)
                     (delete-frame))))
-
-
+#+end_src
+** M-X
+#+begin_src emacs-lisp
 (defun emacs-run-M-x ()
   "Create a new frame and prompt for an M-x command in it."
   (interactive)
@@ -851,6 +966,31 @@ The following creates a global minor mode for rainbow-mode and enables it (excep
     (unwind-protect
         (call-interactively 'execute-extended-command)
       (delete-frame))))
+#+end_src
+** Dired
+TODO
+- esc don't close the frame [x]
+- hide modeline []
+
+#+begin_src emacs-lisp
+(defun emacs-run-dired ()
+  "Create a new frame and open dired in it."
+  (interactive)
+  (let* ((original-frame (selected-frame))
+         (new-frame (make-frame '((name . "emacs-run-dired")
+                                  (width . 80)
+                                  (height . 24)
+                                  (minibuffer . t)
+                                  (undecorated . t)
+                                  (internal-border-width . 10)
+                                  (fullscreen . 0)))))
+    (select-frame-set-input-focus new-frame)
+    (with-selected-window (frame-selected-window new-frame)
+      (dired "~")  ;; opens dired in your home directory, change "~" to any directory you prefer
+      (hide-mode-line-mode 1))  ;; hide the modeline
+    (define-key dired-mode-map (kbd "<escape>") 'delete-frame)
+    (select-frame-set-input-focus original-frame)))
+
 
 #+end_src
 * XOS

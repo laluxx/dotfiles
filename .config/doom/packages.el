@@ -64,7 +64,6 @@
 
 (package! ivy-posframe)
 (package! dashboard)
-(package! eat)
 
 (package! peep-dired)
 (package! dired-open)

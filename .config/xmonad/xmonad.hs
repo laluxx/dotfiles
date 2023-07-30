@@ -59,6 +59,8 @@ import XMonad.Layout.ResizableTile
 import XMonad.Layout.Tabbed
 import XMonad.Layout.ThreeColumns
 
+import XMonad.Layout.NoBorders (noBorders)
+
     -- Layouts modifiers
 import XMonad.Layout.LayoutModifier
 import XMonad.Layout.LimitWindows (limitWindows, increaseLimit, decreaseLimit)
@@ -141,7 +143,7 @@ myStartupHook = do
 
   -- spawn "xdotool keydown Super_L && xdotool key Tab key Tab key Tab key Tab key Tab key Tab && xdotool keyup Super_L"
   spawn "doom sync"
-  spawn "/usr/bin/emacs --daemon" -- emacs daemon for the emacsclient
+  -- spawn "/usr/bin/emacs --daemon" -- emacs daemon for the emacsclient
   -- spawn "pgrep -u $USER -x emacsclient > /dev/null || emacsclient -c -a 'emacs'" -- emacs client
   -- spawn "emacsclient -c -a 'emacs'" -- emacs client
   -- spawn "discord" -- discord
@@ -496,7 +498,9 @@ myManageHook = composeAll
   -- , title =? "emacs-run-launcher" --> doCenterFloat
   , title =? "emacs-run-launcher" --> doRectFloat (W.RationalRect ((-15)/1920) (905/1080) (2066/1920) (185/1080)) -- BOTTOM
   , title =? "emacs-run-M-x" --> doRectFloat (W.RationalRect ((-15)/1920) (905/1080) (2066/1920) (185/1080)) -- BOTTOM
-  , title =? "emacs-run-wal-set" --> doRectFloat (W.RationalRect ((-15)/1920) (25/1080) (2066/1920) (185/1080)) -- TOP TODO no border for top
+  , title =? "emacs-run-wal-set" --> doRectFloat (W.RationalRect ((-15)/1920) (905/1080) (2066/1920) (185/1080)) -- BOTTOM
+  , title =? "emacs-run-dired" --> doRectFloat (W.RationalRect ((-15)/1920) (905/1080) (2066/1920) (185/1080)) -- BOTTOM
+  -- , title =? "emacs-run-wal-set" --> doRectFloat (W.RationalRect ((-15)/1920) (25/1080) (2066/1920) (185/1080)) -- TOP TODO no border for top
   , title =? "Mozilla Firefox"     --> doShift ( myWorkspaces !! 1 )
   , className =? "Brave-browser"   --> doShift ( myWorkspaces !! 1 )
   , className =? "mpv"             --> doShift ( myWorkspaces !! 7 )
@@ -541,9 +545,11 @@ myKeys c =
   , ("M-S-a", addName "Kill all windows on WS" $ killAll)
   -- , ("M-S-<Return>", addName "Run prompt"      $ sequence_ [spawn (mySoundPlayer ++ dmenuSound), spawn "~/.local/bin/dm-run"])
   -- , ("M-S-<Return>", addName "Run prompt"      $ sequence_ [spawn (mySoundPlayer ++ dmenuSound), spawn "emacsclient -cF '((visibility . nil))' -e '(emacs-run-launcher)'"])
-  ,("M-S-<Return>", addName "Run prompt" $ sequence_ [spawn (mySoundPlayer ++ dmenuSound), spawn "emacsclient -a '' -F '((visibility . nil))' -e '(emacs-run-launcher)'"])
-  ,("M-w", addName "Run wal-set" $ sequence_ [spawn (mySoundPlayer ++ dmenuSound), spawn "emacsclient -a '' -F '((visibility . nil))' -e '(emacs-run-wal-set)'"])
+  , ("M-S-<Return>", addName "Run prompt" $ sequence_ [spawn (mySoundPlayer ++ dmenuSound), spawn "emacsclient -a '' -F '((visibility . nil))' -e '(emacs-run-launcher)'"])
+  , ("M-w", addName "Run wal-set" $ sequence_ [spawn (mySoundPlayer ++ dmenuSound), spawn "emacsclient -a '' -F '((visibility . nil))' -e '(emacs-run-wal-set)'"])
   , ("M-x", addName "Run M-x" $ sequence_ [spawn (mySoundPlayer ++ dmenuSound), spawn "emacsclient -a '' -F '((visibility . nil))' -e '(emacs-run-M-x)'"])
+  , ("M-d", addName "Run dired" $ sequence_ [spawn (mySoundPlayer ++ dmenuSound), spawn "emacsclient -a '' -F '((visibility . nil))' -e '(emacs-run-dired)'"])
+
   , ("M-S-b", addName "Toggle bar show/hide"   $ sendMessage ToggleStruts)
   , ("M-/", addName "DTOS Help"                $ spawn "~/.local/bin/dtos-help")]
 
