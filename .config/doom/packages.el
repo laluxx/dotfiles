@@ -82,4 +82,8 @@
 (package! treemacs-tab-bar)
 (package! treemacs-icons-dired)
 
+(package! magit-delta)
+(package! snails)
+
+
 (package! app-launcher :recipe (:host github :repo "SebastienWae/app-launcher"))

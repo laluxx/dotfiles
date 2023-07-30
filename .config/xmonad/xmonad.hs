@@ -133,6 +133,7 @@ myStartupHook = do
   spawnOnce "xrandr --output \"$(xrandr | awk '/ connected/ {print $1; exit}')\" --mode 1920x1080 --rate 144"
   spawnOnce "xset r rate 160 60"
   spawnOnce "python3 /home/l/xos/typetune/typetune.py"
+  spawnOnce "python3 /home/l/xos/xmv/main.py"
 
   spawnOnce "lxsession"
   -- spawnonce "/usr/lib/polkit-gnome/polkit-gnome-authentication-agent-1"
@@ -357,9 +358,6 @@ mySpacing i = spacingRaw False (Border i i i i) True (Border i i i i) True
 mySpacing' :: Integer -> l a -> XMonad.Layout.LayoutModifier.ModifiedLayout Spacing l a
 mySpacing' i = spacingRaw True (Border i i i i) True (Border i i i i) True
 
--- Defining a bunch of layouts, many that I don't use.
--- limitWindows n sets maximum number of windows displayed for layout.
--- mySpacing n sets the gap size around the windows.
 tall     = renamed [Replace "tall"]
            $ limitWindows 5
            $ smartBorders
@@ -368,15 +366,18 @@ tall     = renamed [Replace "tall"]
            $ subLayout [] (smartBorders Simplest)
            $ mySpacing 8
            $ ResizableTall 1 (3/100) (1/2) []
+
 monocle  = renamed [Replace "monocle"]
            $ smartBorders
            $ windowNavigation
            $ addTabs shrinkText myTabTheme
            $ subLayout [] (smartBorders Simplest)
            $ Full
+
 floats   = renamed [Replace "floats"]
            $ smartBorders
            $ simplestFloat
+
 grid     = renamed [Replace "grid"]
            $ limitWindows 9
            $ smartBorders
@@ -386,6 +387,7 @@ grid     = renamed [Replace "grid"]
            $ mySpacing 8
            $ mkToggle (single MIRROR)
            $ Grid (16/10)
+
 spirals  = renamed [Replace "spirals"]
            $ limitWindows 9
            $ smartBorders
@@ -394,6 +396,7 @@ spirals  = renamed [Replace "spirals"]
            $ subLayout [] (smartBorders Simplest)
            $ mySpacing' 8
            $ spiral (6/7)
+
 threeCol = renamed [Replace "threeCol"]
            $ limitWindows 7
            $ smartBorders
@@ -401,6 +404,7 @@ threeCol = renamed [Replace "threeCol"]
            $ addTabs shrinkText myTabTheme
            $ subLayout [] (smartBorders Simplest)
            $ ThreeCol 1 (3/100) (1/2)
+
 threeRow = renamed [Replace "threeRow"]
            $ limitWindows 7
            $ smartBorders
@@ -411,12 +415,15 @@ threeRow = renamed [Replace "threeRow"]
            -- So we are applying Mirror to the ThreeCol layout.
            $ Mirror
            $ ThreeCol 1 (3/100) (1/2)
+
 tabs     = renamed [Replace "tabs"]
            -- I cannot add spacing to this layout because it will
            -- add spacing between window and tabs which looks bad.
            $ tabbed shrinkText myTabTheme
+
 tallAccordion  = renamed [Replace "tallAccordion"]
            $ Accordion
+
 wideAccordion  = renamed [Replace "wideAccordion"]
            $ Mirror Accordion
 
@@ -493,6 +500,8 @@ myManageHook = composeAll
   , className =? "splash"          --> doFloat
   , className =? "toolbar"         --> doFloat
   , className =? "Yad"             --> doCenterFloat
+  , className =? "Lutris" --> doRectFloat (W.RationalRect (0.2020833333) (0.2101851852) (0.5114583333) (0.6212962963))
+
   , title =? "Oracle VM VirtualBox Manager"   --> doFloat
   , title =? "Order Chain - Market Snapshots" --> doFloat
   -- , title =? "emacs-run-launcher" --> doCenterFloat
@@ -500,6 +509,9 @@ myManageHook = composeAll
   , title =? "emacs-run-M-x" --> doRectFloat (W.RationalRect ((-15)/1920) (905/1080) (2066/1920) (185/1080)) -- BOTTOM
   , title =? "emacs-run-wal-set" --> doRectFloat (W.RationalRect ((-15)/1920) (905/1080) (2066/1920) (185/1080)) -- BOTTOM
   , title =? "emacs-run-dired" --> doRectFloat (W.RationalRect ((-15)/1920) (905/1080) (2066/1920) (185/1080)) -- BOTTOM
+  -- , title =? "emacs-run-info" --> doRectFloat (W.RationalRect ((-15)/1920) (905/1080) (2066/1920) (185/1080)) -- BOTTOM
+  , title =? "emacs-run-info" --> doRectFloat (W.RationalRect ((-8)/1920) (741/1080) (1930/1920) (365/1080)) -- BOTTOM-BIG
+
   , title =? "emacs-run-which-key" --> doRectFloat (W.RationalRect ((-15)/1920) (905/1080) (2066/1920) (185/1080)) -- BOTTOM
   , title =? "emacs-run-clone-client-frame-bottom" --> doRectFloat (W.RationalRect ((-15)/1920) (905/1080) (2066/1920) (185/1080)) -- BOTTOM
   -- , title =? "emacs-run-wal-set" --> doRectFloat (W.RationalRect ((-15)/1920) (25/1080) (2066/1920) (185/1080)) -- TOP TODO no border for top
@@ -553,6 +565,7 @@ myKeys c =
   , ("M-d", addName "Run dired" $ sequence_ [spawn (mySoundPlayer ++ dmenuSound), spawn "emacsclient -a '' -F '((visibility . nil))' -e '(emacs-run-dired)'"])
   , ("M-C-<Backspace>", addName "Run clone-client-frame" $ sequence_ [spawn (mySoundPlayer ++ dmenuSound), spawn "emacsclient -a '' -F '((visibility . nil))' -e '(emacs-run-clone-client-frame)'"])
   , ("M-S-<Backspace>", addName "Run clone-client-frame-bottom" $ sequence_ [spawn (mySoundPlayer ++ dmenuSound), spawn "emacsclient -a '' -F '((visibility . nil))' -e '(emacs-run-clone-client-frame-bottom)'"])
+  , ("M-i", addName "Run Info" $ sequence_ [spawn (mySoundPlayer ++ dmenuSound), spawn "emacsclient -a '' -F '((visibility . nil))' -e '(emacs-run-info)'"])
 
 
 
