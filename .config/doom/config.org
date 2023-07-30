@@ -111,6 +111,9 @@ when focused and not focused
 (add-to-list 'default-frame-alist '(alpha 95 100))
 #+end_src
 * FONT
+TODO
+- variables [] (OCR B)
+** Doom
 Settings related to fonts within Doom Emacs:
 + 'doom-font' -- standard monospace font that is used for most things in Emacs.
 + 'doom-variable-pitch-font' -- variable font which is useful in some Emacs plugins.
@@ -138,12 +141,11 @@ Settings related to fonts within Doom Emacs:
 #+end_src
 ** Minibuffer
 *** Default
-TODO
 adding a function to minibuffer-setup-hook, which Emacs runs every time the minibuffer is entered
 #+begin_src emacs-lisp
 (defun set-minibuffer-font ()
   "Set the font for the minibuffer."
-  (face-remap-add-relative 'default '(:family "JetBrains Mono NF ExtraBold" :height 90)))
+  (face-remap-add-relative 'default '(:family "JetBrains Mono NF ExtraBold" :height 100)))
 
 (add-hook 'minibuffer-setup-hook 'set-minibuffer-font)
 #+end_src
@@ -592,7 +594,8 @@ If not specified, return nil."
         :desc desc
         key (lambda () (interactive) (dired dir))))
 #+end_src
-* Open-dir-keybinds
+* Open-dir-keybind
+open-dir defined in =FUNCTIONS=
 #+begin_src emacs-lisp
 (open-dir "f P" "Open dotfiles directory" "~/Desktop/pulls/dotfiles/.config/doom")
 (open-dir "f t" "Open test directory" "~/Desktop/test")
@@ -970,9 +973,17 @@ The following creates a global minor mode for rainbow-mode and enables it (excep
 ** Dired
 TODO
 - esc don't close the frame [x]
-- hide modeline []
+- hide modeline [x]
 
 #+begin_src emacs-lisp
+(defun hide-mode-line-in-dired-frame (frame)
+  "Hide the mode line in the 'emacs-run-dired' frame."
+  (when (string-equal (frame-parameter frame 'name) "emacs-run-dired")
+    (with-selected-frame frame
+      (setq-default mode-line-format nil))))
+
+(add-hook 'after-make-frame-functions 'hide-mode-line-in-dired-frame)
+
 (defun emacs-run-dired ()
   "Create a new frame and open dired in it."
   (interactive)
@@ -986,13 +997,59 @@ TODO
                                   (fullscreen . 0)))))
     (select-frame-set-input-focus new-frame)
     (with-selected-window (frame-selected-window new-frame)
-      (dired "~")  ;; opens dired in your home directory, change "~" to any directory you prefer
-      (hide-mode-line-mode 1))  ;; hide the modeline
+      (dired "~"))  ;; opens dired in your home directory, change "~" to any directory you prefer
     (define-key dired-mode-map (kbd "<escape>") 'delete-frame)
     (select-frame-set-input-focus original-frame)))
-
-
 #+end_src
+** Which-key
+#+begin_src emacs-lisp
+;; (defun emacs-run-which-key ()
+;;   "Create a new frame and prompt for a which-key command in it."
+;;   (interactive)
+;;   (let ((new-frame (make-frame '((name . "emacs-run-which-key")
+;;                                  (minibuffer . only)
+;;                                  (fullscreen . 0)
+;;                                  (undecorated . t)
+;;                                  (internal-border-width . 10)
+;;                                  (width . 80)
+;;                                  (height . 11)))))
+;;     (with-selected-frame new-frame
+;;       (which-key-mode 1)
+;;       (call-interactively 'which-key-show-top-level))))
+#+end_src
+** Clone-client-frame
+#+begin_src emacs-lisp
+(defun emacs-run-clone-client-frame ()
+  "Create a new frame and activate which-key-mode in it."
+  (interactive)
+  (let ((new-frame (make-frame '((name . "emacs-run-clone-client-frame")
+                                 (minibuffer . nil)
+                                 (fullscreen . 0)
+                                 (undecorated . t)
+                                 (internal-border-width . 10)
+                                 (width . 80)
+                                 (height . 11)))))
+    (with-selected-frame new-frame
+      (which-key-mode 1)
+      (minibuffer-keyboard-quit))))
+#+end_src
+*** Bottom
+#+begin_src emacs-lisp
+(defun emacs-run-clone-client-frame-bottom ()
+  "Create a new frame and activate which-key-mode in it."
+  (interactive)
+  (let ((new-frame (make-frame '((name . "emacs-run-clone-client-frame-bottom")
+                                 (minibuffer . nil)
+                                 (fullscreen . 0)
+                                 (undecorated . t)
+                                 (internal-border-width . 10)
+                                 (width . 80)
+                                 (height . 11)))))
+    (with-selected-frame new-frame
+      (which-key-mode 1)
+      (minibuffer-keyboard-quit))))
+#+end_src
+
 * XOS
 ** update-dotfiles
 whenever you save a file inside "~/Desktop/pulls/dotfiles"

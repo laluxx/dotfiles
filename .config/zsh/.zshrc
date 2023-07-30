@@ -32,7 +32,7 @@ source ~/xos/.env_secrets
 source /usr/share/zsh/plugins/zsh-syntax-highlighting/zsh-syntax-highlighting.zsh 2>/dev/null # PACMAN path
 # source $HOME/.config/zsh/plug/fzf-keybindings.plugins.zsh
 
-# source ~/.cache/wal/colors.sh
+source ~/.cache/wal/colors.sh
 
 #Enable colors and change fallback prompt:
 autoload -U colors && colors
@@ -1584,6 +1584,7 @@ gtkset2 () {
 }
 
 # TODO: set emacs theme too [x]
+# TODO: compile spaceline []
 wal-set () {
     local dir=~/xos/wallpapers/static
     local wallpaper=$(find "$dir" \( -name "*.png" -o -name "*.jpg" -o -name "*.jpeg" -o -name "*.webp" \) -type f | fzf --height 40% -m --reverse --ansi --cycle)
