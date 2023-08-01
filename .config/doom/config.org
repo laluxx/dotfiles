@@ -109,6 +109,9 @@ when focused and not focused
 #+begin_src emacs-lisp
 (set-frame-parameter (selected-frame) 'alpha '(95 100))
 (add-to-list 'default-frame-alist '(alpha 95 100))
+
+
+;; (add-to-list 'default-frame-alist '(alpha-background . 90))
 #+end_src
 * FONT
 TODO
@@ -133,6 +136,7 @@ Settings related to fonts within Doom Emacs:
 #+END_SRC
 ** Dired
 #+begin_src emacs-lisp
+;; emacs 29 broke this ?
 (defun use-ocr-b-bold ()
   "Switch the current buffer to the OCR B-Bold font."
   (face-remap-add-relative 'default '(:family "JetBrains Mono NF ExtraBold" :height 130)))
@@ -184,7 +188,7 @@ set everything
   "Set the font to Space Mono when in python mode."
   (interactive)
   (when (derived-mode-p 'python-mode)
-    (setq buffer-face-mode-face '(:family "fira code semibold" :height 1.3)) ;; Ubuntu Mono
+    (setq buffer-face-mode-face '(:family "jetbrains mono nl extrabold" :height 1.3)) ;; Ubuntu Mono
     (buffer-face-mode)))
 
 (add-hook 'python-mode-hook 'my-set-python-mode-font)
@@ -463,6 +467,32 @@ Setup file watcher for ~/.cache/wal/colors
                             (laluxx/load-org-wal-colors)
                             (run-at-time "1 sec" nil 'spaceline-compile)))))))  ; Delay spaceline-compile
 #+end_src
+*** Favourite
+#+begin_src emacs-lisp
+(defun laluxx/wal-set-favourite ()
+  (interactive)
+  (let* ((default-directory "~/xos/wallpapers/favourites")
+         (theme-directory "~/xos/theme")
+         (pywal-scripts-directory "~/xos/pywal-scripts")
+         (image-files (directory-files-recursively default-directory "\\.\\(png\\|jpg\\|jpeg\\|webp\\)$")))
+    (ivy-read "Favourite wallpapers: "
+              image-files
+              :action (lambda (wallpaper)
+                        (when (and (not (string-empty-p wallpaper))
+                                   (file-exists-p wallpaper))
+                          (let ((abs-wallpaper (expand-file-name wallpaper)))
+                            (shell-command-to-string (concat "wal -i " abs-wallpaper))
+                            (with-temp-file (concat theme-directory "/.wallpaper")
+                              (insert abs-wallpaper))
+                            (shell-command-to-string "theme pywal --no-random")
+                            (dolist (script '("xmonad-dark-wal.py" "nvim-wal.py" "nvim-wal-dark.py"))
+                              (shell-command-to-string (concat "python3 " pywal-scripts-directory "/" script)))
+                            (shell-command-to-string "xmonad --restart")
+                            ;; (shell-command "papirus-wal")
+                            (shell-command-to-string "oomox-gtk-gen")
+                            (laluxx/load-org-wal-colors)
+                            (run-at-time "1 sec" nil 'spaceline-compile)))))))  ; Delay spaceline-compile
+#+end_src
 ** Set-wallpaper
 #+begin_src emacs-lisp
 (defun set-wallpaper ()
@@ -694,16 +724,17 @@ noob mode
   (kbd "t") 'dired-toggle-marks
   (kbd "u") 'dired-unmark
   (kbd "C") 'dired-do-copy
-  (kbd "D") 'dired-do-delete
   (kbd "J") 'dired-goto-file
   (kbd "M") 'dired-do-chmod
   (kbd "O") 'dired-do-chown
   (kbd "P") 'dired-do-print
   (kbd "R") 'dired-do-rename
+  (kbd "r") 'laluxx/dired-run-or-find
   (kbd "T") 'dired-do-touch
   (kbd "Y") 'dired-copy-filenamecopy-filename-as-kill ; copies filename to kill ring.
   (kbd "Z") 'dired-do-compress
-  (kbd "+") 'dired-create-directory
+  ;; (kbd "D") 'dired-do-delete
+  (kbd "D") 'dired-create-directory
   (kbd "-") 'dired-do-kill-lines
   (kbd "% l") 'dired-downcase
   (kbd "% m") 'dired-mark-files-regexp
@@ -723,7 +754,27 @@ noob mode
                               ("mkv" . "mpv")
                               ("mp4" . "mpv")))
 #+end_src
+*** Run
+#+begin_src emacs-lisp
+(setq async-shell-command-buffer 'rename-buffer)
 
+(defun laluxx/dired-run-or-find ()
+  "In Dired, run a script if it's a script, enter directory if it's a directory, or open the file otherwise."
+  (interactive)
+  (let ((file (dired-get-file-for-visit)))
+    (cond
+     ((file-directory-p file) (dired-find-file)) ; If it's a directory, recurse into it
+     ((and (file-exists-p file) (file-executable-p file)) ; If it's an executable file, run it and also open it
+      (find-file file)
+      (async-shell-command (concat "./" file " > /dev/null 2>&1 &")))
+     ((and (file-exists-p file) (string-match-p "\\.py\\'" file)) ; If it's a Python script, run it and also open it
+      (find-file file)
+      (async-shell-command (concat "python " file " > /dev/null 2>&1 &")))
+     ((file-exists-p file) (find-file file)) ; If it's another type of file, just open it
+     (t (message "No file on this line")))))
+
+
+#+end_src
 ** Keybindings Within Dired With Peep-Dired-Mode Enabled
 If peep-dired is enabled, you will get image previews as you go up/down with 'j' and 'k'
 #+BEGIN_SRC emacs-lisp
@@ -967,6 +1018,26 @@ The following creates a global minor mode for rainbow-mode and enables it (excep
                     (laluxx/wal-set)
                     (delete-frame))))
 #+end_src
+*** favourite
+#+begin_src emacs-lisp
+(defun emacs-run-wal-set-favourite ()
+  "Create and select a frame called emacs-run-launcher which consists only of a minibuffer and has specific dimensions. Runs app-launcher-run-app on that frame, which is an emacs command that prompts you to select an app and open it in a dmenu like behaviour. Delete the frame after that command has exited"
+  (interactive)
+  (with-selected-frame
+    (make-frame '((name . "emacs-run-wal-set-favourite")
+                  (minibuffer . only)
+                  (fullscreen . 0) ; no fullscreen
+                  (undecorated . t) ; remove title bar
+                  ;;(auto-raise . t) ; focus on this frame
+                  ;;(tool-bar-lines . 0)
+                  ;;(menu-bar-lines . 0)
+                  (internal-border-width . 10)
+                  (width . 80)
+                  (height . 11)))
+                  (unwind-protect
+                    (laluxx/wal-set-favourite)
+                    (delete-frame))))
+#+end_src
 ** M-X
 #+begin_src emacs-lisp
 (defun emacs-run-M-x ()
@@ -1096,7 +1167,25 @@ TODO
 
 
 #+end_src
+*** Dmenu
+#+begin_src emacs-lisp
+(defun emacs-run-dmenu ()
+  "Create a new frame and run dmenu in it."
+  (interactive)
+  (with-selected-frame
+      (make-frame '((name . "emacs-run-dmenu")
+                    (minibuffer . only)
+                    (fullscreen . 0)
+                    (undecorated . t)
+                    (internal-border-width . 10)
+                    (width . 80)
+                    (height . 11)))
+    (unwind-protect
+        (call-interactively 'dmenu)
+      (delete-frame))))
 
+
+#+end_src
 * XOS
 ** update-dotfiles
 whenever you save a file inside "~/Desktop/pulls/dotfiles"
@@ -1113,12 +1202,44 @@ or one of its subdirectories && if that file is a org file
 #+end_src
 *** run-update-dotfiles
 #+begin_src emacs-lisp
+;; ONLY org
+;; (defun laluxx/run-update-dotfiles ()
+;;   "Run `laluxx/update-dotfiles` if the current file is inside ~/Desktop/pulls/dotfiles or its subdirectories."
+;;   (when (and buffer-file-name
+;;              (string-prefix-p (expand-file-name "~/Desktop/pulls/dotfiles") buffer-file-name)
+;;              (string= (file-name-extension buffer-file-name) "org"))
+;;     (laluxx/update-dotfiles)))
+
+;; (add-hook 'after-save-hook 'laluxx/run-update-dotfiles)
+
+;; ALL file extentions
 (defun laluxx/run-update-dotfiles ()
   "Run `laluxx/update-dotfiles` if the current file is inside ~/Desktop/pulls/dotfiles or its subdirectories."
   (when (and buffer-file-name
-             (string-prefix-p (expand-file-name "~/Desktop/pulls/dotfiles") buffer-file-name)
-             (string= (file-name-extension buffer-file-name) "org"))
+             (string-prefix-p (expand-file-name "~/Desktop/pulls/dotfiles") buffer-file-name))
     (laluxx/update-dotfiles)))
 
 (add-hook 'after-save-hook 'laluxx/run-update-dotfiles)
+
+
+#+end_src
+* ORG
+** auto-tangle
+=org-auto-tangle= allows you to add the option =#+auto_tangle: t= in your Org file so that it automatically tangles when you save the document.
+#+begin_src emacs-lisp
+(use-package! org-auto-tangle
+  :defer t
+  :hook (org-mode . org-auto-tangle-mode)
+  :config
+  (setq org-auto-tangle-default t))
+
+(defun laluxx/insert-auto-tangle-tag ()
+  "Insert auto-tangle tag in a literate config."
+  (interactive)
+  (evil-org-open-below 1)
+  (insert "#+auto_tangle: t ")
+  (evil-force-normal-state))
+
+(map! :leader
+      :desc "Insert auto_tangle tag" "i a" #'laluxx/insert-auto-tangle-tag)
 #+end_src

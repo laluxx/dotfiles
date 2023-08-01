@@ -1,0 +1,19 @@
+#!/usr/bin/env python3
+
+import os
+import shutil
+from pathlib import Path
+
+# Get the path to the current wallpaper from the fehbg script
+with open(Path.home() / ".fehbg") as f:
+    content = f.read()
+start = content.find("'") + 1
+end = content.find("'", start)
+current_wallpaper = content[start:end]
+
+# Copy the current wallpaper to the new location
+new_location = Path.home() / "xos/wallpapers/favourites"
+os.makedirs(new_location, exist_ok=True)
+shutil.copy2(current_wallpaper, new_location)
+
+print(f"Copied current wallpaper to {new_location}")

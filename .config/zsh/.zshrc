@@ -231,6 +231,16 @@ render_pwd() {
 
 render_pwd # run once
 
+function disassemble() {
+    if [ $# -eq 0 ]; then
+        echo "No arguments provided. Please provide a binary file name."
+        return 1
+    fi
+
+    # Disassemble the binary file using objdump
+    objdump -d $1 | less
+}
+
 #HACK custo function and aliases should work
 diffrun() {
         [ -z "$1" ] && { echo "Usage: drun <command> [file/directory]"; return 1; }

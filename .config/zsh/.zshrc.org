@@ -291,7 +291,19 @@ render_pwd() {
 
 render_pwd # run once
 #+end_src
-* DEV-TOOLS
+* DEV-TOOL
+** Disassemble
+#+begin_src shell
+function disassemble() {
+    if [ $# -eq 0 ]; then
+        echo "No arguments provided. Please provide a binary file name."
+        return 1
+    fi
+
+    # Disassemble the binary file using objdump
+    objdump -d $1 | less
+}
+#+end_src
 ** diffrun
 DIFF RUN :
 monitor a directory for changes,

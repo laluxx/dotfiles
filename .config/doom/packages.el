@@ -86,4 +86,7 @@
 (package! snails)
 
 
+
+(package! org-auto-tangle)
+
 (package! app-launcher :recipe (:host github :repo "SebastienWae/app-launcher"))

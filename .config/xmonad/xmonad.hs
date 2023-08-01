@@ -508,9 +508,11 @@ myManageHook = composeAll
   , title =? "emacs-run-launcher" --> doRectFloat (W.RationalRect ((-15)/1920) (905/1080) (2066/1920) (185/1080)) -- BOTTOM
   , title =? "emacs-run-M-x" --> doRectFloat (W.RationalRect ((-15)/1920) (905/1080) (2066/1920) (185/1080)) -- BOTTOM
   , title =? "emacs-run-wal-set" --> doRectFloat (W.RationalRect ((-15)/1920) (905/1080) (2066/1920) (185/1080)) -- BOTTOM
+  , title =? "emacs-run-wal-set-favourite" --> doRectFloat (W.RationalRect ((-15)/1920) (905/1080) (2066/1920) (185/1080)) -- BOTTOM
   , title =? "emacs-run-dired" --> doRectFloat (W.RationalRect ((-15)/1920) (905/1080) (2066/1920) (185/1080)) -- BOTTOM
   -- , title =? "emacs-run-info" --> doRectFloat (W.RationalRect ((-15)/1920) (905/1080) (2066/1920) (185/1080)) -- BOTTOM
   , title =? "emacs-run-info" --> doRectFloat (W.RationalRect ((-8)/1920) (741/1080) (1930/1920) (365/1080)) -- BOTTOM-BIG
+  , title =? "emacs-run-dmenu" --> doRectFloat (W.RationalRect ((-8)/1920) (741/1080) (1930/1920) (365/1080)) -- BOTTOM-BIG
 
   , title =? "emacs-run-which-key" --> doRectFloat (W.RationalRect ((-15)/1920) (905/1080) (2066/1920) (185/1080)) -- BOTTOM
   , title =? "emacs-run-clone-client-frame-bottom" --> doRectFloat (W.RationalRect ((-15)/1920) (905/1080) (2066/1920) (185/1080)) -- BOTTOM
@@ -551,7 +553,6 @@ myKeys c =
   subKeys "Xmonad Essentials"
   [ ("M-C-r", addName "Recompile XMonad"       $ spawn "xmonad --recompile")
   , ("M-S-r", addName "Restart XMonad"         $ spawn "xmonad --restart")
-  , ("M-p", addName "Run custom Python script" $ spawn "python3 ~/xos/pywal-scripts/instantmenu/instant-zsh.py")
   -- , ("M-x", addName "Run custom Python script" $ spawn "python3 ~/xos/pywal-scripts/instantmenu/main.py")
   --, ("M-S-q", addName "Quit XMonad"            $ sequence_ [spawn (mySoundPlayer ++ shutdownSound), io exitSuccess])
   , ("M-S-q", addName "Quit XMonad"            $ spawn "dm-logout")
@@ -560,12 +561,13 @@ myKeys c =
   -- , ("M-S-<Return>", addName "Run prompt"      $ sequence_ [spawn (mySoundPlayer ++ dmenuSound), spawn "~/.local/bin/dm-run"])
   -- , ("M-S-<Return>", addName "Run prompt"      $ sequence_ [spawn (mySoundPlayer ++ dmenuSound), spawn "emacsclient -cF '((visibility . nil))' -e '(emacs-run-launcher)'"])
   , ("M-S-<Return>", addName "Run prompt" $ sequence_ [spawn (mySoundPlayer ++ dmenuSound), spawn "emacsclient -a '' -F '((visibility . nil))' -e '(emacs-run-launcher)'"])
-  , ("M-w", addName "Run wal-set" $ sequence_ [spawn (mySoundPlayer ++ dmenuSound), spawn "emacsclient -a '' -F '((visibility . nil))' -e '(emacs-run-wal-set)'"])
+  -- , ("M-w", addName "Run wal-set" $ sequence_ [spawn (mySoundPlayer ++ dmenuSound), spawn "emacsclient -a '' -F '((visibility . nil))' -e '(emacs-run-wal-set)'"])
   , ("M-x", addName "Run M-x" $ sequence_ [spawn (mySoundPlayer ++ dmenuSound), spawn "emacsclient -a '' -F '((visibility . nil))' -e '(emacs-run-M-x)'"])
   , ("M-d", addName "Run dired" $ sequence_ [spawn (mySoundPlayer ++ dmenuSound), spawn "emacsclient -a '' -F '((visibility . nil))' -e '(emacs-run-dired)'"])
   , ("M-C-<Backspace>", addName "Run clone-client-frame" $ sequence_ [spawn (mySoundPlayer ++ dmenuSound), spawn "emacsclient -a '' -F '((visibility . nil))' -e '(emacs-run-clone-client-frame)'"])
   , ("M-S-<Backspace>", addName "Run clone-client-frame-bottom" $ sequence_ [spawn (mySoundPlayer ++ dmenuSound), spawn "emacsclient -a '' -F '((visibility . nil))' -e '(emacs-run-clone-client-frame-bottom)'"])
-  , ("M-i", addName "Run Info" $ sequence_ [spawn (mySoundPlayer ++ dmenuSound), spawn "emacsclient -a '' -F '((visibility . nil))' -e '(emacs-run-info)'"])
+  , ("M-i", addName "Run info" $ sequence_ [spawn (mySoundPlayer ++ dmenuSound), spawn "emacsclient -a '' -F '((visibility . nil))' -e '(emacs-run-info)'"])
+  , ("M-p", addName "Run dmenu" $ sequence_ [spawn (mySoundPlayer ++ dmenuSound), spawn "emacsclient -a '' -F '((visibility . nil))' -e '(emacs-run-dmenu)'"])
 
 
 
@@ -729,6 +731,13 @@ myKeys c =
   , ("M-e s", addName "Emacsclient Eshell"       $ spawn (myEmacs ++ ("--eval '(eshell)'")))
   , ("M-e v", addName "Emacsclient Vterm"        $ spawn (myEmacs ++ ("--eval '(+vterm/here nil)'")))
   , ("M-e w", addName "Emacsclient EWW Browser"  $ spawn (myEmacs ++ ("--eval '(doom/window-maximize-buffer(eww \"distro.tube\"))'")))]
+
+  ^++^ subKeys "wal"
+  [
+    ("M-w s", addName "Save Wallpaper" $ spawn ("walfav"))
+  , ("M-w w", addName "Run wal-set" $ sequence_ [spawn (mySoundPlayer ++ dmenuSound), spawn "emacsclient -a '' -F '((visibility . nil))' -e '(emacs-run-wal-set)'"])
+  , ("M-w f", addName "Run wal-set" $ sequence_ [spawn (mySoundPlayer ++ dmenuSound), spawn "emacsclient -a '' -F '((visibility . nil))' -e '(emacs-run-wal-set-favourite)'"])
+  ]
 
   -- Multimedia Keys
   ^++^ subKeys "Multimedia keys"
