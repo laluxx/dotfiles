@@ -1,0 +1,103 @@
+#!/usr/bin/env python3
+
+import abc
+import time
+import psutil
+import subprocess
+import os
+from typing import List
+
+# Colorful color scheme
+COLORS = {
+    "background": "#282a36",
+    "foreground": "#f8f8f2",
+    "cyan": "#8be9fd",
+    "green": "#50fa7b",
+    "red": "#ff5555",
+    "purple": "#bd93f9",
+    "yellow": "#f1fa8c",
+    "pink": "#ff79c6",
+    "orange": "#ffb86c"
+}
+
+class BarItem(abc.ABC):
+    def __init__(self, bg_color: str, fg_color: str):
+        self.bg_color = bg_color
+        self.fg_color = fg_color
+
+    @abc.abstractmethod
+    def fetch_data(self) -> str:
+        pass
+
+    def __str__(self) -> str:
+        return f"%{{B{self.bg_color}}} %{{F{self.fg_color}}} {self.fetch_data()} %{{B-}} %{{F-}} "
+
+class CPUBarItem(BarItem):
+    def fetch_data(self) -> str:
+        cpu_percent = psutil.cpu_percent()
+        return f"🖥️ CPU: {cpu_percent}%"
+
+class MemoryBarItem(BarItem):
+    def fetch_data(self) -> str:
+        mem = psutil.virtual_memory()
+        return f"💾 MEM: {mem.percent}%"
+
+class UpdateBarItem(BarItem):
+    def fetch_data(self) -> str:
+        updates = subprocess.run(["checkupdates"], capture_output=True, text=True, shell=True)
+        num_updates = len(updates.stdout.splitlines())
+        return f"🔃 Updates: {num_updates}"
+
+class DateTimeBarItem(BarItem):
+    def fetch_data(self) -> str:
+        date = time.strftime('%Y-%m-%d %H:%M')
+        return f"⏱️ {date}"
+
+class NetworkBarItem(BarItem):
+    def fetch_data(self) -> str:
+        net = psutil.net_io_counters()
+        return f"🌐 Sent: {net.bytes_sent / 1024} KB Received: {net.bytes_recv / 1024} KB"
+
+class BatteryBarItem(BarItem):
+    def fetch_data(self) -> str:
+        battery = psutil.sensors_battery()
+        if battery is None:
+            return "Battery info not available"
+        else:
+            return f"🔋 Battery: {battery.percent}%"
+
+class Bar:
+    def __init__(self, items: List[BarItem] = []):
+        self.items = items
+
+    def add_item(self, item: BarItem) -> None:
+        self.items.append(item)
+
+    def remove_item(self, item: BarItem) -> None:
+        self.items.remove(item)
+
+    def __str__(self) -> str:
+        return ''.join(str(item) for item in self.items)
+
+class BarGenerator:
+    def __init__(self, bar: Bar, interval: int = 1):
+        self.bar = bar
+        self.interval = interval
+
+    def run(self):
+        while True:
+            output = str(self.bar)
+            os.system(f'echo "{output}" | lemonbar -p -B "{COLORS["background"]}" -F "{COLORS["foreground"]}" -f "Ubuntu Mono:size=12" -g "x30+30+30"')
+            time.sleep(self.interval)
+
+if __name__ == "__main__":
+    cpu_bar_item = CPUBarItem(COLORS['yellow'], COLORS['background'])
+    memory_bar_item = MemoryBarItem(COLORS['cyan'], COLORS['background'])
+    update_bar_item = UpdateBarItem(COLORS['pink'], COLORS['background'])
+    datetime_bar_item = DateTimeBarItem(COLORS['purple'], COLORS['background'])
+    network_bar_item = NetworkBarItem(COLORS['green'], COLORS['background'])
+    battery_bar_item = BatteryBarItem(COLORS['red'], COLORS['background'])
+
+    bar = Bar([cpu_bar_item, memory_bar_item, update_bar_item, datetime_bar_item, network_bar_item, battery_bar_item])
+    bar_generator = BarGenerator(bar)
+    bar_generator.run()

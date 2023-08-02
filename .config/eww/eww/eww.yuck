@@ -1,0 +1,23 @@
+(defvar     bell_rev        false)
+(defvar     music_rev       false)
+(defvar     volume_rev      false)
+(defvar     updates_rev     false)
+(defvar     apps            "{}")
+(defvar     notifications   "{}")
+(defvar     mpris_positions "{}")
+(defvar     picture         "assets/getou.jpg")
+
+(deflisten  volume          `scripts/volume`)
+(deflisten  hyprland        `scripts/workspaces`)
+(deflisten  details         `scripts/details`)
+(deflisten  network         `scripts/network`)
+(deflisten  weather         `scripts/weather.py`)
+(deflisten  mpris           `scripts/mpris.py`)
+
+(defpoll    date            :interval "1h"   :initial `{"day": 1, "month": 1, "year": 1}` `date +'{"day": "%d", "month": "%m", "year": "%Y"}'`)
+(defpoll    waiting         :interval "10s"  :initial 0     `dunstctl count waiting`)
+(defpoll    dnd             :interval "10s"  :initial false `dunstctl is-paused`)
+
+(include    "yuck/widgets.yuck")
+(include    "yuck/windows.yuck")
+(include    "yuck/setup.yuck")

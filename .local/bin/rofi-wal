@@ -1,0 +1,37 @@
+#/usr/bin/python3
+
+import re
+
+color_order = [
+    "drac-bgd",
+    "drac-cur",
+    "drac-fgd",
+    "drac-cmt",
+    "drac-cya",
+    "drac-grn",
+    "drac-ora",
+    "drac-pnk",
+    "drac-pur",
+    "drac-red",
+    "drac-yel",
+]
+
+# Read the color values
+with open("/home/username/.cache/wal/colors", "r") as file:
+    color_values = [line.strip() for line in file]
+
+# Read the Rofi config file
+with open("/home/username/.config/rofi/config.rasi", "r") as file:
+    rofi_config = file.read()
+
+# Replace the color values
+for i, color_name in enumerate(color_order):
+    rofi_config = re.sub(
+        rf"{color_name}: #[0-9a-fA-F]+;",
+        f"{color_name}: {color_values[i]};",
+        rofi_config,
+    )
+
+# Write the modified Rofi config back to the file
+with open("/home/username/.config/rofi/config.rasi", "w") as file:
+    file.write(rofi_config)

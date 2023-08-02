@@ -1,0 +1,172 @@
+(defwidget header []
+  (box 
+    :class "header"
+    :space-evenly false
+    (overlay
+      :hexpand true
+      (box
+        :class "dnd"
+        :space-evenly false
+        :halign "start"
+        (eventbox
+          :cursor "pointer"
+          (button 
+            :onclick "dunstctl set-paused toggle"
+            :style "color: ${dnd ? '#dd6777;' : '#ceb188;'}"
+            {dnd ? "" : ""}
+          )
+        )
+        (revealer 
+          :reveal {dnd || notifications.count == 0 ? false : true}
+          :transition "slideright"
+          (label
+            :class "dnd count"
+            :text {notifications.count}
+          )
+        )
+        (revealer 
+          :reveal {waiting == 0 ? false : true}
+          :transition "slideright"
+          (label
+            :class "dnd count"
+            :text waiting
+          )
+        )
+      )
+      (label :class "label" :text "Notifications")
+      (revealer 
+        :reveal {notifications.count == 0 ? false : true}
+        :transition "slideleft"
+        :halign "end"
+        :hexpand true
+        (eventbox
+          :cursor "pointer"
+          (button 
+            :class "clear"
+            :onclick "scripts/notifications.py --clear" 
+            ""
+          )
+        )
+      )
+    )
+  )
+)
+
+(defwidget notif [notification]
+  (box 
+    :space-evenly false 
+    :orientation "v"
+    (box 
+      :class "osd"
+      :space-evenly false
+      (box
+        :halign "start"
+        :space-evenly false
+        :spacing 10
+        (label
+          :class "icon"
+          :text {
+            notification.app == "Screenshot" ? "" : 
+            notification.app == "Spotify" ? "" :
+            notification.app == "Color Picker" ? "" : 
+            notification.app == "Kotatogram Desktop" ? "" :
+            notification.app == "discord" ? "" :
+            notification.app == "Brave" ? "" :
+            ""
+          }
+          :style {
+            notification.app == "Spotify" ? "color: #9ec49f" :
+            notification.app == "Kotatogram Desktop" ? "color: #7dcfff" :
+            notification.app == "discord" ? "color: #A39EC4; font-size: 1.2rem" :
+            "font-size: 1.1rem; color: #f0f0f0;"
+          }
+        )
+        (label :class "app" :text {notification.app})
+        (label :class "circle" :text "")
+        (label :class "time" :text {notification.time})
+      )
+      (box
+        :halign "end"
+        :hexpand true
+        (eventbox
+          :cursor "pointer"
+          (button 
+            :class "close" 
+            :onclick "scripts/notifications.py --rmid ${notification.id}"
+            "" 
+          )
+        )
+      )
+    )
+    (box  
+      :class "content"
+      :style {notification.app == "Screenshot" ? "margin: 1rem" : ""}
+      :orientation {notification.app == "Screenshot" ? "v" : "h"}
+      :space-evenly false 
+      :spacing 10
+      (box
+        :class "image"
+        :style "background-image: url('${notification.image}')"
+        :valign "center"
+        :halign "center"
+        :visible {notification.image != "null"}
+        :width {
+          notification.app == "Screenshot" ? 384 : 
+          notification.app == "Spotify" || notification.app == "Color Picker" ? 90 : 
+          notification.app == "Kotatogram Desktop" || notification.app == "discord" || notification.app == "Brave" ? 65 :
+          50
+        }
+        :height {
+          notification.app == "Screenshot" ? 216 : 
+          notification.app == "Spotify" || notification.app == "Color Picker" ? 90 : 
+          notification.app == "Kotatogram Desktop" || notification.app == "discord" || notification.app == "Brave" ? 65 :
+          50
+        }
+      )
+      (box
+        :visible {notification.app == "Screenshot" ? false : true}
+        :orientation "v"
+        :space-evenly false
+        (label 
+          :class "summary"
+          :limit-width 30
+          :wrap true
+          :xalign 0
+          :text {notification.summary}
+          :halign "start"
+        )
+        (label
+          :class "body"
+          :limit-width 120
+          :wrap true
+          :xalign 0
+          :text {notification.body}
+          :halign "start"
+        )
+      )
+      (box
+        :class "screenshot buttons"
+        :visible {notification.app == "Screenshot" ? true : false}
+        :spacing 40
+        (eventbox
+          :cursor "pointer"
+          (button
+            :class "screenshot open"
+            :onclick "viewnior '${notification.image}' &"
+            :timeout "1s"
+            "Open"
+          )
+        ) 
+        (eventbox
+          :cursor "pointer"
+          (button
+            :class "screenshot delete"
+            :onclick "rm -f '${notification.image}' && scripts/notifications.py --rmid ${notification.id}"
+            :timeout "1s"
+            "Delete"
+          )
+        )
+      )
+    )
+  )
+)

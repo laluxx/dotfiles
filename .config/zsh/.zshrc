@@ -16,6 +16,7 @@ function path() {
   printf "${highlight_close}\n"
 }
 
+export XBINKEYS_CONFIG="$HOME/.config/xbindkeysrc"
 export PATH="$PATH:$HOME/.config/emacs/bin"
 export PATH="$PATH:$HOME/.cargo/bin"
 
@@ -55,10 +56,13 @@ bindkey -M menuselect 'l' vi-forward-char
 bindkey -M menuselect 'j' vi-down-line-or-history
 bindkey -v '^?' backward-delete-char
 
+# CTRL
 bindkey -s '^r' 'lfcd\n'
-bindkey -s '^e' 'thunar\n'
+bindkey -s '^e' 'pcmanfm\n'
 bindkey -s '^w' 'wal-set\n'
+bindkey -s '^p' 'launcher\n'
 bindkey -s '^b' 'btop\n' # TODO: make it toggle
+# Alt
 
 # below opens a new terminal in current dir
 # case "$TERM" in (rxvt|rxvt-*|st|st-*|*xterm*|(dt|k|E)term)

@@ -84,6 +84,7 @@
 
 (package! magit-delta)
 (package! snails)
+(package! pynt)
 
 
 

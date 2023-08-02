@@ -15,6 +15,7 @@ alias sbu="sudo pacman -Rns"
 alias databases="sudo pacman -Syy"
 alias pacup='kitty +kitten icat  && sudo pacman -Syu'
 alias savepkgs='pacman -Qe | awk '\''{print $1}'\'' > ~/Desktop/pulls/dotfiles/packages.txt'
+alias mail='pop'
 
 #+end_src
 * emacs

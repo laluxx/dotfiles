@@ -1,0 +1,25 @@
+#!/usr/bin/env python3
+
+import os
+import subprocess
+
+# Define the path to the colors file
+colors_file = os.path.join(os.environ['HOME'], '.cache/wal/colors')
+
+# Parse the colors file
+with open(colors_file, 'r') as f:
+    colors = f.read().splitlines()
+
+# Prepare the dmenu command with desired configuration
+dmenu_cmd = [
+    'dmenu_run',
+    '-fn', 'jetbrainsmono nfm extrabold-10',  # Set the font
+    '-nb', colors[0],  # Set the normal background color
+    '-nf', colors[1],  # Set the normal foreground color
+    '-sb', colors[6],  # Set the selected background color
+    '-sf', colors[0],  # Set the selected foreground color
+    # '-b'  # Make dmenu appear at the bottom
+]
+
+# Run the dmenu command
+subprocess.run(dmenu_cmd)

@@ -1,0 +1,247 @@
+* {
+  all: unset; //Unsets everything so you can style everything from scratch
+	//font-family: Inter Nerd Font;
+	// font-family:Space Mono;
+}
+
+.dockbox {
+	font-family : Space Mono;
+	border-radius: 12px;
+}
+
+
+//Global Styles
+.bar {
+  color: #dbdee9;
+	// background-color:rgba(0,0,0,0.2);
+	// background-color:#181818;
+	background: linear-gradient(to right, #121212,#181818,#050505,#181818,#121212);
+}
+
+.time {
+	font-family :Bebas Neue;
+	font-size: 20px;
+	color: #bcbcbc;
+	font-weight:bold;
+}
+
+.date {
+	font-family :Bebas Neue;
+	color: #898989;
+	padding-left:12px;
+}
+
+
+// Styles on classes (see eww.yuck for more information)
+.music {
+	font-family: SpaceMono Nerd Font;
+	font-size: 11px;
+}
+
+.album_art {
+	background-repeat: no-repeat;
+	background-size: 300px;
+	min-height: 300px;
+	min-width: 300px;
+	border-radius: 8px;
+}
+
+
+.musicbox {
+	margin : 0px 0px 0px 0px;
+}
+
+
+.float_mplayer{
+	font-family:VictorMono Nerd Font;
+	padding: 15px;
+	border-radius: 10px;
+	background: linear-gradient(to right, #212121,#181818,#171717,#181818,#212121);
+}
+
+.song {
+	font-size : 12px;
+	padding:12px;
+	font-weight : bold;
+	padding-left:2px;
+}
+.artist {
+	font-size : 12px;
+	padding-left:2px;
+}
+
+.musicbuttons {
+	margin : -80px 0px 0px 0px;
+}
+
+.playbutton {
+    background-repeat: no-repeat;
+	background-size: 18px;
+	min-height: 18px;
+	min-width: 18px;
+	margin: 0px 0px  0px 0px;
+}
+
+
+.trackbutton {
+	background-repeat: no-repeat;
+	background-size: 18px;
+	min-height: 18px;
+	min-width: 18px;
+	margin: 0px 0px  0px 0px;
+}
+
+.sidestuff {
+	font-size: 14px;
+}
+
+.sidestuff slider {
+  all: unset;
+  color: #c04639;
+	margin: 10px 0px 7px 0px;
+}
+
+
+.battery_metric {
+	font-size: 14px;
+	margin-left:0px;
+}
+
+.battery_metric slider {
+  all: unset;
+  color: #c04639;
+	margin: 10px 0px 7px 0px;
+	min-width: 120px;
+}
+
+
+.audiostuff {
+	font-size: 14px;
+}
+
+.audiostuff slider {
+  all: unset;
+  color: #c04639;
+	margin: 10px 0px 7px 0px;
+	min-width: 90px;
+}
+
+
+.works {
+	font-family:VictorMono Nerd Font;
+	font-weight:bold;
+}
+
+
+.0 , .01, .02, .03, .04, .05, .06,
+.011, .022, .033, .044, .055, .066{
+  margin: 0px 0px 0px 0px;
+}
+
+/* Unoccupied */
+.0 {
+	color: #606060;
+}
+
+/* Occupied */
+.01, .02, .03, .04, .05, .06, .07, .08, .09 {
+	color:#959595;
+}
+
+
+/* Focused */
+.011, .022, .033, .044, .055, .066, .077, .088, .099{
+	color: #ffffff;
+	font-weight:bold;
+}
+
+
+.works button:hover {
+  color: #000000;
+  background-color: #bcbcbc;
+}
+
+.module {
+    margin: 0px 0px 0px 0px;
+    border-radius: 10px 10px 0px 10px;
+}
+
+.metric scale trough highlight {
+  all: unset;
+  //background-color: #D35D6E;
+  background-color: #bcbcbc;
+  color: #000000;
+  border-radius: 4px;
+}
+.metric scale trough {
+  all: unset;
+  //background-color: #323232;
+  background-color: #bcbcbc;
+  border-radius: 50px;
+  min-height: 3px;
+  min-width: 30px;
+  margin-left: 8px;
+  margin-right: 30px;
+}
+.metric scale trough highlight {
+  all: unset;
+  //background-color: #D35D6E;
+	background-color: #bcbcbc;
+  color: #000000;
+  border-radius: 4px;
+}
+.metric scale trough {
+  all: unset;
+  //background-color: #4e4e4e;
+  background-color: #4e4e4e;
+  border-radius: 3px;
+  min-height: 3px;
+  min-width: 50px;
+  margin-left: 2px;
+  margin-right: 18px;
+}
+.label-ram {
+  font-size: 12px;
+  margin-left: 2px;
+  margin-right: 18px;
+}
+
+.label-Audio {
+  font-size: 20px;
+}
+
+.mails {
+	color: #FFC8C8;
+	border: 0px solid #161616;
+	border-radius: 16px;
+	font-size : 14px;
+	padding: 0px 5px 0px 5px;
+	margin: 10px 0px 10px 0px;
+	font-weight : bold;
+}
+
+.trayicon {
+    background-repeat: no-repeat;
+	background-size: 24px;
+	min-height: 24px;
+	min-width: 24px;
+	margin: 8px 0px 0px 0px;
+}
+
+.infotext {
+	color: #DCD7CD;
+	border: 0px solid #161616;
+	border-radius: 16px;
+	font-size : 14px;
+	padding: 0px 2px 0px 0px;
+	margin: 10px 0px 10px 0px;
+}
+
+.face {
+	background-size: 24px;
+	min-height: 24px;
+	min-width: 24px;
+	margin: 8px 0px 8px 0px;
+	border-radius: 100%;
+}
+

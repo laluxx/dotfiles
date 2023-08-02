@@ -1,0 +1,238 @@
+(defwidget bell []
+  (eventbox 
+    :onhover "eww update bell_rev=true" 
+    :onhoverlost "eww update bell_rev=false"
+    :halign "center"
+    (box
+      :class "bell"
+      :space-evenly false
+      :orientation "v"
+      (revealer 
+        :transition "slideup" 
+        :reveal bell_rev 
+        (label 
+          :class "updates total" 
+          :text {notifications.count}
+        )
+      )
+      (eventbox
+        :cursor "pointer"
+        :halign "center"
+        (overlay 
+          (button
+            :class "bell icon"
+            :onclick "actions --notifications"
+            :style {notifications.count > 0 ? "color: #cacaca;" : "color: #767676;"}
+            {dnd ? "" : ""}
+          )
+          (label
+            :class "bell indicator"
+            :visible {notifications.count > 0 ? true : false}
+            :valign "start" :halign "end" 
+            :text ""
+          )
+        )
+      )
+    )
+  )
+)
+
+(defwidget clock []
+  (box 
+    :class "clock"
+    :orientation "v"
+    :space-evenly false
+    :spacing 5
+    :halign "center"
+    (label 
+      :class "clock hour" 
+      :text {formattime(EWW_TIME, "%H", "America/Sao_Paulo")}
+    )
+    (box :class "timebox" :spacing 4
+      (box :class "timebox magenta" "")
+      (box :class "timebox green" "")
+      (box :class "timebox yellow" "")
+    )
+    (label 
+      :class "clock minute" 
+      :text {formattime(EWW_TIME, "%M", "America/Sao_Paulo")}
+    )
+  )
+)
+
+(defwidget launcher_icon  []
+  (eventbox
+    :cursor "pointer"
+    :halign "center"
+    (button 
+      :class "launcher_icon" 
+      :valign "start"
+      :onclick "actions --launcher" 
+      ""
+    )
+  )
+)
+
+(defwidget music [] 
+  (eventbox
+    :onhover "eww update music_rev=${mpris[0].status == 'Stopped' ? false : true}"
+    :onhoverlost "eww update music_rev=false"
+    :onclick "eww open --toggle media"
+    (box
+      :class "music"
+      :space-evenly false 
+      :spacing 8
+      :orientation "v"
+      :halign "center"
+      (revealer 
+        :transition "slideup"
+        :reveal music_rev 
+        (box 
+          :spacing 10
+          :orientation "v"
+          (eventbox
+            :cursor "pointer"
+            :halign "center"
+            (button 
+              :class "music previous" 
+              :onclick "playerctl -p ${mpris[0].name} previous" 
+              ""
+            )
+          )
+          (eventbox
+            :cursor "pointer"
+            :halign "center"
+            (button 
+              :class "music toggle" 
+              :onclick "playerctl -p ${mpris[0].name} play-pause" 
+              {mpris[0].status == "Playing" ? "" : 
+                mpris[0].status == "Paused" ? 
+                "" : ""
+              }
+            )
+          )
+          (eventbox
+            :cursor "pointer"
+            :halign "center"
+            (button 
+              :class "music next" 
+              :onclick "playerctl -p ${mpris[0].name} next" 
+              ""
+            )
+          )
+        )
+      )
+      (box
+        :class "music cover"
+        :style "background-image: url('${mpris[0].artUrl == "null" ? "assets/spotify.png" : mpris[0].artUrl}')"
+      )
+    )
+  )
+)
+
+(defwidget network []
+  (label 
+    :class "network"
+    :style {network == "down" ? "color: #dd6777;" : "color: #A39EC4;"}
+    :text {network == "down" ? "" : ""}
+    :tooltip "${round(EWW_NET.enp4s0.NET_DOWN / 1000000, 3)}MB"
+  )
+)
+
+(defwidget updates []
+  (eventbox 
+    :onhover "eww update updates_rev=true" 
+    :onhoverlost "eww update updates_rev=false"
+    :halign "center"
+    (box
+      :class "updates"
+      :space-evenly false
+      :orientation "v"
+      (revealer 
+        :transition "slideup" 
+        :reveal updates_rev 
+        (label 
+          :class "updates total" 
+          :text {details.updates}
+        )
+      )
+      (eventbox
+        :cursor "pointer"
+        :halign "center"
+        (button 
+          :class "updates icon" 
+          :onclick "foot -T flooat -e $SHELL -c 'yay -Syu' &"
+          ""
+        )
+      )  
+    )
+  )
+)
+
+(defwidget volume []
+  (eventbox 
+    :onhover "eww update volume_rev=true" 
+    :onhoverlost "eww update volume_rev=false"
+    (box
+      :class "volume"
+      :space-evenly false
+      :orientation "v"
+      (revealer 
+        :class "volume-bar"
+        :transition "slideup" 
+        :reveal volume_rev 
+        (eventbox
+          :cursor "pointer"
+          :halign "center"
+          (scale  
+            :orientation "v"
+            :tooltip {volume == "muted" ? "Muted" : "${volume}%"}
+            :value {volume == "muted" ? "0" : volume} 
+            :min 0 
+            :max 101 
+            :onchange "pamixer -u && pamixer --set-volume {}"
+            :flipped true
+          )
+        )
+      )
+      (eventbox
+        :cursor "pointer"
+        :onscroll "echo {} | sed -e 's/up/--up/g' -e 's/down/--down/g' | xargs volume"
+        (button 
+          :class "volume icon" 
+          :style {volume == 0 || volume == "muted" ? "color: #dd6777;" : "color: #9ec49f;"} 
+          :tooltip {volume == "muted" ? "Muted" : "${volume}%" } 
+          :onclick "volume --toggle"
+          {volume == 0 || volume == "muted" ? "" : 
+          volume < 30 ? "" : 
+          volume < 75 ? "" : ""}
+        )
+      )
+    )
+  )
+)
+
+(defwidget workspaces []
+  (box 
+    :class "workspaces"
+    :spacing 10
+    :orientation "v"
+    :width 40
+    :space-evenly false
+    (for workspace in hyprland
+      (eventbox
+        :cursor "pointer"
+        :onscroll "echo {} | sed -e 's/up/-1/g' -e 's/down/+1/g' | xargs hyprctl dispatch workspace"
+        :halign "center"
+        (button 
+          :class "${workspace.current ? "current" : ""} ${workspace.windows > 0 ? "occupied" : "empty"}"
+          :onclick "hyprctl dispatch workspace ${workspace.id}"
+          (button 
+            :class "icon ${workspace.current ? "current" : ""} ${workspace.windows > 0 ? "occupied" : "empty"}"
+            {workspace.current ? "" : ""}
+          )
+        )
+      )
+    )
+  )
+)

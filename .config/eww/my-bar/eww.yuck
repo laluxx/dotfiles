@@ -1,0 +1,252 @@
+;; ** Variables ***********************************************************************
+;; all the deffpolls
+
+(defpoll bat_label :interval "1s" "scripts/getbat_status")
+
+(defpoll SONG :interval "1s" `scripts/music_info --song`)
+(defpoll COVER :interval "1s" `scripts/music_info --cover`)
+;; (defpoll COVER :interval "1s" `scripts/test_art.sh`)
+(defpoll ARTIST :interval "1s" `scripts/music_info --artist`)
+(defpoll STATUS :interval "1s" `scripts/music_info --status`)
+(defpoll music :interval "1s" "scripts/getmusic")
+
+(defpoll battery :interval "1s" "scripts/getbat")
+
+(defpoll volume :interval "1s" "scripts/getvol")
+
+(defpoll date :interval "1s" "date '+%d/%m %A'")
+(defpoll time :interval "1s" "date '+ %H:%M:%S'")
+
+
+;; Battery vars
+(defpoll BATICON :interval "1s" `scripts/battery --icon`)
+(defpoll BATPERC :interval "1m" `scripts/battery --perc`)
+
+;; Volume vars
+(defpoll VOLICON :interval "1s" `scripts/volume --icon`)
+(defpoll VOLUME :interval "1s" `scripts/volume --get`)
+
+;; Network
+(defpoll WIFIICON :interval "1s" `scripts/check-network --icon`)
+(defpoll NETSTAT :interval "1s" `scripts/check-network --stat`)
+
+;; TIME
+(defvar CALENDAR "images/icons/system/calendar.png")
+
+;; User
+(defvar IMAGE "images/profile.jpg")
+(defpoll USER :interval "10m" `whoami`)
+
+;; Bar
+(defvar BARIMG "images/black_armour_80.png")
+
+
+;;defwidgets******************************************************************
+
+
+(defwidget system [] 
+		(box :class "dockbox"
+			(box :orientation "h" :spacing 16 :valign "center" :halign "end" :space-evenly "false" :vexpand "false" :hexpand "false"
+
+
+				(audiostuff)
+				(batterystuff)
+
+				(button :onclick "scripts/widget_apps --nm"
+					(box :orientation "h" :spacing 8 :valign "center" :halign "center" :space-evenly "false" :vexpand "false" :hexpand "false"
+						(box :style "background-image: url('${WIFIICON}');" :class "trayicon")
+							(label :class "infotext" :halign "start" :text NETSTAT)))
+
+
+
+				(box :class "time" time)
+				(button :onclick "notify-send zoinks!!!"
+					(box :orientation "h" :spacing 8 :valign "center" :halign "center" :space-evenly "false" :vexpand "false" :hexpand "false"
+						(box :style "background-image: url('${IMAGE}');" :class "face")
+							(label :class "infotext" :halign "start" :text USER)))
+
+							)))
+
+
+(defwidget batterystuff []
+	(box :orientation "h"
+		 :space-evenly false
+         :halign "end"
+		 :class "right_modules"
+(bat_label)
+(battery_metric)
+))
+
+
+(defwidget right []
+	(box :orientation "h"
+		 :space-evenly false
+         :halign "end"
+		 :class "right_modules"
+(audiostuff)
+(sidestuff)
+(batterystuff)
+))
+
+
+
+(defwidget bar []
+
+	;;(centerbox :style "background-image: url('${BARIMG}');"
+	(centerbox
+    (left)
+		(clock)
+    (system)
+		))
+
+
+(defwidget audiostuff []
+  (box :class "audiostuff" :orientation "h" :space-evenly false :halign "end"
+
+    (metric :label "Audio "
+            :value volume
+            :onchange "amixer -D pulse sset Master {}%")
+    ))
+
+
+(defwidget sidestuff []
+  (box :class "sidestuff" :orientation "h" :space-evenly false :halign "end"
+
+    (metric :label "Ram "
+            :value {EWW_RAM.used_mem_perc}
+            :onchange "")
+
+    (metric :label "Cpu "
+            :value {round((1 - (EWW_DISK["/"].free / EWW_DISK["/"].total)) * 100, 0)}
+            :onchange "")
+
+    ))
+
+
+
+(defwidget bat_label []
+  (box :class "bat_label"
+       :orientation "h"
+       :space-evenly false
+       :halign "center"
+    {bat_label != "" ? "${bat_label} " : ""}))
+
+
+
+(defwidget battery_metric []
+  (box :class "battery_metric" :orientation "h" :space-evenly false :halign "end"
+    (metric :label ""
+            :value battery
+            :onchange "")
+    ))
+
+
+(defwidget battery_status []
+  (box :class "battery_metric" :orientation "h" :space-evenly false :halign "end"
+    (metric :label ""
+            :value "cat /sys/class/power_supply/BAT0/status"
+            :onchange "")
+    ))
+
+
+(deflisten workspace "scripts/workspace")
+(defwidget workspaces []
+(literal :content workspace))
+
+
+(defwidget float_mplayer [] 
+		(box :class "float_mplayer"
+
+			(box :orientation "v" :spacing 0 :valign "center" :halign "start" :space-evenly "false" :vexpand "false" :hexpand "false"
+
+				;; Album art box
+				(box :class "album_art" :style "background-image: url('${COVER}');")
+
+				;; artist and song name box
+				(box :class "musicbox" :orientation "v" :spacing 0 :valign "center" :halign "start" :space-evenly "false" :vexpand "false" :hexpand "false"
+					(label :class "song" :halign "start" :wrap "false" :limit-width 30 :text SONG)
+					(label :class "artist" :halign "start" :wrap "false" :limit-width 30 :text ARTIST)
+				)
+
+				;; Player Buttons
+				(box :class "musicbuttons" :orientation "h" :spacing 100 :valign "center" :halign "center" :space-evenly "false" :vexpand "false" :hexpand "false"
+					(button :style "background-image: url('images/icons/music/previous-button.png');" :class "trackbutton" :onclick "scripts/music_info --prev")
+					(button :style "background-image: url('${STATUS}');" :class "playbutton" :onclick "scripts/music_info --toggle")
+					(button :style "background-image: url('images/icons/music/next-button.png');" :class "trackbutton" :onclick "scripts/music_info --next")
+				)
+
+
+			)
+		)
+)
+
+
+(defwidget clock []
+  (box :class "dockbox"
+       :orientation "h"
+       :space-evenly false
+       :halign "center"
+
+				(button :onclick "scripts/widget_apps --nm"
+					(box :orientation "h" :spacing 2 :valign "center" :halign "center" :space-evenly "false" :vexpand "false" :hexpand "false"
+							(label :class "infotext" :halign "start")
+							(box :class "date" date)))
+							)
+							)
+
+
+(defwidget battery []
+  (box :class "battery"
+       :orientation "h"
+       :space-evenly false
+       :halign "left"
+    {battery != "" ? "   ${battery}%" : ""}))
+
+
+(defwidget metric [label value onchange]
+  (box :orientation "h"
+       :class "metric"
+       :space-evenly false
+    (box :class "label" label)
+    (scale :min 0
+           :max 101
+           :active {onchange != ""}
+           :value value
+           :onchange onchange)))
+
+
+(defwidget left []
+	(box :orientation "h" 
+		 :space-evenly false  
+       :halign "start"
+			 :valign "center"
+		 :class "left_modules"
+(workspaces)
+))
+
+;; windows ****************************************
+
+(defwindow bar
+  :exclusive true
+  :monitor 0
+  :windowtype "dock"
+  :stacking "bg"
+	:focusable false
+  :geometry (geometry :x "0%"
+                      :y "0%"
+                      :width "100%"
+                      :height "30px"
+                      :anchor "top center")
+  :reserve (struts :side "top" :distance "4%")
+  (bar))
+
+
+(defwindow album_art
+           :monitor 0
+           :geometry (geometry :x "10px"
+															 :y "10px"
+                               :anchor "top right")
+           :stacking "bg"
+           :windowtype "dock"
+           :wm-ignore false
+(float_mplayer))

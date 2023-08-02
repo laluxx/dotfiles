@@ -113,6 +113,7 @@ when focused and not focused
 
 ;; (add-to-list 'default-frame-alist '(alpha-background . 90))
 #+end_src
+
 * FONT
 TODO
 - variables [] (OCR B)
@@ -124,24 +125,34 @@ Settings related to fonts within Doom Emacs:
 + 'font-lock-comment-face' -- for comments.
 + 'font-lock-keyword-face' -- for keywords with special significance like 'setq' in elisp.
 #+BEGIN_SRC emacs-lisp
-;; (setq doom-font (font-spec :family "JetBrains Mono" :size 15)
-;;       doom-variable-pitch-font (font-spec :family "Ubuntu" :size 15)
-;;       doom-big-font (font-spec :family "JetBrains Mono" :size 24))
-;; (after! doom-themes
-;;   (setq doom-themes-enable-bold t
-;;         doom-themes-enable-italic t))
-;; (custom-set-faces!
-;;   '(font-lock-comment-face :slant italic)
-;;   '(font-lock-keyword-face :slant italic))
+(setq doom-font (font-spec :family "JetBrains Mono NF ExtraBold" :size 15) ;; :height 1.1)
+      doom-variable-pitch-font (font-spec :family "Ubuntu" :size 15)
+      doom-big-font (font-spec :family "JetBrains Mono" :size 24))
+(after! doom-themes
+  (setq doom-themes-enable-bold t
+        doom-themes-enable-italic t))
+(custom-set-faces!
+  '(font-lock-comment-face :slant italic)
+  '(font-lock-keyword-face :slant italic))
 #+END_SRC
 ** Dired
 #+begin_src emacs-lisp
-;; emacs 29 broke this ?
-(defun use-ocr-b-bold ()
-  "Switch the current buffer to the OCR B-Bold font."
-  (face-remap-add-relative 'default '(:family "JetBrains Mono NF ExtraBold" :height 130)))
+;; (defun use-ocr-b-bold ()
+;;   "Switch the current buffer to the OCR B-Bold font."
+;;   (face-remap-add-relative 'default '(:family "JetBrains Mono NF ExtraBold" :height 130)))
 
-(add-hook 'dired-mode-hook 'use-ocr-b-bold)
+;; (add-hook 'dired-mode-hook 'use-ocr-b-bold)
+
+
+(defun use-jetbrains-mono-extrabold ()
+  "Switch the current buffer to JetBrains Mono ExtraBold font."
+  (interactive)
+  (message "Running use-jetbrains-mono-extrabold...")
+  (face-remap-add-relative 'default '(:family "JetBrains Mono ExtraBold" :height 130)))
+
+(with-eval-after-load 'dired
+  (add-hook 'dired-mode-hook 'use-jetbrains-mono-extrabold))
+
 #+end_src
 ** Minibuffer
 *** Default
@@ -193,7 +204,6 @@ set everything
 
 (add-hook 'python-mode-hook 'my-set-python-mode-font)
 #+end_src
-
 * Dashboard
 #+begin_src emacs-lisp
 (require 'dashboard)
@@ -261,7 +271,81 @@ this will set the theme
 #+end_src
 
 * Keybinds
+** Toggle
+#+begin_src emacs-lisp
+(map! :leader
+      (:prefix ("t" . "Toggle")
+       :desc "Toggle truncated lines" "t" #'visual-line-mode))
+#+end_src
+** Btop
+open a new window containing btop
+#+begin_src emacs-lisp
+
+
+#+end_src
 ** Org
+*** block-jump
+if inside a src code block
+shift + j -> cursor at the end of the code block
+shift + k -> cursor at the start of the code block
+#+begin_src emacs-lisp
+(defun my/org-beginning-of-src-block ()
+  "Move point to the beginning of the current source block."
+  (interactive)
+  (when (org-in-src-block-p)
+    (search-backward "#+begin_src")
+    (forward-line)
+    (beginning-of-line)))
+
+(defun my/org-end-of-src-block ()
+  "Move point to the end of the current source block."
+  (interactive)
+  (when (org-in-src-block-p)
+    (search-forward "#+end_src")
+    (backward-char 11)))
+
+(defun my/org-src-keybindings ()
+  "Setup keybindings for org-src-mode."
+  (when (org-in-src-block-p)
+    (let ((map (make-sparse-keymap)))
+      (define-key map (kbd "M-k") 'my/org-beginning-of-src-block)
+      (define-key map (kbd "M-j") 'my/org-end-of-src-block)
+      (set-transient-map map t))))
+
+(add-hook 'org-mode-hook 'my/org-src-keybindings)
+
+(with-eval-after-load 'evil-maps
+  (define-key evil-visual-state-map (kbd "M-k") 'my/org-beginning-of-src-block)
+  (define-key evil-visual-state-map (kbd "M-j") 'my/org-end-of-src-block))
+
+#+end_src
+*** Shifttab
+#+begin_src emacs-lisp
+;; MAIN
+(defun my/org-shifttab-advice (orig-fun &rest args)
+  "Always use global cycling with `org-shifttab'."
+  (let ((context (org-element-lineage
+                  (org-element-context)
+                  '(headline inlinetask) t)))
+    (if (or (not context)
+            (eq 'headline (org-element-type context)))
+        (apply 'org-global-cycle args)
+      (apply orig-fun args))))
+
+(advice-add 'org-shifttab :around 'my/org-shifttab-advice)
+
+
+(defun my/org-shifttab-or-beginning-of-line ()
+  "Call org-shifttab, then move to the beginning of the line."
+  (interactive)
+  (org-shifttab)
+  (run-at-time "0.3 sec" nil #'beginning-of-line))
+
+(with-eval-after-load 'org
+  (define-key org-mode-map (kbd "<backtab>") #'my/org-shifttab-or-beginning-of-line))
+
+
+#+end_src
 *** Evil
 open org bullets with =l= and close them with =h=
 #+begin_src emacs-lisp
@@ -442,6 +526,7 @@ Setup file watcher for ~/.cache/wal/colors
 #+end_src
 
 ** Wal-Set
+*** Default
 #+begin_src emacs-lisp
 (defun laluxx/wal-set ()
   (interactive)
@@ -463,8 +548,8 @@ Setup file watcher for ~/.cache/wal/colors
                               (shell-command-to-string (concat "python3 " pywal-scripts-directory "/" script)))
                             (shell-command-to-string "xmonad --restart")
                             ;; (shell-command "papirus-wal")
-                            (shell-command-to-string "oomox-gtk-gen")
-                            (laluxx/load-org-wal-colors)
+                            ;; (shell-command-to-string "oomox-gtk-gen")
+                            ;; (laluxx/load-org-wal-colors)
                             (run-at-time "1 sec" nil 'spaceline-compile)))))))  ; Delay spaceline-compile
 #+end_src
 *** Favourite
@@ -489,13 +574,44 @@ Setup file watcher for ~/.cache/wal/colors
                               (shell-command-to-string (concat "python3 " pywal-scripts-directory "/" script)))
                             (shell-command-to-string "xmonad --restart")
                             ;; (shell-command "papirus-wal")
-                            (shell-command-to-string "oomox-gtk-gen")
-                            (laluxx/load-org-wal-colors)
+                            ;; (shell-command-to-string "oomox-gtk-gen")
+                            ;; (laluxx/load-org-wal-colors)
                             (run-at-time "1 sec" nil 'spaceline-compile)))))))  ; Delay spaceline-compile
 #+end_src
-** Set-wallpaper
+*** solid
 #+begin_src emacs-lisp
-(defun set-wallpaper ()
+(defun laluxx/wal-set-solid ()
+  (interactive)
+  (let* ((default-directory "~/xos/wallpapers/static")
+         (theme-directory "~/xos/theme")
+         (pywal-scripts-directory "~/xos/pywal-scripts")
+         (solid-wallpapers-directory "~/xos/wallpapers/solid")
+         (image-files (directory-files-recursively default-directory "\\.\\(png\\|jpg\\|jpeg\\|webp\\)$")))
+    (ivy-read "Wallpapers to turn solid: "
+              image-files
+              :action (lambda (wallpaper)
+                        (when (and (not (string-empty-p wallpaper))
+                                   (file-exists-p wallpaper))
+                          (let* ((abs-wallpaper (expand-file-name wallpaper))
+                                 (base-wallpaper-name (file-name-base wallpaper))  ;; Get the filename without extension
+                                 (solid-wallpaper (concat solid-wallpapers-directory "/" base-wallpaper-name "-SOLID.png")))
+                            (if (file-exists-p solid-wallpaper)
+                                (shell-command-to-string (concat "wal -i " solid-wallpaper))
+                              (progn
+                                (shell-command-to-string (concat "wal -n -i " abs-wallpaper)) ;; Use wal -n to generate colors without setting wallpaper
+                                (shell-command-to-string (concat "wal-set-solid " base-wallpaper-name))))
+                            (with-temp-file (concat theme-directory "/.wallpaper")
+                              (insert abs-wallpaper))
+                            (shell-command-to-string "theme pywal --no-random")
+                            (dolist (script '("xmonad-dark-wal.py" "nvim-wal.py" "nvim-wal-dark.py"))
+                              (shell-command-to-string (concat "python3 " pywal-scripts-directory "/" script)))
+                            (shell-command-to-string "xmonad --restart")
+                            (run-at-time "1 sec" nil 'spaceline-compile)))))))  ; Delay spaceline-compile
+#+end_src
+
+*** Set-wallpaper
+#+begin_src emacs-lisp
+(defun laluxx/set-wallpaper ()
   (interactive)
   (let* ((default-directory "~/xos/wallpapers/static/")
          (image-files (directory-files-recursively default-directory "\\.\\(png\\|jpg\\|jpeg\\|webp\\)$")))
@@ -504,9 +620,6 @@ Setup file watcher for ~/.cache/wal/colors
               :action (lambda (wallpaper)
                         (when (file-exists-p wallpaper)
                           (start-process-shell-command "feh" nil (format "feh --bg-scale '%s'" (shell-quote-argument wallpaper))))))))
-
-
-
 #+end_src
 ** Doom-wal
 #+begin_src emacs-lisp
@@ -645,6 +758,7 @@ open-dir defined in =FUNCTIONS=
 (open-dir "f t" "Open test directory" "~/Desktop/test")
 (open-dir "f x" "Open xos directory" "~/xos")
 (open-dir "f z" "Open dotfiles zsh directory" "~/Desktop/pulls/dotfiles/.config/zsh")
+(open-dir "f c" "Open ~/.config" "~/.config")
 #+end_src
 * IVY
 ** IVY-POSFRAME
@@ -754,7 +868,13 @@ noob mode
                               ("mkv" . "mpv")
                               ("mp4" . "mpv")))
 #+end_src
-*** Run
+** Custom faces
+#+begin_src emacs-lisp
+;; (custom-set-faces
+;;   '(dired-header ((t (:family "JetBrains Mono NF ExtraBold" :height 120))))
+;;   '(dired-directory ((t (:family "JetBrains Mono NF ExtraBold" :height 120)))))
+#+end_src
+** Run
 #+begin_src emacs-lisp
 (setq async-shell-command-buffer 'rename-buffer)
 
@@ -999,6 +1119,7 @@ The following creates a global minor mode for rainbow-mode and enables it (excep
                     (delete-frame))))
 #+end_src
 ** wal-set
+*** Default
 #+begin_src emacs-lisp
 (defun emacs-run-wal-set ()
   "Create and select a frame called emacs-run-launcher which consists only of a minibuffer and has specific dimensions. Runs app-launcher-run-app on that frame, which is an emacs command that prompts you to select an app and open it in a dmenu like behaviour. Delete the frame after that command has exited"
@@ -1016,6 +1137,26 @@ The following creates a global minor mode for rainbow-mode and enables it (excep
                   (height . 11)))
                   (unwind-protect
                     (laluxx/wal-set)
+                    (delete-frame))))
+#+end_src
+*** Solid
+#+begin_src emacs-lisp
+(defun emacs-run-wal-set-solid ()
+  "Create and select a frame called emacs-run-launcher which consists only of a minibuffer and has specific dimensions. Runs app-launcher-run-app on that frame, which is an emacs command that prompts you to select an app and open it in a dmenu like behaviour. Delete the frame after that command has exited"
+  (interactive)
+  (with-selected-frame
+    (make-frame '((name . "emacs-run-wal-set-solid")
+                  (minibuffer . only)
+                  (fullscreen . 0) ; no fullscreen
+                  (undecorated . t) ; remove title bar
+                  ;;(auto-raise . t) ; focus on this frame
+                  ;;(tool-bar-lines . 0)
+                  ;;(menu-bar-lines . 0)
+                  (internal-border-width . 10)
+                  (width . 80)
+                  (height . 11)))
+                  (unwind-protect
+                    (laluxx/wal-set-solid)
                     (delete-frame))))
 #+end_src
 *** favourite
@@ -1038,6 +1179,26 @@ The following creates a global minor mode for rainbow-mode and enables it (excep
                     (laluxx/wal-set-favourite)
                     (delete-frame))))
 #+end_src
+*** Set-wallpaper
+#+begin_src emacs-lisp
+(defun emacs-run-set-wallpaper ()
+  "Create and select a frame called emacs-run-launcher which consists only of a minibuffer and has specific dimensions. Runs app-launcher-run-app on that frame, which is an emacs command that prompts you to select an app and open it in a dmenu like behaviour. Delete the frame after that command has exited"
+  (interactive)
+  (with-selected-frame
+    (make-frame '((name . "emacs-run-set-wallpaper")
+                  (minibuffer . only)
+                  (fullscreen . 0) ; no fullscreen
+                  (undecorated . t) ; remove title bar
+                  ;;(auto-raise . t) ; focus on this frame
+                  ;;(tool-bar-lines . 0)
+                  ;;(menu-bar-lines . 0)
+                  (internal-border-width . 10)
+                  (width . 80)
+                  (height . 11)))
+                  (unwind-protect
+                    (laluxx/set-wallpaper)
+                    (delete-frame))))
+#+end_src
 ** M-X
 #+begin_src emacs-lisp
 (defun emacs-run-M-x ()
@@ -1056,26 +1217,36 @@ The following creates a global minor mode for rainbow-mode and enables it (excep
       (delete-frame))))
 #+end_src
 ** Info
-Open info inside xmonad
-- remember last manual manual
+Open info inside xmonad  DONE:
+- remember last manual manual [x]
+- Toggle [x]
 #+begin_src emacs-lisp
+(defvar emacs-run-info-frame nil)
+
 (defun emacs-run-info ()
   "Create a new frame and run 'info' in it."
   (interactive)
-  (let* ((new-frame (make-frame '((name . "emacs-run-info")
-                                  (minibuffer . t)
-                                  (fullscreen . 0)
-                                  (undecorated . t)
-                                  (internal-border-width . 10)
-                                  (width . 80)
-                                  (height . 11)))))
-    (select-frame-set-input-focus new-frame)
-    (with-selected-window (frame-selected-window new-frame)
-      (switch-to-buffer (save-window-excursion
-                          (info)
-                          (current-buffer)))
-      (delete-other-windows)
-      (define-key Info-mode-map (kbd "<escape>") 'delete-frame))))
+  (if (and emacs-run-info-frame (frame-live-p emacs-run-info-frame))
+      ;; If the frame exists, delete it.
+      (progn
+        (delete-frame emacs-run-info-frame)
+        (setq emacs-run-info-frame nil))
+    ;; Else, create a new frame.
+    (let* ((new-frame (make-frame '((name . "emacs-run-info")
+                                    (minibuffer . t)
+                                    (fullscreen . 0)
+                                    (undecorated . t)
+                                    (internal-border-width . 10)
+                                    (width . 80)
+                                    (height . 11)))))
+      (setq emacs-run-info-frame new-frame)
+      (select-frame-set-input-focus new-frame)
+      (with-selected-window (frame-selected-window new-frame)
+        (switch-to-buffer (save-window-excursion
+                            (info)
+                            (current-buffer)))
+        (delete-other-windows)
+        (define-key Info-mode-map (kbd "<escape>") 'delete-frame)))))
 
 
 
@@ -1243,3 +1414,4 @@ or one of its subdirectories && if that file is a org file
 (map! :leader
       :desc "Insert auto_tangle tag" "i a" #'laluxx/insert-auto-tangle-tag)
 #+end_src
+

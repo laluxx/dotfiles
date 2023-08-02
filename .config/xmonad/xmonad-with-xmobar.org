@@ -222,8 +222,8 @@ myStartupHook = do
 #+BEGIN_SRC haskell
   spawnOnce "xrandr --output \"$(xrandr | awk '/ connected/ {print $1; exit}')\" --mode 1920x1080 --rate 144"
   spawnOnce "xset r rate 160 60"
-  spawnOnce "python3 /home/l/xos/typetune/typetune.py"
-  spawnOnce "python3 /home/l/xos/xmv/main.py"
+  spawnOnce "python3 /home/l/xos/gtk/anyline/web/main.py"
+  -- spawnOnce "python3 /home/l/xos/xmv/main.py"
 
   spawnOnce "lxsession"
   -- spawnonce "/usr/lib/polkit-gnome/polkit-gnome-authentication-agent-1"
@@ -240,6 +240,11 @@ myStartupHook = do
   -- spawn "discord" -- discord
 
 #+END_SRC
+
+#+RESULTS:
+: <interactive>:16:3-7: error:
+:     • Variable not in scope: spawn :: String -> t
+:     • Perhaps you meant ‘span’ (imported from Prelude)
 
 We killed any running conky and trayer processes earlier in the autostart, so now we sleep for 2 seconds and then restart conky and trayer.
 #+BEGIN_SRC haskell
@@ -653,6 +658,7 @@ myManageHook = composeAll
   , className =? "splash"          --> doFloat
   , className =? "toolbar"         --> doFloat
   , className =? "Yad"             --> doCenterFloat
+  , className =? "missioncenter"   --> doCenterFloat
   , className =? "Lutris" --> doRectFloat (W.RationalRect (0.2020833333) (0.2101851852) (0.5114583333) (0.6212962963))
 
   , title =? "Oracle VM VirtualBox Manager"   --> doFloat
@@ -661,6 +667,7 @@ myManageHook = composeAll
   , title =? "emacs-run-launcher" --> doRectFloat (W.RationalRect ((-15)/1920) (905/1080) (2066/1920) (185/1080)) -- BOTTOM
   , title =? "emacs-run-M-x" --> doRectFloat (W.RationalRect ((-15)/1920) (905/1080) (2066/1920) (185/1080)) -- BOTTOM
   , title =? "emacs-run-wal-set" --> doRectFloat (W.RationalRect ((-15)/1920) (905/1080) (2066/1920) (185/1080)) -- BOTTOM
+  , title =? "emacs-run-wal-set-solid" --> doRectFloat (W.RationalRect ((-15)/1920) (905/1080) (2066/1920) (185/1080)) -- BOTTOM
   , title =? "emacs-run-wal-set-favourite" --> doRectFloat (W.RationalRect ((-15)/1920) (905/1080) (2066/1920) (185/1080)) -- BOTTOM
   , title =? "emacs-run-dired" --> doRectFloat (W.RationalRect ((-15)/1920) (905/1080) (2066/1920) (185/1080)) -- BOTTOM
   -- , title =? "emacs-run-info" --> doRectFloat (W.RationalRect ((-15)/1920) (905/1080) (2066/1920) (185/1080)) -- BOTTOM
@@ -768,7 +775,9 @@ myKeys c =
   , ("M-C-<Backspace>", addName "Run clone-client-frame" $ sequence_ [spawn (mySoundPlayer ++ dmenuSound), spawn "emacsclient -a '' -F '((visibility . nil))' -e '(emacs-run-clone-client-frame)'"])
   , ("M-S-<Backspace>", addName "Run clone-client-frame-bottom" $ sequence_ [spawn (mySoundPlayer ++ dmenuSound), spawn "emacsclient -a '' -F '((visibility . nil))' -e '(emacs-run-clone-client-frame-bottom)'"])
   , ("M-i", addName "Run info" $ sequence_ [spawn (mySoundPlayer ++ dmenuSound), spawn "emacsclient -a '' -F '((visibility . nil))' -e '(emacs-run-info)'"])
-  , ("M-p", addName "Run dmenu" $ sequence_ [spawn (mySoundPlayer ++ dmenuSound), spawn "emacsclient -a '' -F '((visibility . nil))' -e '(emacs-run-dmenu)'"])
+  -- , ("M-p", addName "Run dmenu" $ sequence_ [spawn (mySoundPlayer ++ dmenuSound), spawn "emacsclient -a '' -F '((visibility . nil))' -e '(emacs-run-dmenu)'"])
+  , ("M-p", addName "Run dmenu" $ sequence_ [spawn (mySoundPlayer ++ dmenuSound), spawn "dmrun"])
+
 
 
 
@@ -936,8 +945,9 @@ myKeys c =
   ^++^ subKeys "wal"
   [
     ("M-w s", addName "Save Wallpaper" $ spawn ("walfav"))
-  , ("M-w w", addName "Run wal-set" $ sequence_ [spawn (mySoundPlayer ++ dmenuSound), spawn "emacsclient -a '' -F '((visibility . nil))' -e '(emacs-run-wal-set)'"])
-  , ("M-w f", addName "Run wal-set" $ sequence_ [spawn (mySoundPlayer ++ dmenuSound), spawn "emacsclient -a '' -F '((visibility . nil))' -e '(emacs-run-wal-set-favourite)'"])
+    , ("M-w w", addName "Run wal-set" $ spawn "emacsclient -a '' -F '((visibility . nil))' -e '(emacs-run-wal-set)'")
+    , ("M-w f", addName "Run wal-set-favorite" $ spawn "emacsclient -a '' -F '((visibility . nil))' -e '(emacs-run-wal-set-favourite)'")
+    , ("M-w d", addName "Run wal-set-solid" $ spawn "emacsclient -a '' -F '((visibility . nil))' -e '(emacs-run-wal-set-solid)'")
   ]
 
   -- Multimedia Keys
