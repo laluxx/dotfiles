@@ -90,4 +90,7 @@
 
 (package! org-auto-tangle)
 
+(package! rotate)
+(package! edwina)
+
 (package! app-launcher :recipe (:host github :repo "SebastienWae/app-launcher"))

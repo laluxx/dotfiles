@@ -667,11 +667,13 @@ myManageHook = composeAll
   , title =? "emacs-run-launcher" --> doRectFloat (W.RationalRect ((-15)/1920) (905/1080) (2066/1920) (185/1080)) -- BOTTOM
   , title =? "emacs-run-M-x" --> doRectFloat (W.RationalRect ((-15)/1920) (905/1080) (2066/1920) (185/1080)) -- BOTTOM
   , title =? "emacs-run-wal-set" --> doRectFloat (W.RationalRect ((-15)/1920) (905/1080) (2066/1920) (185/1080)) -- BOTTOM
+  , title =? "emacs-run-set-wallpaper" --> doRectFloat (W.RationalRect ((-15)/1920) (905/1080) (2066/1920) (185/1080)) -- BOTTOM
   , title =? "emacs-run-wal-set-solid" --> doRectFloat (W.RationalRect ((-15)/1920) (905/1080) (2066/1920) (185/1080)) -- BOTTOM
   , title =? "emacs-run-wal-set-favourite" --> doRectFloat (W.RationalRect ((-15)/1920) (905/1080) (2066/1920) (185/1080)) -- BOTTOM
-  , title =? "emacs-run-dired" --> doRectFloat (W.RationalRect ((-15)/1920) (905/1080) (2066/1920) (185/1080)) -- BOTTOM
+  -- , title =? "emacs-run-dired" --> doRectFloat (W.RationalRect ((-15)/1920) (905/1080) (2066/1920) (185/1080)) -- BOTTOM
   -- , title =? "emacs-run-info" --> doRectFloat (W.RationalRect ((-15)/1920) (905/1080) (2066/1920) (185/1080)) -- BOTTOM
   , title =? "emacs-run-info" --> doRectFloat (W.RationalRect ((-8)/1920) (741/1080) (1930/1920) (365/1080)) -- BOTTOM-BIG
+  , title =? "emacs-run-dired" --> doRectFloat (W.RationalRect ((-8)/1920) (741/1080) (1930/1920) (365/1080)) -- BOTTOM-BIG
   , title =? "emacs-run-dmenu" --> doRectFloat (W.RationalRect ((-8)/1920) (741/1080) (1930/1920) (365/1080)) -- BOTTOM-BIG
 
   , title =? "emacs-run-which-key" --> doRectFloat (W.RationalRect ((-15)/1920) (905/1080) (2066/1920) (185/1080)) -- BOTTOM
@@ -871,11 +873,11 @@ myKeys c =
   , ("M-S-t", addName "Sink all floated windows" $ sinkAll)]
 
   -- Increase/decrease spacing (gaps)
-  ^++^ subKeys "Window spacing (gaps)"
-  [ ("C-M1-j", addName "Decrease window spacing" $ decWindowSpacing 4)
-  , ("C-M1-k", addName "Increase window spacing" $ incWindowSpacing 4)
-  , ("C-M1-h", addName "Decrease screen spacing" $ decScreenSpacing 4)
-  , ("C-M1-l", addName "Increase screen spacing" $ incScreenSpacing 4)]
+  -- ^++^ subKeys "Window spacing (gaps)"
+  -- [ ("C-M1-j", addName "Decrease window spacing" $ decWindowSpacing 4)
+  -- , ("C-M1-k", addName "Increase window spacing" $ incWindowSpacing 4)
+  -- , ("C-M1-h", addName "Decrease screen spacing" $ decScreenSpacing 4)
+  -- , ("C-M1-l", addName "Increase screen spacing" $ incScreenSpacing 4)]
 
   -- Increase/decrease windows in the master pane or the stack
   ^++^ subKeys "Increase/decrease windows in master pane or the stack"
@@ -946,6 +948,7 @@ myKeys c =
   [
     ("M-w s", addName "Save Wallpaper" $ spawn ("walfav"))
     , ("M-w w", addName "Run wal-set" $ spawn "emacsclient -a '' -F '((visibility . nil))' -e '(emacs-run-wal-set)'")
+    , ("M-w a", addName "Run set-wallpaper" $ spawn "emacsclient -a '' -F '((visibility . nil))' -e '(emacs-run-set-wallpaper)'")
     , ("M-w f", addName "Run wal-set-favorite" $ spawn "emacsclient -a '' -F '((visibility . nil))' -e '(emacs-run-wal-set-favourite)'")
     , ("M-w d", addName "Run wal-set-solid" $ spawn "emacsclient -a '' -F '((visibility . nil))' -e '(emacs-run-wal-set-solid)'")
   ]

@@ -94,24 +94,70 @@
 (set-frame-parameter (selected-frame) 'alpha '(95 100))
 (add-to-list 'default-frame-alist '(alpha 95 100))
 
-;; (setq doom-font (font-spec :family "JetBrains Mono" :size 15)
-;;       doom-variable-pitch-font (font-spec :family "Ubuntu" :size 15)
-;;       doom-big-font (font-spec :family "JetBrains Mono" :size 24))
-;; (after! doom-themes
-;;   (setq doom-themes-enable-bold t
-;;         doom-themes-enable-italic t))
-;; (custom-set-faces!
-;;   '(font-lock-comment-face :slant italic)
-;;   '(font-lock-keyword-face :slant italic))
+
+;; (add-to-list 'default-frame-alist '(alpha-background . 90))
+
+(setq doom-font (font-spec :family "JetBrains Mono NF ExtraBold" :size 15) ;; :height 1.1)
+      doom-variable-pitch-font (font-spec :family "Ubuntu" :size 15)
+      doom-big-font (font-spec :family "JetBrains Mono" :size 24))
+(after! doom-themes
+  (setq doom-themes-enable-bold t
+        doom-themes-enable-italic t))
+(custom-set-faces!
+  '(font-lock-comment-face :slant italic)
+  '(font-lock-keyword-face :slant italic))
+
+;; (defun use-ocr-b-bold ()
+;;   "Switch the current buffer to the OCR B-Bold font."
+;;   (face-remap-add-relative 'default '(:family "JetBrains Mono NF ExtraBold" :height 130)))
+
+;; (add-hook 'dired-mode-hook 'use-ocr-b-bold)
+
+
+(defun use-jetbrains-mono-extrabold ()
+  "Switch the current buffer to JetBrains Mono ExtraBold font."
+  (interactive)
+  (message "Running use-jetbrains-mono-extrabold...")
+  (face-remap-add-relative 'default '(:family "JetBrains Mono ExtraBold" :height 130)))
+
+(with-eval-after-load 'dired
+  (add-hook 'dired-mode-hook 'use-jetbrains-mono-extrabold))
+
+(defun set-minibuffer-font ()
+  "Set the font for the minibuffer."
+  (face-remap-add-relative 'default '(:family "JetBrains Mono NF ExtraBold" :height 100)))
+
+(add-hook 'minibuffer-setup-hook 'set-minibuffer-font)
+
+(custom-set-faces
+  '(minibuffer-prompt ((t (:family "JetBrains Mono NF ExtraBold" :height 120)))))
 
 (defun my-set-org-mode-font ()
   "Set the font to JetBrains Mono NF ExtraBold when in org mode."
   (interactive)
   (when (derived-mode-p 'org-mode)
-    (setq buffer-face-mode-face '(:family "JetBrains Mono NF ExtraBold" :height 1.1))
+    (setq buffer-face-mode-face '(:family "JetBrains Mono NF ExtraBold" :height 1.1)) ;;  NF ExtraBold
     (buffer-face-mode)))
 
 (add-hook 'org-mode-hook 'my-set-org-mode-font)
+
+(defun my-set-markdown-mode-font ()
+  "Set the font to JetBrains Mono NF ExtraBold when in markdown mode."
+  (interactive)
+  (when (derived-mode-p 'markdown-mode)
+    (setq buffer-face-mode-face '(:family "JetBrains Mono NF ExtraBold" :height 1.1))
+    (buffer-face-mode)))
+
+(add-hook 'markdown-mode-hook 'my-set-markdown-mode-font)
+
+(defun my-set-python-mode-font ()
+  "Set the font to Space Mono when in python mode."
+  (interactive)
+  (when (derived-mode-p 'python-mode)
+    (setq buffer-face-mode-face '(:family "jetbrains mono nl extrabold" :height 1.3)) ;; Ubuntu Mono
+    (buffer-face-mode)))
+
+(add-hook 'python-mode-hook 'my-set-python-mode-font)
 
 (require 'dashboard)
 (setq dashboard-startup-banner 'logo)
@@ -169,6 +215,149 @@
   (enable-theme 'ewal-doom-one))
 
 (map! :leader
+      (:prefix ("t" . "Toggle")
+       :desc "Toggle truncated lines" "t" #'visual-line-mode))
+
+
+
+(defun my/org-beginning-of-src-block ()
+  "Move point to the beginning of the current source block."
+  (interactive)
+  (when (org-in-src-block-p)
+    (search-backward "#+begin_src")
+    (forward-line)
+    (beginning-of-line)))
+
+(defun my/org-end-of-src-block ()
+  "Move point to the end of the current source block."
+  (interactive)
+  (when (org-in-src-block-p)
+    (search-forward "#+end_src")
+    (backward-char 11)))
+
+(defun my/org-src-keybindings ()
+  "Setup keybindings for org-src-mode."
+  (when (org-in-src-block-p)
+    (let ((map (make-sparse-keymap)))
+      (define-key map (kbd "M-k") 'my/org-beginning-of-src-block)
+      (define-key map (kbd "M-j") 'my/org-end-of-src-block)
+      (set-transient-map map t))))
+
+(add-hook 'org-mode-hook 'my/org-src-keybindings)
+
+(with-eval-after-load 'evil-maps
+  (define-key evil-visual-state-map (kbd "M-k") 'my/org-beginning-of-src-block)
+  (define-key evil-visual-state-map (kbd "M-j") 'my/org-end-of-src-block))
+
+;; MAIN
+(defun my/org-shifttab-advice (orig-fun &rest args)
+  "Always use global cycling with `org-shifttab'."
+  (let ((context (org-element-lineage
+                  (org-element-context)
+                  '(headline inlinetask) t)))
+    (if (or (not context)
+            (eq 'headline (org-element-type context)))
+        (apply 'org-global-cycle args)
+      (apply orig-fun args))))
+
+(advice-add 'org-shifttab :around 'my/org-shifttab-advice)
+
+
+(defun my/org-shifttab-or-beginning-of-line ()
+  "Call org-shifttab, then move to the beginning of the line."
+  (interactive)
+  (org-shifttab)
+  (run-at-time "0.3 sec" nil #'beginning-of-line))
+
+(with-eval-after-load 'org
+  (define-key org-mode-map (kbd "<backtab>") #'my/org-shifttab-or-beginning-of-line))
+
+(defun my-org-cycle-or-move-right ()
+  (interactive)
+  (if (and (bolp) (org-at-heading-p))
+      (org-cycle)
+    (evil-forward-char 1)))
+
+(defun my-org-close-or-move-left ()
+  (interactive)
+  (if (and (bolp) (org-at-heading-p))
+      (outline-hide-subtree)
+    (evil-backward-char 1)))
+
+(add-hook 'org-mode-hook
+          (lambda ()
+            (evil-define-key 'normal org-mode-map
+              (kbd "l") 'my-org-cycle-or-move-right)
+            (evil-define-key 'normal org-mode-map
+              (kbd "h") 'my-org-close-or-move-left)))
+
+;; OVERLAY DONE
+(defvar org-headline-overlay nil)
+(defvar org-last-highlighted-line nil)
+
+(defun org-highlight-headline ()
+  (when (org-at-heading-p)
+    (if org-headline-overlay
+        (move-overlay org-headline-overlay (line-beginning-position) (line-end-position))
+      (setq org-headline-overlay (make-overlay (line-beginning-position) (line-end-position))))
+    (overlay-put org-headline-overlay 'face 'highlight)
+    (setq org-last-highlighted-line (line-number-at-pos))))
+
+(defun org-unhighlight-headline ()
+  (when org-headline-overlay
+    (delete-overlay org-headline-overlay)))
+
+(defun org-next-headline-or-wrap ()
+  (interactive)
+  (org-unhighlight-headline)
+  (let ((initial-position (point)))
+    (org-next-visible-heading 1)
+    (when (= (point) initial-position)
+      (goto-char (point-min))))
+  (org-highlight-headline))
+
+(defun org-previous-headline-or-wrap ()
+  (interactive)
+  (org-unhighlight-headline)
+  (let ((initial-position (point)))
+    (unless (and (eobp) (looking-at-p "^$"))
+      (org-previous-visible-heading 1))
+    (when (= (point) initial-position)
+      (goto-char (point-max))
+      (org-previous-visible-heading 1)))
+  (org-highlight-headline))
+
+(defun org-go-to-last-highlighted-line ()
+  (interactive)
+  (when org-last-highlighted-line
+    (goto-line org-last-highlighted-line)
+    (org-highlight-headline)))
+
+(add-hook 'org-mode-hook
+          (lambda ()
+            (define-key org-mode-map (kbd "<S-mouse-4>") 'org-previous-headline-or-wrap)
+            (define-key org-mode-map (kbd "<S-mouse-5>") 'org-next-headline-or-wrap)
+            (define-key org-mode-map (kbd "<S-mouse-2>") 'org-go-to-last-highlighted-line)
+            (define-key org-mode-map (kbd "<S-mouse-8>") 'org-cycle)
+            (define-key org-mode-map (kbd "<M-mouse-4>") 'previous-line)
+            (define-key org-mode-map (kbd "<M-mouse-5>") 'next-line)
+            (define-key org-mode-map (kbd "M-C-j") 'org-next-headline-or-wrap)
+            (define-key org-mode-map (kbd "M-C-k") 'org-previous-headline-or-wrap)
+            (define-key org-mode-map (kbd "<S-mouse-9>") (lambda () (interactive) (org-cycle t)))))
+
+(map! :leader
+      :desc "Insert header tags"
+      "i o" #'org-insert-header-tags)
+
+(map! :leader
+      :desc "Jump to tangled file"
+      "o j" #'org-jump-to-tangled)
+
+(map! :leader
+      :desc "Split and jump to tangled file with zoom"
+      "o J" #'org-jump-to-tangled-split-and-zoom)
+
+(map! :leader
       :desc "Eshell"                 "e s" #'eshell
       :desc "Eshell popup toggle"    "t e" #'+eshell/toggle
       :desc "Counsel eshell history" "e h" #'counsel-esh-history
@@ -185,18 +374,6 @@
               (text-scale-set -1)  ;; Set the desired zoom level here
               (execute-kbd-macro (kbd "SPC w v"))
               (execute-kbd-macro (kbd "SPC d j"))))
-
-(map! :leader
-      :desc "Insert header tags"
-      "i o" #'org-insert-header-tags)
-
-(map! :leader
-      :desc "Jump to tangled file"
-      "o j" #'org-jump-to-tangled)
-
-(map! :leader
-      :desc "Split and jump to tangled file with zoom"
-      "o J" #'org-jump-to-tangled-split-and-zoom)
 
 (global-set-key (kbd "M-p") 'dmenu)
 
@@ -259,11 +436,63 @@
                               (shell-command-to-string (concat "python3 " pywal-scripts-directory "/" script)))
                             (shell-command-to-string "xmonad --restart")
                             ;; (shell-command "papirus-wal")
-                            (shell-command-to-string "oomox-gtk-gen")
-                            (laluxx/load-org-wal-colors)
+                            ;; (shell-command-to-string "oomox-gtk-gen")
+                            ;; (laluxx/load-org-wal-colors)
                             (run-at-time "1 sec" nil 'spaceline-compile)))))))  ; Delay spaceline-compile
 
-(defun set-wallpaper ()
+(defun laluxx/wal-set-favourite ()
+  (interactive)
+  (let* ((default-directory "~/xos/wallpapers/favourites")
+         (theme-directory "~/xos/theme")
+         (pywal-scripts-directory "~/xos/pywal-scripts")
+         (image-files (directory-files-recursively default-directory "\\.\\(png\\|jpg\\|jpeg\\|webp\\)$")))
+    (ivy-read "Favourite wallpapers: "
+              image-files
+              :action (lambda (wallpaper)
+                        (when (and (not (string-empty-p wallpaper))
+                                   (file-exists-p wallpaper))
+                          (let ((abs-wallpaper (expand-file-name wallpaper)))
+                            (shell-command-to-string (concat "wal -i " abs-wallpaper))
+                            (with-temp-file (concat theme-directory "/.wallpaper")
+                              (insert abs-wallpaper))
+                            (shell-command-to-string "theme pywal --no-random")
+                            (dolist (script '("xmonad-dark-wal.py" "nvim-wal.py" "nvim-wal-dark.py"))
+                              (shell-command-to-string (concat "python3 " pywal-scripts-directory "/" script)))
+                            (shell-command-to-string "xmonad --restart")
+                            ;; (shell-command "papirus-wal")
+                            ;; (shell-command-to-string "oomox-gtk-gen")
+                            ;; (laluxx/load-org-wal-colors)
+                            (run-at-time "1 sec" nil 'spaceline-compile)))))))  ; Delay spaceline-compile
+
+(defun laluxx/wal-set-solid ()
+  (interactive)
+  (let* ((default-directory "~/xos/wallpapers/static")
+         (theme-directory "~/xos/theme")
+         (pywal-scripts-directory "~/xos/pywal-scripts")
+         (solid-wallpapers-directory "~/xos/wallpapers/solid")
+         (image-files (directory-files-recursively default-directory "\\.\\(png\\|jpg\\|jpeg\\|webp\\)$")))
+    (ivy-read "Wallpapers to turn solid: "
+              image-files
+              :action (lambda (wallpaper)
+                        (when (and (not (string-empty-p wallpaper))
+                                   (file-exists-p wallpaper))
+                          (let* ((abs-wallpaper (expand-file-name wallpaper))
+                                 (base-wallpaper-name (file-name-base wallpaper))  ;; Get the filename without extension
+                                 (solid-wallpaper (concat solid-wallpapers-directory "/" base-wallpaper-name "-SOLID.png")))
+                            (if (file-exists-p solid-wallpaper)
+                                (shell-command-to-string (concat "wal -i " solid-wallpaper))
+                              (progn
+                                (shell-command-to-string (concat "wal -n -i " abs-wallpaper)) ;; Use wal -n to generate colors without setting wallpaper
+                                (shell-command-to-string (concat "wal-set-solid " base-wallpaper-name))))
+                            (with-temp-file (concat theme-directory "/.wallpaper")
+                              (insert abs-wallpaper))
+                            (shell-command-to-string "theme pywal --no-random")
+                            (dolist (script '("xmonad-dark-wal.py" "nvim-wal.py" "nvim-wal-dark.py"))
+                              (shell-command-to-string (concat "python3 " pywal-scripts-directory "/" script)))
+                            (shell-command-to-string "xmonad --restart")
+                            (run-at-time "1 sec" nil 'spaceline-compile)))))))  ; Delay spaceline-compile
+
+(defun laluxx/set-wallpaper ()
   (interactive)
   (let* ((default-directory "~/xos/wallpapers/static/")
          (image-files (directory-files-recursively default-directory "\\.\\(png\\|jpg\\|jpeg\\|webp\\)$")))
@@ -390,6 +619,7 @@ If not specified, return nil."
 (open-dir "f t" "Open test directory" "~/Desktop/test")
 (open-dir "f x" "Open xos directory" "~/xos")
 (open-dir "f z" "Open dotfiles zsh directory" "~/Desktop/pulls/dotfiles/.config/zsh")
+(open-dir "f c" "Open ~/.config" "~/.config")
 
 (setq ivy-posframe-display-functions-alist
       '((swiper                     . ivy-posframe-display-at-point)
@@ -433,6 +663,7 @@ If not specified, return nil."
         :desc "Dired view file"           "d v" #'dired-view-file)))
 
 (evil-define-key 'normal dired-mode-map
+  (kbd "<escape>") 'delete-frame
   (kbd "M-RET") 'dired-display-file
   (kbd "h") 'dired-up-directory
   (kbd "l") 'dired-open-file ; use dired-find-file instead of dired-open.
@@ -440,16 +671,17 @@ If not specified, return nil."
   (kbd "t") 'dired-toggle-marks
   (kbd "u") 'dired-unmark
   (kbd "C") 'dired-do-copy
-  (kbd "D") 'dired-do-delete
   (kbd "J") 'dired-goto-file
   (kbd "M") 'dired-do-chmod
   (kbd "O") 'dired-do-chown
   (kbd "P") 'dired-do-print
   (kbd "R") 'dired-do-rename
+  (kbd "r") 'laluxx/dired-run-or-find
   (kbd "T") 'dired-do-touch
   (kbd "Y") 'dired-copy-filenamecopy-filename-as-kill ; copies filename to kill ring.
   (kbd "Z") 'dired-do-compress
-  (kbd "+") 'dired-create-directory
+  ;; (kbd "D") 'dired-do-delete
+  (kbd "D") 'dired-create-directory
   (kbd "-") 'dired-do-kill-lines
   (kbd "% l") 'dired-downcase
   (kbd "% m") 'dired-mark-files-regexp
@@ -468,6 +700,27 @@ If not specified, return nil."
                               ("png" . "sxiv")
                               ("mkv" . "mpv")
                               ("mp4" . "mpv")))
+
+;; (custom-set-faces
+;;   '(dired-header ((t (:family "JetBrains Mono NF ExtraBold" :height 120))))
+;;   '(dired-directory ((t (:family "JetBrains Mono NF ExtraBold" :height 120)))))
+
+(setq async-shell-command-buffer 'rename-buffer)
+
+(defun laluxx/dired-run-or-find ()
+  "In Dired, run a script if it's a script, enter directory if it's a directory, or open the file otherwise."
+  (interactive)
+  (let ((file (dired-get-file-for-visit)))
+    (cond
+     ((file-directory-p file) (dired-find-file)) ; If it's a directory, recurse into it
+     ((and (file-exists-p file) (file-executable-p file)) ; If it's an executable file, run it and also open it
+      (find-file file)
+      (async-shell-command (concat "./" file " > /dev/null 2>&1 &")))
+     ((and (file-exists-p file) (string-match-p "\\.py\\'" file)) ; If it's a Python script, run it and also open it
+      (find-file file)
+      (async-shell-command (concat "python " file " > /dev/null 2>&1 &")))
+     ((file-exists-p file) (find-file file)) ; If it's another type of file, just open it
+     (t (message "No file on this line")))))
 
 (evil-define-key 'normal peep-dired-mode-map
   (kbd "j") 'peep-dired-next-file
@@ -515,23 +768,23 @@ If not specified, return nil."
   (spaceline-spacemacs-theme))
 
 ;; FIXME
-;; (defvar my-modeline-state 'doom)
+(defvar my-modeline-state 'doom)
 
-;; (defun laluxx/toggle-modeline ()
-;;   "Toggle between doom-modeline, spaceline, and no modeline."
-;;   (interactive)
-;;   (cond
-;;    ((eq my-modeline-state 'doom)
-;;     (doom-modeline-mode -1)
-;;     (spaceline-spacemacs-theme)
-;;     (setq my-modeline-state 'spaceline))
-;;    ((eq my-modeline-state 'spaceline)
-;;     (hide-mode-line-mode 1)
-;;     (setq my-modeline-state 'none))
-;;    ((eq my-modeline-state 'none)
-;;     (hide-mode-line-mode -1)
-;;     (doom-modeline-mode 1)
-;;     (setq my-modeline-state 'doom))))
+(defun laluxx/toggle-modeline ()
+  "Toggle between doom-modeline, spaceline, and no modeline."
+  (interactive)
+  (cond
+   ((eq my-modeline-state 'doom)
+    (doom-modeline-mode -1)
+    (spaceline-spacemacs-theme)
+    (setq my-modeline-state 'spaceline))
+   ((eq my-modeline-state 'spaceline)
+    (hide-mode-line-mode 1)
+    (setq my-modeline-state 'none))
+   ((eq my-modeline-state 'none)
+    (hide-mode-line-mode -1)
+    (doom-modeline-mode 1)
+    (setq my-modeline-state 'doom))))
 
 1(use-package treemacs
   :ensure t
@@ -674,6 +927,210 @@ If not specified, return nil."
                     (app-launcher-run-app)
                     (delete-frame))))
 
+(defun emacs-run-wal-set ()
+  "Create and select a frame called emacs-run-launcher which consists only of a minibuffer and has specific dimensions. Runs app-launcher-run-app on that frame, which is an emacs command that prompts you to select an app and open it in a dmenu like behaviour. Delete the frame after that command has exited"
+  (interactive)
+  (with-selected-frame
+    (make-frame '((name . "emacs-run-wal-set")
+                  (minibuffer . only)
+                  (fullscreen . 0) ; no fullscreen
+                  (undecorated . t) ; remove title bar
+                  ;;(auto-raise . t) ; focus on this frame
+                  ;;(tool-bar-lines . 0)
+                  ;;(menu-bar-lines . 0)
+                  (internal-border-width . 10)
+                  (width . 80)
+                  (height . 11)))
+                  (unwind-protect
+                    (laluxx/wal-set)
+                    (delete-frame))))
+
+(defun emacs-run-wal-set-solid ()
+  "Create and select a frame called emacs-run-launcher which consists only of a minibuffer and has specific dimensions. Runs app-launcher-run-app on that frame, which is an emacs command that prompts you to select an app and open it in a dmenu like behaviour. Delete the frame after that command has exited"
+  (interactive)
+  (with-selected-frame
+    (make-frame '((name . "emacs-run-wal-set-solid")
+                  (minibuffer . only)
+                  (fullscreen . 0) ; no fullscreen
+                  (undecorated . t) ; remove title bar
+                  ;;(auto-raise . t) ; focus on this frame
+                  ;;(tool-bar-lines . 0)
+                  ;;(menu-bar-lines . 0)
+                  (internal-border-width . 10)
+                  (width . 80)
+                  (height . 11)))
+                  (unwind-protect
+                    (laluxx/wal-set-solid)
+                    (delete-frame))))
+
+(defun emacs-run-wal-set-favourite ()
+  "Create and select a frame called emacs-run-launcher which consists only of a minibuffer and has specific dimensions. Runs app-launcher-run-app on that frame, which is an emacs command that prompts you to select an app and open it in a dmenu like behaviour. Delete the frame after that command has exited"
+  (interactive)
+  (with-selected-frame
+    (make-frame '((name . "emacs-run-wal-set-favourite")
+                  (minibuffer . only)
+                  (fullscreen . 0) ; no fullscreen
+                  (undecorated . t) ; remove title bar
+                  ;;(auto-raise . t) ; focus on this frame
+                  ;;(tool-bar-lines . 0)
+                  ;;(menu-bar-lines . 0)
+                  (internal-border-width . 10)
+                  (width . 80)
+                  (height . 11)))
+                  (unwind-protect
+                    (laluxx/wal-set-favourite)
+                    (delete-frame))))
+
+(defun emacs-run-set-wallpaper ()
+  "Create and select a frame called emacs-run-launcher which consists only of a minibuffer and has specific dimensions. Runs app-launcher-run-app on that frame, which is an emacs command that prompts you to select an app and open it in a dmenu like behaviour. Delete the frame after that command has exited"
+  (interactive)
+  (with-selected-frame
+    (make-frame '((name . "emacs-run-set-wallpaper")
+                  (minibuffer . only)
+                  (fullscreen . 0) ; no fullscreen
+                  (undecorated . t) ; remove title bar
+                  ;;(auto-raise . t) ; focus on this frame
+                  ;;(tool-bar-lines . 0)
+                  ;;(menu-bar-lines . 0)
+                  (internal-border-width . 10)
+                  (width . 80)
+                  (height . 11)))
+                  (unwind-protect
+                    (laluxx/set-wallpaper)
+                    (delete-frame))))
+
+(defun emacs-run-M-x ()
+  "Create a new frame and prompt for an M-x command in it."
+  (interactive)
+  (with-selected-frame
+      (make-frame '((name . "emacs-run-M-x")
+                    (minibuffer . only)
+                    (fullscreen . 0)
+                    (undecorated . t)
+                    (internal-border-width . 10)
+                    (width . 80)
+                    (height . 11)))
+    (unwind-protect
+        (call-interactively 'execute-extended-command)
+      (delete-frame))))
+
+(defvar emacs-run-info-frame nil)
+
+(defun emacs-run-info ()
+  "Create a new frame and run 'info' in it."
+  (interactive)
+  (if (and emacs-run-info-frame (frame-live-p emacs-run-info-frame))
+      ;; If the frame exists, delete it.
+      (progn
+        (delete-frame emacs-run-info-frame)
+        (setq emacs-run-info-frame nil))
+    ;; Else, create a new frame.
+    (let* ((new-frame (make-frame '((name . "emacs-run-info")
+                                    (minibuffer . t)
+                                    (fullscreen . 0)
+                                    (undecorated . t)
+                                    (internal-border-width . 10)
+                                    (width . 80)
+                                    (height . 11)))))
+      (setq emacs-run-info-frame new-frame)
+      (select-frame-set-input-focus new-frame)
+      (with-selected-window (frame-selected-window new-frame)
+        (switch-to-buffer (save-window-excursion
+                            (info)
+                            (current-buffer)))
+        (delete-other-windows)
+        (define-key Info-mode-map (kbd "<escape>") 'delete-frame)))))
+
+;; (defun emacs-run-which-key ()
+;;   "Create a new frame and prompt for a which-key command in it."
+;;   (interactive)
+;;   (let ((new-frame (make-frame '((name . "emacs-run-which-key")
+;;                                  (minibuffer . only)
+;;                                  (fullscreen . 0)
+;;                                  (undecorated . t)
+;;                                  (internal-border-width . 10)
+;;                                  (width . 80)
+;;                                  (height . 11)))))
+;;     (with-selected-frame new-frame
+;;       (which-key-mode 1)
+;;       (call-interactively 'which-key-show-top-level))))
+
+(defun hide-mode-line-in-dired-frame (frame)
+  "Hide the mode line in the 'emacs-run-dired' frame."
+  (when (string-equal (frame-parameter frame 'name) "emacs-run-dired")
+    (with-selected-frame frame
+      (setq-default mode-line-format nil))))
+
+(add-hook 'after-make-frame-functions 'hide-mode-line-in-dired-frame)
+
+(defun emacs-run-dired ()
+  "Create a new frame and open dired in it."
+  (interactive)
+  (let* ((original-frame (selected-frame))
+         (new-frame (make-frame '((name . "emacs-run-dired")
+                                  (width . 80)
+                                  (height . 24)
+                                  (minibuffer . t)
+                                  (undecorated . t)
+                                  (internal-border-width . 10)
+                                  (fullscreen . 0)))))
+    (select-frame-set-input-focus new-frame)
+    (with-selected-window (frame-selected-window new-frame)
+      (dired "~"))  ;; opens dired in your home directory, change "~" to any directory you prefer
+    (define-key dired-mode-map (kbd "<escape>") 'delete-frame)
+    (select-frame-set-input-focus original-frame)))
+
+(defun hide-mode-line-in-frame (frame)
+  "Hide the mode line in the specified frames."
+  (when (string-match-p "^emacs-run-clone-client-frame" (frame-parameter frame 'name))
+    (with-selected-frame frame
+      (setq mode-line-format nil))))
+
+(add-hook 'after-make-frame-functions 'hide-mode-line-in-frame)
+
+(defun emacs-run-clone-client-frame ()
+  "Create a new frame and activate which-key-mode in it."
+  (interactive)
+  (let ((new-frame (make-frame '((name . "emacs-run-clone-client-frame")
+                                 (minibuffer . nil)
+                                 (fullscreen . 0)
+                                 (undecorated . t)
+                                 (internal-border-width . 10)
+                                 (width . 80)
+                                 (height . 11)))))
+    (with-selected-frame new-frame
+      (which-key-mode 1)
+      (minibuffer-keyboard-quit))))
+
+(defun emacs-run-clone-client-frame-bottom ()
+  "Create a new frame and activate which-key-mode in it."
+  (interactive)
+  (let ((new-frame (make-frame '((name . "emacs-run-clone-client-frame-bottom")
+                                 (minibuffer . nil)
+                                 (fullscreen . 0)
+                                 (undecorated . t)
+                                 (internal-border-width . 10)
+                                 (width . 80)
+                                 (height . 11)))))
+    (with-selected-frame new-frame
+      (which-key-mode 1)
+      (minibuffer-keyboard-quit))))
+
+(defun emacs-run-dmenu ()
+  "Create a new frame and run dmenu in it."
+  (interactive)
+  (with-selected-frame
+      (make-frame '((name . "emacs-run-dmenu")
+                    (minibuffer . only)
+                    (fullscreen . 0)
+                    (undecorated . t)
+                    (internal-border-width . 10)
+                    (width . 80)
+                    (height . 11)))
+    (unwind-protect
+        (call-interactively 'dmenu)
+      (delete-frame))))
+
 (defun laluxx/update-dotfiles ()
   "Update dotfiles."
   (interactive)
@@ -682,11 +1139,37 @@ If not specified, return nil."
     (shell-command command)
     (message "Updated dotfiles")))
 
+;; ONLY org
+;; (defun laluxx/run-update-dotfiles ()
+;;   "Run `laluxx/update-dotfiles` if the current file is inside ~/Desktop/pulls/dotfiles or its subdirectories."
+;;   (when (and buffer-file-name
+;;              (string-prefix-p (expand-file-name "~/Desktop/pulls/dotfiles") buffer-file-name)
+;;              (string= (file-name-extension buffer-file-name) "org"))
+;;     (laluxx/update-dotfiles)))
+
+;; (add-hook 'after-save-hook 'laluxx/run-update-dotfiles)
+
+;; ALL file extentions
 (defun laluxx/run-update-dotfiles ()
   "Run `laluxx/update-dotfiles` if the current file is inside ~/Desktop/pulls/dotfiles or its subdirectories."
   (when (and buffer-file-name
-             (string-prefix-p (expand-file-name "~/Desktop/pulls/dotfiles") buffer-file-name)
-             (string= (file-name-extension buffer-file-name) "org"))
+             (string-prefix-p (expand-file-name "~/Desktop/pulls/dotfiles") buffer-file-name))
     (laluxx/update-dotfiles)))
 
 (add-hook 'after-save-hook 'laluxx/run-update-dotfiles)
+
+(use-package! org-auto-tangle
+  :defer t
+  :hook (org-mode . org-auto-tangle-mode)
+  :config
+  (setq org-auto-tangle-default t))
+
+(defun laluxx/insert-auto-tangle-tag ()
+  "Insert auto-tangle tag in a literate config."
+  (interactive)
+  (evil-org-open-below 1)
+  (insert "#+auto_tangle: t ")
+  (evil-force-normal-state))
+
+(map! :leader
+      :desc "Insert auto_tangle tag" "i a" #'laluxx/insert-auto-tangle-tag)

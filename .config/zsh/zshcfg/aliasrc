@@ -9,6 +9,7 @@ alias databases="sudo pacman -Syy"
 alias pacup='kitty +kitten icat  && sudo pacman -Syu'
 alias savepkgs='pacman -Qe | awk '\''{print $1}'\'' > ~/Desktop/pulls/dotfiles/packages.txt'
 alias mail='pop'
+alias help='halp'
 
 alias em="/usr/bin/emacs -nw"
 # alias emacs="emacsclient -c -a 'emacs'"

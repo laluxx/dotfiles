@@ -79,6 +79,15 @@
 #+end_src
 
 * look and feel
+** No modeline
+*** dired
+#+begin_src emacs-lisp
+(defun hide-modeline-in-dired-mode ()
+  "Hide the modeline in `dired-mode'."
+  (setq mode-line-format nil))
+
+(add-hook 'dired-mode-hook 'hide-modeline-in-dired-mode)
+#+end_src
 ** toolbar
 #+begin_src emacs-lisp
 (tool-bar-mode  -1)
@@ -117,6 +126,7 @@ when focused and not focused
 * FONT
 TODO
 - variables [] (OCR B)
+
 ** Doom
 Settings related to fonts within Doom Emacs:
 + 'doom-font' -- standard monospace font that is used for most things in Emacs.
@@ -144,14 +154,14 @@ Settings related to fonts within Doom Emacs:
 ;; (add-hook 'dired-mode-hook 'use-ocr-b-bold)
 
 
-(defun use-jetbrains-mono-extrabold ()
-  "Switch the current buffer to JetBrains Mono ExtraBold font."
-  (interactive)
-  (message "Running use-jetbrains-mono-extrabold...")
-  (face-remap-add-relative 'default '(:family "JetBrains Mono ExtraBold" :height 130)))
+;; (defun use-jetbrains-mono-extrabold ()
+;;   "Switch the current buffer to JetBrains Mono ExtraBold font."
+;;   (interactive)
+;;   (message "Running use-jetbrains-mono-extrabold...")
+;;   (face-remap-add-relative 'default '(:family "JetBrains Mono ExtraBold" :height 130)))
 
-(with-eval-after-load 'dired
-  (add-hook 'dired-mode-hook 'use-jetbrains-mono-extrabold))
+;; (with-eval-after-load 'dired
+;;   (add-hook 'dired-mode-hook 'use-jetbrains-mono-extrabold))
 
 #+end_src
 ** Minibuffer
@@ -171,14 +181,14 @@ adding a function to minibuffer-setup-hook, which Emacs runs every time the mini
 #+end_src
 ** Org
 #+begin_src emacs-lisp
-(defun my-set-org-mode-font ()
-  "Set the font to JetBrains Mono NF ExtraBold when in org mode."
-  (interactive)
-  (when (derived-mode-p 'org-mode)
-    (setq buffer-face-mode-face '(:family "JetBrains Mono NF ExtraBold" :height 1.1)) ;;  NF ExtraBold
-    (buffer-face-mode)))
+;; (defun my-set-org-mode-font ()
+;;   "Set the font to JetBrains Mono NF ExtraBold when in org mode."
+;;   (interactive)
+;;   (when (derived-mode-p 'org-mode)
+;;     (setq buffer-face-mode-face '(:family "JetBrains Mono NF ExtraBold" :height 1.1)) ;;  NF ExtraBold
+;;     (buffer-face-mode)))
 
-(add-hook 'org-mode-hook 'my-set-org-mode-font)
+;; (add-hook 'org-mode-hook 'my-set-org-mode-font)
 #+end_src
 ** Markdown
 #+begin_src emacs-lisp
@@ -205,6 +215,7 @@ set everything
 (add-hook 'python-mode-hook 'my-set-python-mode-font)
 #+end_src
 * Dashboard
+** Conf
 #+begin_src emacs-lisp
 (require 'dashboard)
 (setq dashboard-startup-banner 'logo)
@@ -242,7 +253,21 @@ set everything
   (setq initial-buffer-choice (lambda () (get-buffer-create "*dashboard*"))))
 (global-set-key (kbd "C-x d") 'dashboard-open)
 #+end_src
+** Keybinds
+keybind within the dashboard
+#+begin_src emacs-lisp
+(defun my/dashboard-bindings ()
+  "Add my keybindings for dashboard."
+  (map! :map dashboard-mode-map
+        :n "j" #'widget-forward
+        :n "k" #'widget-backward
+        :n "l" #'widget-button-press
+        :n "h" #'ignore))
+
+(add-hook 'dashboard-mode-hook 'my/dashboard-bindings)
+#+end_src
 ** Initial-buffer
+Set dashboard as the initial buffer
 #+begin_src emacs-lisp
 (setq initial-buffer-choice (lambda () (get-buffer-create "*dashboard*")))
 #+end_src
@@ -465,6 +490,7 @@ Keybinds that execute other keybinds.
       :desc "Custom Keybind"
       "d J" (lambda ()
               (interactive)
+
               (text-scale-set -1)  ;; Set the desired zoom level here
               (execute-kbd-macro (kbd "SPC w v"))
               (execute-kbd-macro (kbd "SPC d j"))))
@@ -482,7 +508,319 @@ Keybinds that execute other keybinds.
 #+end_src
 
 * FUNCTIONS
+** emacs-Window-manager
+*** One-window
+#+begin_src emacs-lisp
+;; IF only one window
+;; ctrl h and l will cycle buffers
+;; (defun previous-buffer-or-window-left ()
+;;   "Switch to previous buffer if there's only one window. Otherwise, enlarge the window to the left."
+;;   (interactive)
+;;   (if (one-window-p)
+;;       (previous-buffer)
+;;     (resize-window-horizontally nil)))
+
+;; (defun next-buffer-or-window-right ()
+;;   "Switch to next buffer if there's only one window. Otherwise, enlarge the window to the right."
+;;   (interactive)
+;;   (if (one-window-p)
+;;       (next-buffer)
+;;     (resize-window-horizontally t)))
+
+;; (global-set-key (kbd "C-h") 'previous-buffer-or-window-left)
+;; (global-set-key (kbd "C-l") 'next-buffer-or-window-right)
+#+end_src
+
+*** Resizing
+#+begin_src emacs-lisp
+;; (defun enlarge-window-horizontally-left ()
+;;   "Enlarges the window horizontally by 10 units."
+;;   (interactive)
+;;   (shrink-window-horizontally 10))
+
+;; (defun shrink-window-horizontally-left ()
+;;   "Shrinks the window horizontally by 10 units."
+;;   (interactive)
+;;   (enlarge-window-horizontally 10))
+
+;; (defun enlarge-window-horizontally-right ()
+;;   "Enlarges the window horizontally by 10 units."
+;;   (interactive)
+;;   (enlarge-window-horizontally 10))
+
+;; (defun shrink-window-horizontally-right ()
+;;   "Shrinks the window horizontally by 10 units."
+;;   (interactive)
+;;   (shrink-window-horizontally 10))
+
+;; (defun resize-window-horizontally (increase)
+;;   "Resize the current window horizontally.
+;; If INCREASE is non-nil, enlarge the window, otherwise shrink it."
+;;   (interactive "P")
+;;   (if (window-in-direction 'right)
+;;       (if increase
+;;           (enlarge-window-horizontally-right)
+;;         (shrink-window-horizontally-right))
+;;     (if increase
+;;         (enlarge-window-horizontally-left)
+;;       (shrink-window-horizontally-left))))
+
+;; (global-set-key (kbd "C-h") (lambda () (interactive) (resize-window-horizontally nil)))
+;; (global-set-key (kbd "C-l") (lambda () (interactive) (resize-window-horizontally t)))
+#+end_src
+*** Resizing and Buffer Cycling
+ctrl + h -> enlarge left  [x]
+ctrl + l -> enlarge right [x]
+- if there is only one window ctrl h and l wii switch buffer [x]
+If there is only one window, `ctrl h` and `ctrl l` will cycle buffers. If there are multiple windows, `ctrl h` and `ctrl l` will resize the windows.
+#+begin_src emacs-lisp
+(defun enlarge-window-horizontally-left ()
+  "Enlarges the window horizontally by 10 units."
+  (interactive)
+  (shrink-window-horizontally 10))
+
+(defun shrink-window-horizontally-left ()
+  "Shrinks the window horizontally by 10 units."
+  (interactive)
+  (enlarge-window-horizontally 10))
+
+(defun enlarge-window-horizontally-right ()
+  "Enlarges the window horizontally by 10 units."
+  (interactive)
+  (enlarge-window-horizontally 10))
+
+(defun shrink-window-horizontally-right ()
+  "Shrinks the window horizontally by 10 units."
+  (interactive)
+  (shrink-window-horizontally 10))
+
+(defun resize-window-horizontally (increase)
+  "Resize the current window horizontally.
+If INCREASE is non-nil, enlarge the window, otherwise shrink it."
+  (interactive "P")
+  (if (window-in-direction 'right)
+      (if increase
+          (enlarge-window-horizontally-right)
+        (shrink-window-horizontally-right))
+    (if increase
+        (enlarge-window-horizontally-left)
+      (shrink-window-horizontally-left))))
+
+;; IF only one window
+;; ctrl h and l will cycle buffers
+(defun previous-buffer-or-window-left ()
+  "Switch to previous buffer if there's only one window. Otherwise, enlarge the window to the left."
+  (interactive)
+  (if (one-window-p)
+      (previous-buffer)
+    (resize-window-horizontally nil)))
+
+(defun next-buffer-or-window-right ()
+  "Switch to next buffer if there's only one window. Otherwise, enlarge the window to the right."
+  (interactive)
+  (if (one-window-p)
+      (next-buffer)
+    (resize-window-horizontally t)))
+
+(global-set-key (kbd "C-h") 'previous-buffer-or-window-left)
+(global-set-key (kbd "C-l") 'next-buffer-or-window-right)
+#+end_src
+*** Window-border
+#+begin_src emacs-lisp
+;; (defun highlight-selected-window ()
+;;   "Highlight selected window with a different background color."
+;;   (walk-windows (lambda (w)
+;;                   (unless (or (eq w (selected-window)) (minibufferp (window-buffer w)))
+;;                     (with-current-buffer (window-buffer w)
+;;                       (buffer-face-set '(:background "#f6f6f6"))))))
+;;   (unless (minibufferp (window-buffer (selected-window)))
+;;     (buffer-face-set 'default)))
+
+;; (add-hook 'buffer-list-update-hook 'highlight-selected-window)
+
+;; Main
+;; (require 'color)
+
+;; (defun highlight-selected-window ()
+;;   "Highlight selected window with a different background color."
+;;   (let ((bg (face-attribute 'default :background)))
+;;     (walk-windows (lambda (w)
+;;                     (unless (or (eq w (selected-window)) (minibufferp (window-buffer w)))
+;;                       (with-current-buffer (window-buffer w)
+;;                         (buffer-face-set `(:background ,(color-darken-name bg 35))))))))
+;;   (unless (minibufferp (window-buffer (selected-window)))
+;;     (buffer-face-set 'default)))
+
+;; (add-hook 'buffer-list-update-hook 'highlight-selected-window)
+
+
+
+;; FRINGE FIX
+(defun highlight-selected-window ()
+  "Highlight selected window with a different background color."
+  (let ((bg (face-attribute 'default :background)))
+    (walk-windows (lambda (w)
+                    (if (eq w (selected-window))
+                        (progn
+                          (with-current-buffer (window-buffer w)
+                            (buffer-face-set 'default))
+                          (with-selected-window w
+                            (set-face-attribute 'fringe nil :background bg)))
+                      (with-current-buffer (window-buffer w)
+                        (buffer-face-set `(:background ,(color-darken-name bg 35))))
+                      (with-selected-window w
+                        (set-face-attribute 'fringe nil :background (color-darken-name bg 35))))))))
+(add-hook 'buffer-list-update-hook 'highlight-selected-window)
+
+
+#+end_src
+*** Keybinds
+#+begin_src emacs-lisp
+;; Keybindings
+(map! :n "C-M-l" #'next-buffer
+      :n "C-M-h" #'previous-buffer
+      "C-j" #'other-window
+      "C-k" (lambda () (interactive) (other-window -1)))
+
+
+
+(map! :leader
+      (:prefix ("w" . "window")
+       "M" #'laluxx/window-single-toggle))
+(map! "C-SPC" #'laluxx/window-single-toggle)
+
+(map! "<C-backspace>" #'delete-window)
+(map! :map evil-normal-state-map
+      "C-w" #'delete-window)
+
+(map! :leader
+      "SPC" #'rotate-layout)
+
+(global-set-key (kbd "C-M-j") 'rotate-window)
+(global-set-key (kbd "C-M-k") (lambda () (interactive) (dotimes (_ (- (length (window-list)) 1)) (rotate-window))))
+#+end_src
+*** Modeline
+no modeline from the 3 buffer
+#+begin_src emacs-lisp
+;; (defun laluxx/setup-mode-line ()
+;;   "Set up the mode line."
+;;   (dolist (window (window-list))
+;;     (with-selected-window window
+;;       (if (or (not (window-in-direction 'left))
+;;               (and (window-in-direction 'down)
+;;                    (not (window-in-direction 'right))))
+;;           (hide-mode-line-mode -1)
+;;         (hide-mode-line-mode 1)))))
+
+;; (add-hook 'buffer-list-update-hook 'laluxx/setup-mode-line)
+
+
+
+;; (defun laluxx/setup-mode-line ()
+;;   "Set up the mode line."
+;   (let ((windows (window-list))
+;;         (counter 1))
+;;     (dolist (window windows)
+;;       (with-selected-window window
+;;         (if (<= counter 2)
+;;             (setq mode-line-format (default-value 'mode-line-format))  ; show modeline
+;;           (setq mode-line-format nil))  ; hide modeline
+;;         (setq counter (1+ counter))))))
+
+;; (add-hook 'buffer-list-update-hook 'laluxx/setup-mode-line)
+#+end_src
+*** Tall
+#+begin_src emacs-lisp
+(defun laluxx/create-tall-window ()
+  "Create a new window for the tall layout."
+  (interactive)
+  (if (= (length (window-list)) 1)
+      (laluxx/vertical-split-and-hide-modeline)
+    (select-window (window-at (frame-width) 0))  ; Select the rightmost window
+    (laluxx/horizontal-split-and-hide-modeline)))
+
+(defvar laluxx/layouts
+  '((:name tall
+           :description "Master and stack layout"
+           :new-window-function laluxx/create-tall-window)))
+
+(defvar laluxx/current-layout (car laluxx/layouts)
+  "Current layout for new windows.")
+
+(defun laluxx/create-window-based-on-layout ()
+  "Create a new window based on the current layout."
+  (interactive)
+  (let ((new-window-function (plist-get laluxx/current-layout :new-window-function)))
+    (funcall new-window-function)))
+
+
+(evil-global-set-key 'normal (kbd "<C-return>") #'laluxx/create-window-based-on-layout)
+#+end_src
+*** Monocole
+#+begin_src emacs-lisp
+(defvar laluxx/window-configuration nil
+  "Current window configuration.
+Intended for use by `laluxx/window-single-toggle'.")
+
+(define-minor-mode laluxx/window-single-toggle
+  "Toggle between multiple windows and single window.
+This is the equivalent of maximising a window.  Tiling window
+managers such as DWM, BSPWM refer to this state as 'monocle'."
+  :lighter " Monocle"
+  :global nil
+  (if (one-window-p)
+      (when laluxx/window-configuration
+        (set-window-configuration laluxx/window-configuration)
+        (setq laluxx/window-configuration nil))
+    (setq laluxx/window-configuration (current-window-configuration))
+    (delete-other-windows)))
+
+
+
+#+end_src
+*** Splits
+**** Horizzontal
+#+begin_src emacs-lisp
+;; (defun laluxx/horizontal-split-and-hide-modeline ()
+;;   "Horizontally split the window, create a new buffer and hide the modeline."
+;;   (interactive)
+;;   (split-window-below)
+;;   (other-window 1)
+;;   (switch-to-buffer (generate-new-buffer "new"))
+;;   (hide-mode-line-mode))
+
+;; Proportion fix
+ (defun laluxx/horizontal-split-and-hide-modeline ()
+  "Horizontally split the window, create a new buffer and hide the modeline."
+  (interactive)
+  (split-window-below)
+  (balance-windows)
+  (other-window 1)
+  (switch-to-buffer (generate-new-buffer "new"))
+  (hide-mode-line-mode))
+
+
+(map! :leader
+      (:prefix ("w" . "window")
+       "s" #'laluxx/horizontal-split-and-hide-modeline))
+#+end_src
+**** Vertical
+#+begin_src emacs-lisp
+(defun laluxx/vertical-split-and-hide-modeline ()
+  "Vertically split the window, create a new buffer and hide the modeline."
+  (interactive)
+  (split-window-right)
+  (other-window 1)
+  (switch-to-buffer (generate-new-buffer "new"))
+  (hide-mode-line-mode))
+
+(map! :leader
+      (:prefix ("w" . "window")
+       "v" #'laluxx/vertical-split-and-hide-modeline))
+#+end_src
+
 ** Kill-buffer
+Kill every buffer that is not the dashboard
 #+begin_src emacs-lisp
 (defun kill-buffer-and-maybe-open-dashboard ()
   "Kill current buffer if it's not dashboard, and open dashboard if it was the last user buffer."
@@ -498,7 +836,18 @@ Keybinds that execute other keybinds.
       (dashboard-refresh-buffer))
     (kill-buffer (current-buffer))))
 #+end_src
-** Theme-Realod
+** emacs-speak-to-python
+#+begin_src emacs-lisp
+(defun write-buffer-list-to-file ()
+  "Write the current list of buffer names to a file."
+  (with-temp-file "/tmp/emacs-buffer-list"
+    (insert (mapconcat 'identity (mapcar 'buffer-name (buffer-list)) "\n"))
+    (insert "\n----\n")
+    (insert (buffer-name (current-buffer)))))
+
+(add-hook 'buffer-list-update-hook 'write-buffer-list-to-file)
+#+end_src
+** Wal-watcher
 Setup file watcher for ~/.cache/wal/colors
 #+begin_src emacs-lisp
 (run-with-idle-timer
@@ -524,6 +873,9 @@ Setup file watcher for ~/.cache/wal/colors
       (let ((color (nth level wal-colors)))
         (set-face-attribute (intern (format "org-level-%d" (1+ level))) nil :foreground color)))))
 #+end_src
+
+#+RESULTS:
+: laluxx/load-org-wal-colors
 
 ** Wal-Set
 *** Default
@@ -553,6 +905,7 @@ Setup file watcher for ~/.cache/wal/colors
                             (run-at-time "1 sec" nil 'spaceline-compile)))))))  ; Delay spaceline-compile
 #+end_src
 *** Favourite
+Set a wal paper from =~/xos/wallpapers/favourites=
 #+begin_src emacs-lisp
 (defun laluxx/wal-set-favourite ()
   (interactive)
@@ -579,6 +932,8 @@ Setup file watcher for ~/.cache/wal/colors
                             (run-at-time "1 sec" nil 'spaceline-compile)))))))  ; Delay spaceline-compile
 #+end_src
 *** solid
+Choose a wal paper from =~/xos/wallpapers=
+and turn it solid
 #+begin_src emacs-lisp
 (defun laluxx/wal-set-solid ()
   (interactive)
@@ -610,18 +965,24 @@ Setup file watcher for ~/.cache/wal/colors
 #+end_src
 
 *** Set-wallpaper
+set system wallpaper
 #+begin_src emacs-lisp
 (defun laluxx/set-wallpaper ()
   (interactive)
-  (let* ((default-directory "~/xos/wallpapers/static/")
+  (let* ((default-directory "~/xos/wallpapers/static")
          (image-files (directory-files-recursively default-directory "\\.\\(png\\|jpg\\|jpeg\\|webp\\)$")))
     (ivy-read "Choose wallpaper: "
               image-files
               :action (lambda (wallpaper)
-                        (when (file-exists-p wallpaper)
-                          (start-process-shell-command "feh" nil (format "feh --bg-scale '%s'" (shell-quote-argument wallpaper))))))))
+                        (when (and (not (string-empty-p wallpaper))
+                                   (file-exists-p wallpaper))
+                          (let ((abs-wallpaper (expand-file-name wallpaper)))
+                            (shell-command-to-string (concat "feh --bg-scale " abs-wallpaper))))))))
+
+
 #+end_src
 ** Doom-wal
+doom the wallpaper
 #+begin_src emacs-lisp
 ;; TODO: set a specific wallpaper based on the theme,                                            [x]  set-wallpaper-to-match-doom-theme
 ;; TODO: org bullets should use those colors too,                                                []
@@ -751,6 +1112,7 @@ If not specified, return nil."
         :desc desc
         key (lambda () (interactive) (dired dir))))
 #+end_src
+
 * Open-dir-keybind
 open-dir defined in =FUNCTIONS=
 #+begin_src emacs-lisp
@@ -948,25 +1310,40 @@ If peep-dired is enabled, you will get image previews as you go up/down with 'j'
 #+end_src
 *** toggle-modeline
 #+begin_src emacs-lisp
-;; FIXME
-(defvar my-modeline-state 'doom)
+(defvar my-modeline-state 'spaceline)
 
-(defun laluxx/toggle-modeline ()
-  "Toggle between doom-modeline, spaceline, and no modeline."
+(defun laluxx/toggle-modeline-local ()
+  "Toggle between spaceline and no modeline for the current buffer."
   (interactive)
-  (cond
-   ((eq my-modeline-state 'doom)
-    (doom-modeline-mode -1)
-    (spaceline-spacemacs-theme)
-    (setq my-modeline-state 'spaceline))
-   ((eq my-modeline-state 'spaceline)
-    (hide-mode-line-mode 1)
-    (setq my-modeline-state 'none))
-   ((eq my-modeline-state 'none)
-    (hide-mode-line-mode -1)
-    (doom-modeline-mode 1)
-    (setq my-modeline-state 'doom))))
+  (if (eq my-modeline-state 'spaceline)
+      (progn
+        (setq my-modeline-state 'none)
+        (hide-mode-line-mode 1))
+    (progn
+      (hide-mode-line-mode -1)
+      (setq my-modeline-state 'spaceline)
+      (spaceline-spacemacs-theme))))
+
+(defun laluxx/toggle-modeline-global ()
+  "Toggle between spaceline and no modeline globally."
+  (interactive)
+  (if (eq my-modeline-state 'spaceline)
+      (progn
+        (setq my-modeline-state 'none)
+        (global-hide-mode-line-mode 1))
+    (progn
+      (global-hide-mode-line-mode -1)
+      (setq my-modeline-state 'spaceline)
+      (spaceline-spacemacs-theme))))
+
+(map! :leader
+      (:prefix ("t" . "toggle")
+       "m" #'laluxx/toggle-modeline-local
+       "M" #'laluxx/toggle-modeline-global))
+
+
 #+end_src
+
 * TREEMACS
 #+begin_src emacs-lisp
 1(use-package treemacs
