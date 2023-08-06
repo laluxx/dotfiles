@@ -85,12 +85,17 @@
 (package! magit-delta)
 (package! snails)
 (package! pynt)
+(package! spacious-padding)
+(package! sxhkdrc-mode)
 
 
 
+(package! centaur-tabs)
 (package! org-auto-tangle)
-
+(package! grip-mode)
+(package! all-the-icons-ibuffer)
 (package! rotate)
 (package! edwina)
+
 
 (package! app-launcher :recipe (:host github :repo "SebastienWae/app-launcher"))

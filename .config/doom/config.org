@@ -88,6 +88,20 @@
 
 (add-hook 'dired-mode-hook 'hide-modeline-in-dired-mode)
 #+end_src
+*** Vterm
+#+begin_src emacs-lisp
+(defun hide-modeline-in-dired-mode ()
+  "Hide the modeline in `dired-mode'."
+  (setq mode-line-format nil))
+
+(add-hook 'dired-mode-hook 'hide-modeline-in-dired-mode)
+
+(defun hide-modeline-in-vterm-mode ()
+  "Hide the modeline in `vterm-mode'."
+  (setq mode-line-format nil))
+
+(add-hook 'vterm-mode-hook 'hide-modeline-in-vterm-mode)
+#+end_src
 ** toolbar
 #+begin_src emacs-lisp
 (tool-bar-mode  -1)
@@ -122,11 +136,9 @@ when focused and not focused
 
 ;; (add-to-list 'default-frame-alist '(alpha-background . 90))
 #+end_src
-
 * FONT
 TODO
 - variables [] (OCR B)
-
 ** Doom
 Settings related to fonts within Doom Emacs:
 + 'doom-font' -- standard monospace font that is used for most things in Emacs.
@@ -202,7 +214,6 @@ adding a function to minibuffer-setup-hook, which Emacs runs every time the mini
 (add-hook 'markdown-mode-hook 'my-set-markdown-mode-font)
 #+end_src
 ** Python
-*** Default
 set everything
 #+begin_src emacs-lisp
 (defun my-set-python-mode-font ()
@@ -215,6 +226,84 @@ set everything
 (add-hook 'python-mode-hook 'my-set-python-mode-font)
 #+end_src
 * Dashboard
+** scroll
+fix the scroll
+#+begin_src emacs-lisp
+
+(defun my/dashboard-setup ()
+  "Setup for dashboard."
+  (my/dashboard-bindings)
+  ;; Make the cursor invisible in dashboard
+  (setq-local cursor-type nil)
+  ;; Disable mouse scrolling
+  (setq-local mouse-wheel-scroll-amount '(nil))
+  (setq-local mouse-wheel-progressive-speed nil)
+  ;; Turn off evil-mode in this buffer
+  (evil-local-mode -1))
+
+(add-hook 'dashboard-mode-hook 'my/dashboard-setup)
+
+
+
+#+end_src
+** Modeline
+Modeline only for the dashboard
+#+begin_src emacs-lisp
+
+#+end_src
+** Highlight
+#+begin_src emacs-lisp
+(defvar my/current-highlight-overlay nil
+  "Overlay variable for current highlighted line.")
+
+(defun my/dashboard-widget-forward (&optional arg)
+  "Move point to the next field or button in the current buffer.
+ARG is passed as an argument to 'widget-forward'.
+Then apply highlighting to the current widget."
+  (interactive "p")
+  (widget-forward arg)
+  (my/dashboard-highlight-widget))
+
+(defun my/dashboard-widget-backward (&optional arg)
+  "Move point to the previous field or button in the current buffer.
+ARG is passed as an argument to 'widget-backward'.
+Then apply highlighting to the current widget."
+  (interactive "p")
+  (widget-backward arg)
+  (my/dashboard-highlight-widget))
+
+(defun my/dashboard-highlight-widget ()
+  "Highlight the current widget with overlay."
+  (when-let ((widget (widget-at)))
+    ;; Clear previous highlight
+    (when my/current-highlight-overlay
+      (delete-overlay my/current-highlight-overlay))
+    ;; Create new highlight overlay only if the line is not empty
+    (unless (looking-at-p "[[:space:]]*$")
+      (let* ((start (progn (skip-chars-forward " \t") (point)))
+             (end (point-at-eol))
+             (overlay (make-overlay start end)))
+        (overlay-put overlay 'face 'highlight)
+        ;; Store new overlay
+        (setq my/current-highlight-overlay overlay)))))
+
+(defun my/dashboard-bindings ()
+  "Add my keybindings for dashboard."
+  (map! :map dashboard-mode-map
+        :n "j" #'my/dashboard-widget-forward
+        :n "k" #'my/dashboard-widget-backward
+        :n "l" #'widget-button-press
+        :n "h" #'ignore))
+
+(defun my/dashboard-setup ()
+  "Setup for dashboard."
+  (my/dashboard-bindings)
+  ;; Make the cursor invisible in dashboard
+  (setq-local cursor-type nil))
+
+(add-hook 'dashboard-mode-hook 'my/dashboard-setup)
+
+#+end_src
 ** Conf
 #+begin_src emacs-lisp
 (require 'dashboard)
@@ -256,46 +345,53 @@ set everything
 ** Keybinds
 keybind within the dashboard
 #+begin_src emacs-lisp
-(defun my/dashboard-bindings ()
-  "Add my keybindings for dashboard."
-  (map! :map dashboard-mode-map
-        :n "j" #'widget-forward
-        :n "k" #'widget-backward
-        :n "l" #'widget-button-press
-        :n "h" #'ignore))
+;; (defun my/dashboard-bindings ()
+;;   "Add my keybindings for dashboard."
+;;   (map! :map dashboard-mode-map
+;;         :n "l" #'widget-button-press
+;;         :n "h" #'ignore))
+;;         :n "j" #'widget-forward
+;;         :n "k" #'widget-backward
 
-(add-hook 'dashboard-mode-hook 'my/dashboard-bindings)
+;; (add-hook 'dashboard-mode-hook 'my/dashboard-bindings)
+
+
+;; (map! :map dashboard-mode-map
+;;         "<mouse-4>" #'my/dashboard-widget-forward
+;;         "<mouse-5>" #'my/dashboard-widget-backward
+;;         :n "l" #'widget-button-press
+;;         :n "h" #'ignore)
+
 #+end_src
 ** Initial-buffer
 Set dashboard as the initial buffer
 #+begin_src emacs-lisp
 (setq initial-buffer-choice (lambda () (get-buffer-create "*dashboard*")))
 #+end_src
-* Ewal
-#+begin_src emacs-lisp
-(use-package! ewal
-  :init
-  (setq ewal-use-built-in-always-p nil
-        ewal-use-built-in-on-failure-p t
-        ewal-built-in-palette "sexy-material"))
-#+end_src
-
-*** Ewal-Doom-Theme
-this will set the theme
-#+begin_src emacs-lisp
-(use-package! ewal-doom-themes
-  :init
-  ;; If you've set ewal-use-built-in-always-p to nil in ewal configuration
-  ;; This might be unnecessary, but doesn't hurt to ensure.
-  (setq ewal-use-built-in-always-p nil
-        ewal-use-built-in-on-failure-p t
-        ewal-built-in-palette "sexy-material")
-  :config
-  (load-theme 'ewal-doom-one t)
-  (enable-theme 'ewal-doom-one))
-#+end_src
-
 * Keybinds
+** Diff
+#+begin_src emacs-lisp
+(map! :leader
+      (:prefix ("d" . "diff")
+        :desc "diff buffer with file" "i" #'laluxx/diff-buffer-with-file))
+
+#+end_src
+** Regex
+#+begin_src emacs-lisp
+(map! :leader
+      (:prefix ("r" . "regexp")
+        :desc "Regex builder" "b" #'re-builder))
+#+end_src
+** Org
+#+begin_src emacs-lisp
+(after! org
+  (map! :map org-mode-map
+        :nvi "<C-return>" #'laluxx/create-window-based-on-layout
+        :nvi "<C-M-return>" #'vterm
+        :nvi "C-j" #'my-switch-buffer-forward-or-other-window
+        :nvi "C-k" #'my-switch-buffer-backward-or-other-window))
+
+#+end_src
 ** Toggle
 #+begin_src emacs-lisp
 (map! :leader
@@ -508,91 +604,164 @@ Keybinds that execute other keybinds.
 #+end_src
 
 * FUNCTIONS
+** XOS
+** update-dotfiles
+whenever you save a file inside "~/Desktop/pulls/dotfiles"
+or one of its subdirectories && if that file is a org file
+#+begin_src emacs-lisp
+(defun laluxx/update-dotfiles ()
+  "Update dotfiles."
+  (interactive)
+  (let* ((dotfiles-path (expand-file-name "~/Desktop/pulls/dotfiles"))
+         (command (concat "rsync -a " dotfiles-path "/. $HOME/")))
+    (shell-command command)
+    (message "Updated dotfiles")))
+
+#+end_src
+*** run-update-dotfiles
+#+begin_src emacs-lisp
+;; ONLY org
+;; (defun laluxx/run-update-dotfiles ()
+;;   "Run `laluxx/update-dotfiles` if the current file is inside ~/Desktop/pulls/dotfiles or its subdirectories."
+;;   (when (and buffer-file-name
+;;              (string-prefix-p (expand-file-name "~/Desktop/pulls/dotfiles") buffer-file-name)
+;;              (string= (file-name-extension buffer-file-name) "org"))
+;;     (laluxx/update-dotfiles)))
+
+;; (add-hook 'after-save-hook 'laluxx/run-update-dotfiles)
+
+;; ALL file extentions
+(defun laluxx/run-update-dotfiles ()
+  "Run `laluxx/update-dotfiles` if the current file is inside ~/Desktop/pulls/dotfiles or its subdirectories."
+  (when (and buffer-file-name
+             (string-prefix-p (expand-file-name "~/Desktop/pulls/dotfiles") buffer-file-name))
+    (laluxx/update-dotfiles)))
+
+(add-hook 'after-save-hook 'laluxx/run-update-dotfiles)
+
+
+#+end_src
+** Diff
+#+begin_src emacs-lisp
+;;   (defun laluxx/diff-buffer-with-file (&optional arg)
+;;     "Compare buffer to its file, else run `vc-diff'.
+;; With \\[universal-argument] also enable highlighting of word-wise
+;; changes, local to the current buffer."
+;;     (interactive "P")
+;;     (let ((buf nil))     ; this method will "fail" if multi diff buffers
+;;       (if (buffer-modified-p)
+;;           (progn
+;;             (diff-buffer-with-file (current-buffer))
+;;             (setq buf "*Diff*"))
+;;         (vc-diff)
+;;         (setq buf "*vc-diff*"))
+;;       (when arg
+;;         (with-current-buffer (get-buffer buf)
+;;           (setq-local diff-refine 'font-lock)))))
+
+
+(defvar laluxx/diff-buffer nil
+  "Stores the current diff buffer if one exists.")
+
+(defun laluxx/diff-buffer-with-file (&optional arg)
+  "Compare buffer to its file, else run `vc-diff'.
+With \\[universal-argument] also enable highlighting of word-wise
+changes, local to the current buffer."
+  (interactive "P")
+  (if (and laluxx/diff-buffer
+           (buffer-live-p laluxx/diff-buffer)
+           (get-buffer-window laluxx/diff-buffer t))
+      (progn
+        (kill-buffer laluxx/diff-buffer)
+        (setq laluxx/diff-buffer nil))
+    (if (and (not laluxx/diff-buffer)
+             (or (not (buffer-live-p laluxx/diff-buffer))
+                 (not (get-buffer-window laluxx/diff-buffer t))))
+        (let ((buf nil))
+          (if (buffer-modified-p)
+              (progn
+                (diff-buffer-with-file (current-buffer))
+                (setq buf "*Diff*"))
+            (vc-diff)
+            (setq buf "*vc-diff*"))
+          (setq laluxx/diff-buffer (get-buffer buf))
+          (display-buffer laluxx/diff-buffer)
+          (when arg
+            (with-current-buffer laluxx/diff-buffer
+              (setq-local diff-refine 'font-lock)))))))
+
+
+#+end_src
 ** emacs-Window-manager
-*** One-window
+*** Modes
+**** Split-mode
 #+begin_src emacs-lisp
-;; IF only one window
-;; ctrl h and l will cycle buffers
-;; (defun previous-buffer-or-window-left ()
-;;   "Switch to previous buffer if there's only one window. Otherwise, enlarge the window to the left."
-;;   (interactive)
-;;   (if (one-window-p)
-;;       (previous-buffer)
-;;     (resize-window-horizontally nil)))
+(define-minor-mode laluxx/split-mode
+  "A mode for custom splits."
+  :lighter ""
+  :init-value nil
+  (if laluxx/split-mode
+      (progn
+        (setq buffer-read-only t
+              cursor-type nil)
+        (hide-mode-line-mode 1)
+        (evil-define-key* 'normal 'local (kbd "v") 'vterm)
+        (evil-define-key* 'insert 'local (kbd "v") 'vterm)
+        (evil-define-key* 'visual 'local (kbd "v") 'vterm)
+        (evil-define-key* 'normal 'local (kbd "q") 'delete-window)
+        (evil-define-key* 'insert 'local (kbd "q") 'delete-window)
+        (evil-define-key* 'visual 'local (kbd "q") 'delete-window))
+    (progn
+      (setq buffer-read-only nil
+            cursor-type t)
+      (hide-mode-line-mode -1))))
 
-;; (defun next-buffer-or-window-right ()
-;;   "Switch to next buffer if there's only one window. Otherwise, enlarge the window to the right."
-;;   (interactive)
-;;   (if (one-window-p)
-;;       (next-buffer)
-;;     (resize-window-horizontally t)))
+(defun laluxx/horizontal-split-and-hide-modeline ()
+  "Horizontally split the window, create a new buffer, and turn on `laluxx/split-mode'."
+  (interactive)
+  (split-window-below)
+  (balance-windows)
+  (other-window 1)
+  (switch-to-buffer (generate-new-buffer "new"))
+  (laluxx/split-mode 1))
 
-;; (global-set-key (kbd "C-h") 'previous-buffer-or-window-left)
-;; (global-set-key (kbd "C-l") 'next-buffer-or-window-right)
+(defun laluxx/vertical-split-and-hide-modeline ()
+  "Vertically split the window, create a new buffer, and turn on `laluxx/split-mode'."
+  (interactive)
+  (split-window-right)
+  (other-window 1)
+  (switch-to-buffer (generate-new-buffer "new"))
+  (laluxx/split-mode 1))
+
+(map! :leader
+      (:prefix ("w" . "window")
+       "s" #'laluxx/horizontal-split-and-hide-modeline
+       "v" #'laluxx/vertical-split-and-hide-modeline))
+
 #+end_src
 
-*** Resizing
-#+begin_src emacs-lisp
-;; (defun enlarge-window-horizontally-left ()
-;;   "Enlarges the window horizontally by 10 units."
-;;   (interactive)
-;;   (shrink-window-horizontally 10))
-
-;; (defun shrink-window-horizontally-left ()
-;;   "Shrinks the window horizontally by 10 units."
-;;   (interactive)
-;;   (enlarge-window-horizontally 10))
-
-;; (defun enlarge-window-horizontally-right ()
-;;   "Enlarges the window horizontally by 10 units."
-;;   (interactive)
-;;   (enlarge-window-horizontally 10))
-
-;; (defun shrink-window-horizontally-right ()
-;;   "Shrinks the window horizontally by 10 units."
-;;   (interactive)
-;;   (shrink-window-horizontally 10))
-
-;; (defun resize-window-horizontally (increase)
-;;   "Resize the current window horizontally.
-;; If INCREASE is non-nil, enlarge the window, otherwise shrink it."
-;;   (interactive "P")
-;;   (if (window-in-direction 'right)
-;;       (if increase
-;;           (enlarge-window-horizontally-right)
-;;         (shrink-window-horizontally-right))
-;;     (if increase
-;;         (enlarge-window-horizontally-left)
-;;       (shrink-window-horizontally-left))))
-
-;; (global-set-key (kbd "C-h") (lambda () (interactive) (resize-window-horizontally nil)))
-;; (global-set-key (kbd "C-l") (lambda () (interactive) (resize-window-horizontally t)))
-#+end_src
-*** Resizing and Buffer Cycling
-ctrl + h -> enlarge left  [x]
-ctrl + l -> enlarge right [x]
-- if there is only one window ctrl h and l wii switch buffer [x]
+*** Enlarge OR neotree OR re-builder
 If there is only one window, `ctrl h` and `ctrl l` will cycle buffers. If there are multiple windows, `ctrl h` and `ctrl l` will resize the windows.
 #+begin_src emacs-lisp
 (defun enlarge-window-horizontally-left ()
   "Enlarges the window horizontally by 10 units."
   (interactive)
-  (shrink-window-horizontally 10))
+  (enlarge-window-horizontally 10))
 
 (defun shrink-window-horizontally-left ()
   "Shrinks the window horizontally by 10 units."
   (interactive)
-  (enlarge-window-horizontally 10))
+  (shrink-window-horizontally 10))
 
 (defun enlarge-window-horizontally-right ()
   "Enlarges the window horizontally by 10 units."
   (interactive)
-  (enlarge-window-horizontally 10))
+  (shrink-window-horizontally 10))
 
 (defun shrink-window-horizontally-right ()
   "Shrinks the window horizontally by 10 units."
   (interactive)
-  (shrink-window-horizontally 10))
+  (enlarge-window-horizontally 10))
 
 (defun resize-window-horizontally (increase)
   "Resize the current window horizontally.
@@ -600,32 +769,32 @@ If INCREASE is non-nil, enlarge the window, otherwise shrink it."
   (interactive "P")
   (if (window-in-direction 'right)
       (if increase
-          (enlarge-window-horizontally-right)
-        (shrink-window-horizontally-right))
+          (shrink-window-horizontally-right)
+        (enlarge-window-horizontally-right))
     (if increase
         (enlarge-window-horizontally-left)
       (shrink-window-horizontally-left))))
 
-;; IF only one window
-;; ctrl h and l will cycle buffers
-(defun previous-buffer-or-window-left ()
-  "Switch to previous buffer if there's only one window. Otherwise, enlarge the window to the left."
+(defun neotree-or-enlarge-window-left ()
+  "Open Neotree if there's only one window. Otherwise, enlarge the window to the left."
   (interactive)
   (if (one-window-p)
-      (previous-buffer)
-    (resize-window-horizontally nil)))
-
-(defun next-buffer-or-window-right ()
-  "Switch to next buffer if there's only one window. Otherwise, enlarge the window to the right."
-  (interactive)
-  (if (one-window-p)
-      (next-buffer)
+      (neotree-show)
     (resize-window-horizontally t)))
 
-(global-set-key (kbd "C-h") 'previous-buffer-or-window-left)
-(global-set-key (kbd "C-l") 'next-buffer-or-window-right)
+(defun re-builder-or-enlarge-window-right ()
+  "Open Re-Builder if there's only one window. Otherwise, enlarge the window to the right."
+  (interactive)
+  (if (one-window-p)
+      (re-builder)
+    (resize-window-horizontally nil)))
+
+(global-set-key (kbd "C-h") 'neotree-or-enlarge-window-left)
+(global-set-key (kbd "C-l") 're-builder-or-enlarge-window-right)
+
+
 #+end_src
-*** Window-border
+*** Highlight
 #+begin_src emacs-lisp
 ;; (defun highlight-selected-window ()
 ;;   "Highlight selected window with a different background color."
@@ -676,11 +845,23 @@ If INCREASE is non-nil, enlarge the window, otherwise shrink it."
 #+end_src
 *** Keybinds
 #+begin_src emacs-lisp
-;; Keybindings
-(map! :n "C-M-l" #'next-buffer
-      :n "C-M-h" #'previous-buffer
-      "C-j" #'other-window
-      "C-k" (lambda () (interactive) (other-window -1)))
+(defun my-switch-buffer-forward-or-other-window ()
+  (interactive)
+  (if (one-window-p)
+      (next-buffer)
+    (other-window 1)))
+
+(defun my-switch-buffer-backward-or-other-window ()
+  (interactive)
+  (if (one-window-p)
+      (previous-buffer)
+    (other-window -1)))
+
+(after! evil
+  (map! :n "C-j" #'my-switch-buffer-forward-or-other-window
+        :n "C-k" #'my-switch-buffer-backward-or-other-window))
+
+
 
 
 
@@ -698,9 +879,21 @@ If INCREASE is non-nil, enlarge the window, otherwise shrink it."
 
 (global-set-key (kbd "C-M-j") 'rotate-window)
 (global-set-key (kbd "C-M-k") (lambda () (interactive) (dotimes (_ (- (length (window-list)) 1)) (rotate-window))))
+
+(global-set-key (kbd "C-M-<return>") #'vterm) ;; dont work in orgmode or inside vtmerm
+
+
+
+(map! "C-f" #'isearch-forward
+      "C-s" #'edwina-inc-nmaster
+      "C-d" #'edwina-dec-nmaster)
+
+
+
 #+end_src
 *** Modeline
-no modeline from the 3 buffer
+TODO
+- no modeline from the 3 buffer
 #+begin_src emacs-lisp
 ;; (defun laluxx/setup-mode-line ()
 ;;   "Set up the mode line."
@@ -755,6 +948,7 @@ no modeline from the 3 buffer
 
 
 (evil-global-set-key 'normal (kbd "<C-return>") #'laluxx/create-window-based-on-layout)
+(evil-global-set-key 'normal (kbd "<M-return>") #'laluxx/create-window-based-on-layout)
 #+end_src
 *** Monocole
 #+begin_src emacs-lisp
@@ -778,47 +972,6 @@ managers such as DWM, BSPWM refer to this state as 'monocle'."
 
 
 #+end_src
-*** Splits
-**** Horizzontal
-#+begin_src emacs-lisp
-;; (defun laluxx/horizontal-split-and-hide-modeline ()
-;;   "Horizontally split the window, create a new buffer and hide the modeline."
-;;   (interactive)
-;;   (split-window-below)
-;;   (other-window 1)
-;;   (switch-to-buffer (generate-new-buffer "new"))
-;;   (hide-mode-line-mode))
-
-;; Proportion fix
- (defun laluxx/horizontal-split-and-hide-modeline ()
-  "Horizontally split the window, create a new buffer and hide the modeline."
-  (interactive)
-  (split-window-below)
-  (balance-windows)
-  (other-window 1)
-  (switch-to-buffer (generate-new-buffer "new"))
-  (hide-mode-line-mode))
-
-
-(map! :leader
-      (:prefix ("w" . "window")
-       "s" #'laluxx/horizontal-split-and-hide-modeline))
-#+end_src
-**** Vertical
-#+begin_src emacs-lisp
-(defun laluxx/vertical-split-and-hide-modeline ()
-  "Vertically split the window, create a new buffer and hide the modeline."
-  (interactive)
-  (split-window-right)
-  (other-window 1)
-  (switch-to-buffer (generate-new-buffer "new"))
-  (hide-mode-line-mode))
-
-(map! :leader
-      (:prefix ("w" . "window")
-       "v" #'laluxx/vertical-split-and-hide-modeline))
-#+end_src
-
 ** Kill-buffer
 Kill every buffer that is not the dashboard
 #+begin_src emacs-lisp
@@ -1308,7 +1461,7 @@ If peep-dired is enabled, you will get image previews as you go up/down with 'j'
 
   (spaceline-spacemacs-theme))
 #+end_src
-*** toggle-modeline
+** toggle-modeline
 #+begin_src emacs-lisp
 (defvar my-modeline-state 'spaceline)
 
@@ -1342,125 +1495,6 @@ If peep-dired is enabled, you will get image previews as you go up/down with 'j'
        "M" #'laluxx/toggle-modeline-global))
 
 
-#+end_src
-
-* TREEMACS
-#+begin_src emacs-lisp
-1(use-package treemacs
-  :ensure t
-  :defer t
-  :init
-  (with-eval-after-load 'winum
-    (define-key winum-keymap (kbd "M-0") #'treemacs-select-window))
-  :config
-  (progn
-    (setq treemacs-collapse-dirs                   (if treemacs-python-executable 3 0)
-          treemacs-deferred-git-apply-delay        0.5
-          treemacs-directory-name-transformer      #'identity
-          treemacs-display-in-side-window          t
-          treemacs-eldoc-display                   'simple
-          treemacs-file-event-delay                2000
-          treemacs-file-extension-regex            treemacs-last-period-regex-value
-          treemacs-file-follow-delay               0.2
-          treemacs-file-name-transformer           #'identity
-          treemacs-follow-after-init               t
-          treemacs-expand-after-init               t
-          treemacs-find-workspace-method           'find-for-file-or-pick-first
-          treemacs-git-command-pipe                ""
-          treemacs-goto-tag-strategy               'refetch-index
-          treemacs-header-scroll-indicators        '(nil . "^^^^^^")
-          treemacs-hide-dot-git-directory          t
-          treemacs-indentation                     2
-          treemacs-indentation-string              " "
-          treemacs-is-never-other-window           nil
-          treemacs-max-git-entries                 5000
-          treemacs-missing-project-action          'ask
-          treemacs-move-forward-on-expand          nil
-          treemacs-no-png-images                   nil
-          treemacs-no-delete-other-windows         t
-          treemacs-project-follow-cleanup          nil
-          treemacs-persist-file                    (expand-file-name ".cache/treemacs-persist" user-emacs-directory)
-          treemacs-position                        'left
-          treemacs-read-string-input               'from-child-frame
-          treemacs-recenter-distance               0.1
-          treemacs-recenter-after-file-follow      nil
-          treemacs-recenter-after-tag-follow       nil
-          treemacs-recenter-after-project-jump     'always
-          treemacs-recenter-after-project-expand   'on-distance
-          treemacs-litter-directories              '("/node_modules" "/.venv" "/.cask")
-          treemacs-project-follow-into-home        nil
-          treemacs-show-cursor                     t
-          treemacs-show-hidden-files               t
-          treemacs-silent-filewatch                nil
-          treemacs-silent-refresh                  nil
-          treemacs-sorting                         'alphabetic-asc
-          treemacs-select-when-already-in-treemacs 'move-back
-          treemacs-space-between-root-nodes        t
-          treemacs-tag-follow-cleanup              t
-          treemacs-tag-follow-delay                1.5
-          treemacs-text-scale                      nil
-          treemacs-user-mode-line-format           nil
-          treemacs-user-header-line-format         nil
-          treemacs-wide-toggle-width               70
-          treemacs-width                           35
-          treemacs-width-increment                 1
-          treemacs-width-is-initially-locked       t
-          treemacs-workspace-switch-cleanup        nil)
-
-    ;; The default width and height of the icons is 22 pixels. If you are
-    ;; using a Hi-DPI display, uncomment this to double the icon size.
-    ;;(treemacs-resize-icons 44)
-
-    (treemacs-follow-mode t)
-    (treemacs-filewatch-mode t)
-    (treemacs-fringe-indicator-mode 'always)
-    (when treemacs-python-executable
-      (treemacs-git-commit-diff-mode t))
-
-    (pcase (cons (not (null (executable-find "git")))
-                 (not (null treemacs-python-executable)))
-      (`(t . t)
-       (treemacs-git-mode 'deferred))
-      (`(t . _)
-       (treemacs-git-mode 'simple)))
-
-    (treemacs-hide-gitignored-files-mode nil))
-  :bind
-  (:map global-map
-        ("M-0"       . treemacs-select-window)
-        ("C-x t 1"   . treemacs-delete-other-windows)
-        ("C-x t t"   . treemacs)
-        ("C-x t d"   . treemacs-select-directory)
-        ("C-x t B"   . treemacs-bookmark)
-        ("C-x t C-t" . treemacs-find-file)
-        ("C-x t M-t" . treemacs-find-tag)))
-
-(use-package treemacs-evil
-  :after (treemacs evil)
-  :ensure t)
-
-(use-package treemacs-projectile
-  :after (treemacs projectile)
-  :ensure t)
-
-;; BREAK dirvish icons
-;; (use-package treemacs-icons-dired
-;;   :hook (dired-mode . treemacs-icons-dired-enable-once)
-;;   :ensure t)
-
-(use-package treemacs-magit
-  :after (treemacs magit)
-  :ensure t)
-
-(use-package treemacs-persp ;;treemacs-perspective if you use perspective.el vs. persp-mode
-  :after (treemacs persp-mode) ;;or perspective vs. persp-mode
-  :ensure t
-  :config (treemacs-set-scope-type 'Perspectives))
-
-(use-package treemacs-tab-bar ;;treemacs-tab-bar if you use tab-bar-mode
-  :after (treemacs)
-  :ensure t
-  :config (treemacs-set-scope-type 'Tabs))
 #+end_src
 
 * RAINBOW MODE
@@ -1734,45 +1768,27 @@ TODO
 
 
 #+end_src
-* XOS
-** update-dotfiles
-whenever you save a file inside "~/Desktop/pulls/dotfiles"
-or one of its subdirectories && if that file is a org file
+* [#A] Config
+*** Edwina
 #+begin_src emacs-lisp
-(defun laluxx/update-dotfiles ()
-  "Update dotfiles."
-  (interactive)
-  (let* ((dotfiles-path (expand-file-name "~/Desktop/pulls/dotfiles"))
-         (command (concat "rsync -a " dotfiles-path "/. $HOME/")))
-    (shell-command command)
-    (message "Updated dotfiles")))
-
+(use-package! edwina
+  :config
+  ;; Your config here...
+  (setq display-buffer-base-action '(display-buffer-below-selected))
+  (edwina-setup-dwm-keys)
+  (edwina-mode 1))
 #+end_src
-*** run-update-dotfiles
+** Evil
 #+begin_src emacs-lisp
-;; ONLY org
-;; (defun laluxx/run-update-dotfiles ()
-;;   "Run `laluxx/update-dotfiles` if the current file is inside ~/Desktop/pulls/dotfiles or its subdirectories."
-;;   (when (and buffer-file-name
-;;              (string-prefix-p (expand-file-name "~/Desktop/pulls/dotfiles") buffer-file-name)
-;;              (string= (file-name-extension buffer-file-name) "org"))
-;;     (laluxx/update-dotfiles)))
-
-;; (add-hook 'after-save-hook 'laluxx/run-update-dotfiles)
-
-;; ALL file extentions
-(defun laluxx/run-update-dotfiles ()
-  "Run `laluxx/update-dotfiles` if the current file is inside ~/Desktop/pulls/dotfiles or its subdirectories."
-  (when (and buffer-file-name
-             (string-prefix-p (expand-file-name "~/Desktop/pulls/dotfiles") buffer-file-name))
-    (laluxx/update-dotfiles)))
-
-(add-hook 'after-save-hook 'laluxx/run-update-dotfiles)
-
-
+(after! evil
+  (map! :after evil
+        :map evil-insert-state-map
+        "C-h" #'evil-backward-char
+        "C-j" #'evil-next-line
+        "C-k" #'evil-previous-line
+        "C-l" #'evil-forward-char))
 #+end_src
-* ORG
-** auto-tangle
+** org-auto-tangle
 =org-auto-tangle= allows you to add the option =#+auto_tangle: t= in your Org file so that it automatically tangles when you save the document.
 #+begin_src emacs-lisp
 (use-package! org-auto-tangle
@@ -1791,4 +1807,169 @@ or one of its subdirectories && if that file is a org file
 (map! :leader
       :desc "Insert auto_tangle tag" "i a" #'laluxx/insert-auto-tangle-tag)
 #+end_src
+** Centaur-tabs
+#+begin_src emacs-lisp
+(after! centaur-tabs
+  (setq centaur-tabs-style "rounded"
+        centaur-tabs-height 32
+        centaur-tabs-set-icons t
+        centaur-tabs-set-bar 'under
+        x-underline-at-descent-line t
+        centaur-tabs-set-modified-marker t
+        centaur-tabs-show-navigation-buttons t
+        centaur-tabs-show-new-tab-button t
+        centaur-tabs-left-edge-margin nil
+        centaur-tabs-cycle-scope 'tabs)
+  (centaur-tabs-mode t)
+  (centaur-tabs-headline-match)
+  (setq centaur-tabs-adjust-buffer-order t))
 
+
+
+(defun my/centaur-tabs-mode-condition ()
+  (if (or (> (count-windows) 1)
+          (derived-mode-p 'dashboard-mode 'vterm-mode 'dired-mode))
+      (centaur-tabs-local-mode)  ;; disable if more than one window or in one of the listed modes
+    (centaur-tabs-local-mode -1)))  ;; enable otherwise
+
+
+;; Run the function after every buffer list update
+(add-hook 'buffer-list-update-hook 'my/centaur-tabs-mode-condition)
+
+
+#+end_src
+** Vterm
+#+begin_src emacs-lisp
+;; (add-hook 'vterm-mode-hook
+;;           (lambda ()
+;;             (define-key vterm-mode-map (kbd "C-j") 'other-window)
+;;             (define-key vterm-mode-map (kbd "C-k")
+;;               (lambda ()
+;;                 (interactive)
+;;                 (other-window -1)))
+;;             (define-key vterm-mode-map (kbd "C-h") 'neotree-or-enlarge-window-left)
+;;             (define-key vterm-mode-map (kbd "C-l") 're-builder-or-enlarge-window-right)
+;;             (define-key vterm-mode-map (kbd "C-M-j") 'rotate-window)
+;;             (define-key vterm-mode-map (kbd "C-M-k")
+;;               (lambda ()
+;;                 (interactive)
+;;                 (dotimes (_ (- (length (window-list)) 1))
+;;                   (rotate-window))))
+;;             (evil-define-key 'normal vterm-mode-map (kbd "q") 'delete-window)))
+
+(add-hook 'vterm-mode-hook
+          (lambda ()
+            (evil-define-key 'insert vterm-mode-map (kbd "C-j") 'other-window)
+            (evil-define-key 'insert vterm-mode-map (kbd "C-k")
+              (lambda ()
+                (interactive)
+                (other-window -1)))
+            (evil-define-key 'insert vterm-mode-map (kbd "C-h") 'neotree-or-enlarge-window-left)
+            (evil-define-key 'insert vterm-mode-map (kbd "C-l") 're-builder-or-enlarge-window-right)
+            (evil-define-key 'insert vterm-mode-map (kbd "C-M-j") 'rotate-window)
+            (evil-define-key 'insert vterm-mode-map (kbd "C-M-k")
+              (lambda ()
+                (interactive)
+                (dotimes (_ (- (length (window-list)) 1))
+                  (rotate-window))))
+            (evil-define-key 'normal vterm-mode-map (kbd "q") 'delete-window)))
+
+
+
+#+end_src
+** Magit
+#+begin_src emacs-lisp
+;; (with-eval-after-load 'magit
+;;   (define-key magit-mode-map (kbd "C-j") #'other-window)
+;;   (define-key magit-mode-map (kbd "C-k") (lambda () (interactive) (other-window -1)))
+;;   (define-key magit-mode-map (kbd "M-j") #'magit-section-forward)
+;;   (define-key magit-mode-map (kbd "M-k") #'magit-section-backward))
+
+(after! magit
+  (define-key magit-mode-map (kbd "C-j") #'other-window)
+  (define-key magit-mode-map (kbd "C-k") (lambda () (interactive) (other-window -1)))
+  (define-key magit-mode-map (kbd "M-j") #'magit-section-forward)
+  (define-key magit-mode-map (kbd "M-k") #'magit-section-backward))
+
+
+#+end_src
+** Neotree
+#+begin_src emacs-lisp
+(after! neotree
+  (map! :map neotree-mode-map
+        :n "C-j" #'my-switch-buffer-forward-or-other-window
+        :n "C-k" #'my-switch-buffer-backward-or-other-window
+        :n "C-h" #'neotree-hide))
+#+end_src
+
+** Ewal
+*** Default
+#+begin_src emacs-lisp
+(use-package! ewal
+  :init
+  (setq ewal-use-built-in-always-p nil
+        ewal-use-built-in-on-failure-p t
+        ewal-built-in-palette "sexy-material"))
+#+end_src
+*** Ewal-Doom-Theme
+this will set the theme
+#+begin_src emacs-lisp
+(use-package! ewal-doom-themes
+  :init
+  ;; If you've set ewal-use-built-in-always-p to nil in ewal configuration
+  ;; This might be unnecessary, but doesn't hurt to ensure.
+  (setq ewal-use-built-in-always-p nil
+        ewal-use-built-in-on-failure-p t
+        ewal-built-in-palette "sexy-material")
+  :config
+  (load-theme 'ewal-doom-one t)
+  (enable-theme 'ewal-doom-one))
+#+end_src
+* Enable
+#+begin_src emacs-lisp
+;; (desktop-save-mode 1)
+#+end_src
+* Images
+#+begin_src emacs-lisp
+;; (global-set-key [double-mouse-1] 'my-open-image-at-point-in-new-buffer)
+
+;; (defun my-open-image-at-point-in-new-buffer (event)
+;;   "Open the image at point in a new buffer."
+;;   (interactive "e")
+;;   (let* ((window (posn-window (event-end event)))
+;;          (buffer (window-buffer window))
+;;          (pos (posn-point (event-end event)))
+;;          (file (with-current-buffer buffer
+;;                  (get-text-property pos 'display))))
+;;     (when file
+;;       (let ((buffer (generate-new-buffer "image-buffer")))
+;;         (switch-to-buffer buffer)
+;;         (insert-file-contents (car file))
+;;         (image-mode)))))
+
+;; (global-set-key [double-mouse-1] 'my-open-image-at-point-in-new-buffer)
+
+
+(require 'ffap)
+
+(defun doom/open-file-at-point-in-new-buffer (event)
+  "Open the file under the mouse cursor in a new buffer."
+  (interactive "e")
+  (let* ((window (posn-window (event-end event)))
+         (buffer (window-buffer window))
+         (pos (posn-point (event-end event)))
+         (file (with-current-buffer buffer
+                 (ffap-file-at-point))))
+    (when file
+      (let ((buf (find-file-noselect file)))
+        (with-current-buffer buf
+          (when (member (file-name-extension file)
+                        '("jpg" "jpeg" "png" "gif" "bmp"))
+            (image-mode)))
+        (switch-to-buffer-other-window buf)))))
+
+(global-set-key [double-mouse-1] #'doom/open-file-at-point-in-new-buffer)
+
+
+
+#+end_src
