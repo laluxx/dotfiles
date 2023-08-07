@@ -1946,6 +1946,15 @@ TODO
 
 #+end_src
 * Config
+** Org
+#+begin_src emacs-lisp
+
+#+end_src
+** Info-colors
+#+begin_src emacs-lisp
+(add-hook 'Info-selection-hook 'info-colors-fontify-node)
+
+#+end_src
 ** Ibuffer
 #+begin_src emacs-lisp
 (defun laluxx/ibuffer-only ()

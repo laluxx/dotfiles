@@ -82,12 +82,13 @@
 (package! treemacs-tab-bar)
 (package! treemacs-icons-dired)
 
-(package! magit-delta)
-(package! snails)
-(package! pynt)
 (package! spacious-padding)
 (package! sxhkdrc-mode)
-(package! eldoc-box)
+
+(package! inspector)
+(package! tree-inspector)
+
+(package! info-colors)
 
 
 
