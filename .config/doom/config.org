@@ -307,7 +307,8 @@ Then apply highlighting to the current widget."
 ** Conf
 #+begin_src emacs-lisp
 (require 'dashboard)
-(setq dashboard-startup-banner 'logo)
+(setq dashboard-startup-banner "~/xos/emacs/dashboard/xos-logo.png") ;; logo
+
 (setq dashboard-center-content t)
 (setq dashboard-show-shortcuts nil)
 
@@ -366,7 +367,32 @@ keybind within the dashboard
 ** Initial-buffer
 Set dashboard as the initial buffer
 #+begin_src emacs-lisp
-(setq initial-buffer-choice (lambda () (get-buffer-create "*dashboard*")))
+;; (setq initial-buffer-choice (lambda () (get-buffer-create "*dashboard*")))
+
+
+;; (defun open-dashboard ()
+;;   (interactive)
+;;   (setq initial-buffer-choice (lambda () (get-buffer-create "*dashboard*"))))
+;; (global-set-key (kbd "C-x d") 'dashboard-open)
+
+
+
+
+(setq initial-buffer-choice nil)
+
+(defun open-dashboard ()
+  "Open the dashboard."
+  (interactive)
+  (dashboard-refresh-buffer))
+
+(defun generate-image-and-open-dashboard ()
+  "Generate image and open dashboard."
+  (shell-command "python3 ~/xos/pywal-scripts/dashboard-wal-gen.py")
+  (open-dashboard))
+
+(add-hook 'after-init-hook (lambda () (run-at-time "0.5 sec" nil 'generate-image-and-open-dashboard)))
+
+
 #+end_src
 * Keybinds
 ** Diff
@@ -604,7 +630,291 @@ Keybinds that execute other keybinds.
 #+end_src
 
 * FUNCTIONS
-** XOS
+** Set-theme
+#+begin_src emacs-lisp
+;; (defun laluxx/preview-theme ()
+;;   "Preview theme as you scroll through options in counsel-load-theme."
+;;   (interactive)
+;;   (let* ((themes (custom-available-themes))
+;;          (theme-names (mapcar 'symbol-name themes))
+;;          (current-theme (car custom-enabled-themes))
+;;          (previewed-theme nil)
+;;          (ivy-update-fn
+;;           (lambda ()
+;;             (when previewed-theme
+;;               (disable-theme previewed-theme))
+;;             (setq previewed-theme (intern (ivy-state-current ivy-last)))
+;;             (load-theme previewed-theme t))))
+;;     (ivy-read "Load theme: " theme-names
+;;               :update-fn ivy-update-fn
+;;               :action
+;;               (lambda (theme)
+;;                 (load-theme (intern theme) t))
+;;               :caller 'laluxx/preview-theme)))
+
+;; (defun laluxx/set-theme-and-update-environment ()
+;;   "Function to set a new Doom theme and then update the environment according to the new theme."
+;;   (interactive)
+;;   ;; Define pywal-scripts-directory
+;;   (let* ((pywal-scripts-directory "~/xos/pywal-scripts"))
+;;     ;; Load the theme using the same mechanism as h t
+;;     (laluxx/preview-theme)
+;;     (laluxx/doom-wal)
+;;     ;; Then run all the other commands you wanted to run
+;;     (dolist (script '("xmonad-dark-wal.py" "nvim-wal.py" "nvim-wal-dark.py"))
+;;       (shell-command-to-string (concat "python3 " pywal-scripts-directory "/" script)))
+;;     (shell-command-to-string "xmonad --restart")
+;;     (shell-command-to-string "dashboard-wal-gen")
+;;     ;; If the current buffer was the dashboard, refresh it
+;;     (when (equal (buffer-name) "*dashboard*")
+;;       (run-at-time "0.5 sec" nil 'open-dashboard))
+;;     (run-at-time "1 sec" nil 'spaceline-compile)))
+
+
+
+
+
+
+
+;; V2
+;; (defun laluxx/preview-theme ()
+;;   "Preview theme as you scroll through options in counsel-load-theme."
+;;   (interactive)
+;;   (let* ((themes (custom-available-themes))
+;;          (theme-names (mapcar 'symbol-name themes))
+;;          (current-theme (car custom-enabled-themes))
+;;          (previewed-theme nil)
+;;          (ivy-update-fn
+;;           (lambda ()
+;;             (when previewed-theme
+;;               (disable-theme previewed-theme))
+;;             (setq previewed-theme (intern (ivy-state-current ivy-last)))
+;;             (load-theme previewed-theme t)
+;;             (spaceline-compile))))
+;;     (ivy-read "Load theme: " theme-names
+;;               :update-fn ivy-update-fn
+;;               :action
+;;               (lambda (theme)
+;;                 (load-theme (intern theme) t))
+;;               :caller 'laluxx/preview-theme)))
+
+;; (defun laluxx/set-theme-and-update-environment ()
+;;   "Function to set a new Doom theme and then update the environment according to the new theme."
+;;   (interactive)
+;;   ;; Define pywal-scripts-directory
+;;   (let* ((pywal-scripts-directory "~/xos/pywal-scripts"))
+;;     ;; Load the theme using the same mechanism as h t
+;;     (laluxx/preview-theme)
+;;     (laluxx/doom-wal)
+;;     ;; Then run all the other commands you wanted to run
+;;     (dolist (script '("xmonad-dark-wal.py" "nvim-wal.py" "nvim-wal-dark.py"))
+;;       (shell-command-to-string (concat "python3 " pywal-scripts-directory "/" script)))
+;;     (shell-command-to-string "xmonad --restart")
+;;     (shell-command-to-string "dashboard-wal-gen")
+;;     ;; If the current buffer was the dashboard, refresh it
+;;     (when (equal (buffer-name) "*dashboard*")
+;;       (run-at-time "0.5 sec" nil 'open-dashboard))
+;;     (run-at-time "1 sec" nil 'spaceline-compile)))
+
+
+
+
+
+
+
+
+
+(defun laluxx/preview-theme ()
+  "Preview theme as you scroll through options in counsel-load-theme."
+  (interactive)
+  (let* ((themes (custom-available-themes))
+         (theme-names (mapcar 'symbol-name themes))
+         (current-theme (car custom-enabled-themes))
+         (previewed-theme nil)
+         (ivy-update-fn
+          (lambda ()
+            (when previewed-theme
+              (disable-theme previewed-theme))
+            (setq previewed-theme (intern (ivy-state-current ivy-last)))
+            (load-theme previewed-theme t)
+            ;; Only refresh the spaceline faces
+            (spaceline-install))))
+    (ivy-read "Load theme: " theme-names
+              :update-fn ivy-update-fn
+              :action
+              (lambda (theme)
+                (load-theme (intern theme) t))
+              :caller 'laluxx/preview-theme)))
+
+(defun laluxx/set-theme-and-update-environment ()
+  "Function to set a new Doom theme and then update the environment according to the new theme."
+  (interactive)
+  ;; Define pywal-scripts-directory
+  (let* ((pywal-scripts-directory "~/xos/pywal-scripts"))
+    ;; Load the theme using the same mechanism as h t
+    (laluxx/preview-theme)
+    (laluxx/doom-wal)
+    ;; Then run all the other commands you wanted to run
+    (dolist (script '("xmonad-dark-wal.py" "nvim-wal.py" "nvim-wal-dark.py"))
+      (shell-command-to-string (concat "python3 " pywal-scripts-directory "/" script)))
+    (shell-command-to-string "xmonad --restart")
+    (shell-command-to-string "dashboard-wal-gen")
+    ;; If the current buffer was the dashboard, refresh it
+    (when (equal (buffer-name) "*dashboard*")
+      (run-at-time "0.5 sec" nil 'open-dashboard))
+    (run-at-time "1 sec" nil 'spaceline-compile)))
+
+;; Map the function to a key sequence
+(map! :leader
+      :desc "Set theme and update environment"
+      "h t" #'laluxx/set-theme-and-update-environment)
+
+(map! :leader
+      :desc "Set wallpaper and update environment"
+      "h T" #'laluxx/wal-set)
+
+
+
+
+
+
+
+
+
+#+end_src
+
+** Toggle-highlight
+#+begin_src emacs-lisp
+(after! hl-line
+  ;; Define a function to toggle line highlight in current buffer
+  (defun my/toggle-local-hl-line ()
+    (interactive)
+    (if hl-line-mode
+        (hl-line-mode -1)
+      (hl-line-mode 1)))
+
+  ;; Define a function to toggle line highlight globally
+  (defun my/toggle-global-hl-line ()
+    (interactive)
+    (if global-hl-line-mode
+        (global-hl-line-mode -1)
+      (global-hl-line-mode 1))))
+
+(map! :leader
+      (:prefix ("t" . "toggle")
+       :desc "Toggle hl-line in current buffer" "h" #'my/toggle-local-hl-line
+       :desc "Toggle global hl-line" "H" #'my/toggle-global-hl-line))
+#+end_src
+** Wal-Set
+*** Default
+TODO:
+- it doesnt refresh the dashboard if is
+  opened in a split and not focused []
+#+begin_src emacs-lisp
+(defun laluxx/wal-set ()
+  (interactive)
+  (let* ((default-directory "~/xos/wallpapers/static")
+         (theme-directory "~/xos/theme")
+         (pywal-scripts-directory "~/xos/pywal-scripts")
+         (image-files (directory-files-recursively default-directory "\\.\\(png\\|jpg\\|jpeg\\|webp\\)$"))
+         (current-buffer-name (buffer-name)))  ; Save the current buffer name
+    (ivy-read "Choose wallpaper: "
+              image-files
+              :action (lambda (wallpaper)
+                        (when (and (not (string-empty-p wallpaper))
+                                   (file-exists-p wallpaper))
+                          (let ((abs-wallpaper (expand-file-name wallpaper)))
+                            (shell-command-to-string (concat "wal -i " abs-wallpaper))
+                            (with-temp-file (concat theme-directory "/.wallpaper")
+                              (insert abs-wallpaper))
+                            (shell-command-to-string "theme pywal --no-random")
+                            (dolist (script '("xmonad-dark-wal.py" "nvim-wal.py" "nvim-wal-dark.py"))
+                              (shell-command-to-string (concat "python3 " pywal-scripts-directory "/" script)))
+                            (shell-command-to-string "xmonad --restart")
+                            (shell-command-to-string "dashboard-wal-gen")
+                            ;; If the current buffer was the dashboard, refresh it
+                            (when (equal current-buffer-name "*dashboard*")
+                              (run-at-time "0.5 sec" nil 'open-dashboard))
+                            (run-at-time "1 sec" nil 'spaceline-compile)))))))
+#+end_src
+*** Favourite
+Set a wal paper from =~/xos/wallpapers/favourites=
+#+begin_src emacs-lisp
+(defun laluxx/wal-set-favourite ()
+  (interactive)
+  (let* ((default-directory "~/xos/wallpapers/favourites")
+         (theme-directory "~/xos/theme")
+         (pywal-scripts-directory "~/xos/pywal-scripts")
+         (image-files (directory-files-recursively default-directory "\\.\\(png\\|jpg\\|jpeg\\|webp\\)$")))
+    (ivy-read "Favourite wallpapers: "
+              image-files
+              :action (lambda (wallpaper)
+                        (when (and (not (string-empty-p wallpaper))
+                                   (file-exists-p wallpaper))
+                          (let ((abs-wallpaper (expand-file-name wallpaper)))
+                            (shell-command-to-string (concat "wal -i " abs-wallpaper))
+                            (with-temp-file (concat theme-directory "/.wallpaper")
+                              (insert abs-wallpaper))
+                            (shell-command-to-string "theme pywal --no-random")
+                            (dolist (script '("xmonad-dark-wal.py" "nvim-wal.py" "nvim-wal-dark.py"))
+                              (shell-command-to-string (concat "python3 " pywal-scripts-directory "/" script)))
+                            (shell-command-to-string "xmonad --restart")
+                            ;; (shell-command "papirus-wal")
+                            ;; (shell-command-to-string "oomox-gtk-gen")
+                            (shell-command-to-string "dashboard-wal-gen")
+                            ;; (laluxx/load-org-wal-colors)
+                            (run-at-time "1 sec" nil 'spaceline-compile)))))))  ; Delay spaceline-compile
+#+end_src
+*** solid
+Choose a wal paper from =~/xos/wallpapers=
+and turn it solid
+#+begin_src emacs-lisp
+(defun laluxx/wal-set-solid ()
+  (interactive)
+  (let* ((default-directory "~/xos/wallpapers/static")
+         (theme-directory "~/xos/theme")
+         (pywal-scripts-directory "~/xos/pywal-scripts")
+         (solid-wallpapers-directory "~/xos/wallpapers/solid")
+         (image-files (directory-files-recursively default-directory "\\.\\(png\\|jpg\\|jpeg\\|webp\\)$")))
+    (ivy-read "Wallpapers to turn solid: "
+              image-files
+              :action (lambda (wallpaper)
+                        (when (and (not (string-empty-p wallpaper))
+                                   (file-exists-p wallpaper))
+                          (let* ((abs-wallpaper (expand-file-name wallpaper))
+                                 (base-wallpaper-name (file-name-base wallpaper))  ;; Get the filename without extension
+                                 (solid-wallpaper (concat solid-wallpapers-directory "/" base-wallpaper-name "-SOLID.png")))
+                            (if (file-exists-p solid-wallpaper)
+                                (shell-command-to-string (concat "wal -i " solid-wallpaper))
+                              (progn
+                                (shell-command-to-string (concat "wal -n -i " abs-wallpaper)) ;; Use wal -n to generate colors without setting wallpaper
+                                (shell-command-to-string (concat "wal-set-solid " base-wallpaper-name))))
+                            (with-temp-file (concat theme-directory "/.wallpaper")
+                              (insert abs-wallpaper))
+                            (shell-command-to-string "theme pywal --no-random")
+                            (dolist (script '("xmonad-dark-wal.py" "nvim-wal.py" "nvim-wal-dark.py"))
+                              (shell-command-to-string (concat "python3 " pywal-scripts-directory "/" script)))
+                            (shell-command-to-string "xmonad --restart")
+                            (run-at-time "1 sec" nil 'spaceline-compile)))))))  ; Delay spaceline-compile
+#+end_src
+
+*** Set-wallpaper
+set system wallpaper
+#+begin_src emacs-lisp
+(defun laluxx/set-wallpaper ()
+  (interactive)
+  (let* ((default-directory "~/xos/wallpapers/static")
+         (image-files (directory-files-recursively default-directory "\\.\\(png\\|jpg\\|jpeg\\|webp\\)$")))
+    (ivy-read "Choose wallpaper: "
+              image-files
+              :action (lambda (wallpaper)
+                        (when (and (not (string-empty-p wallpaper))
+                                   (file-exists-p wallpaper))
+                          (let ((abs-wallpaper (expand-file-name wallpaper)))
+                            (shell-command-to-string (concat "feh --bg-scale " abs-wallpaper))))))))
+
+
+#+end_src
 ** update-dotfiles
 whenever you save a file inside "~/Desktop/pulls/dotfiles"
 or one of its subdirectories && if that file is a org file
@@ -643,54 +953,21 @@ or one of its subdirectories && if that file is a org file
 #+end_src
 ** Diff
 #+begin_src emacs-lisp
-;;   (defun laluxx/diff-buffer-with-file (&optional arg)
-;;     "Compare buffer to its file, else run `vc-diff'.
-;; With \\[universal-argument] also enable highlighting of word-wise
-;; changes, local to the current buffer."
-;;     (interactive "P")
-;;     (let ((buf nil))     ; this method will "fail" if multi diff buffers
-;;       (if (buffer-modified-p)
-;;           (progn
-;;             (diff-buffer-with-file (current-buffer))
-;;             (setq buf "*Diff*"))
-;;         (vc-diff)
-;;         (setq buf "*vc-diff*"))
-;;       (when arg
-;;         (with-current-buffer (get-buffer buf)
-;;           (setq-local diff-refine 'font-lock)))))
-
-
-(defvar laluxx/diff-buffer nil
-  "Stores the current diff buffer if one exists.")
-
-(defun laluxx/diff-buffer-with-file (&optional arg)
-  "Compare buffer to its file, else run `vc-diff'.
+  (defun laluxx/diff-buffer-with-file (&optional arg)
+    "Compare buffer to its file, else run `vc-diff'.
 With \\[universal-argument] also enable highlighting of word-wise
 changes, local to the current buffer."
-  (interactive "P")
-  (if (and laluxx/diff-buffer
-           (buffer-live-p laluxx/diff-buffer)
-           (get-buffer-window laluxx/diff-buffer t))
-      (progn
-        (kill-buffer laluxx/diff-buffer)
-        (setq laluxx/diff-buffer nil))
-    (if (and (not laluxx/diff-buffer)
-             (or (not (buffer-live-p laluxx/diff-buffer))
-                 (not (get-buffer-window laluxx/diff-buffer t))))
-        (let ((buf nil))
-          (if (buffer-modified-p)
-              (progn
-                (diff-buffer-with-file (current-buffer))
-                (setq buf "*Diff*"))
-            (vc-diff)
-            (setq buf "*vc-diff*"))
-          (setq laluxx/diff-buffer (get-buffer buf))
-          (display-buffer laluxx/diff-buffer)
-          (when arg
-            (with-current-buffer laluxx/diff-buffer
-              (setq-local diff-refine 'font-lock)))))))
-
-
+    (interactive "P")
+    (let ((buf nil))     ; this method will "fail" if multi diff buffers
+      (if (buffer-modified-p)
+          (progn
+            (diff-buffer-with-file (current-buffer))
+            (setq buf "*Diff*"))
+        (vc-diff)
+        (setq buf "*vc-diff*"))
+      (when arg
+        (with-current-buffer (get-buffer buf)
+          (setq-local diff-refine 'font-lock)))))
 #+end_src
 ** emacs-Window-manager
 *** Modes
@@ -795,7 +1072,9 @@ If INCREASE is non-nil, enlarge the window, otherwise shrink it."
 
 #+end_src
 *** Highlight
+a function that highlight the selected window
 #+begin_src emacs-lisp
+;; IF YOU WANT TO BURN YOUR EYES
 ;; (defun highlight-selected-window ()
 ;;   "Highlight selected window with a different background color."
 ;;   (walk-windows (lambda (w)
@@ -806,6 +1085,7 @@ If INCREASE is non-nil, enlarge the window, otherwise shrink it."
 ;;     (buffer-face-set 'default)))
 
 ;; (add-hook 'buffer-list-update-hook 'highlight-selected-window)
+
 
 ;; Main
 ;; (require 'color)
@@ -825,21 +1105,21 @@ If INCREASE is non-nil, enlarge the window, otherwise shrink it."
 
 
 ;; FRINGE FIX
-(defun highlight-selected-window ()
-  "Highlight selected window with a different background color."
-  (let ((bg (face-attribute 'default :background)))
-    (walk-windows (lambda (w)
-                    (if (eq w (selected-window))
-                        (progn
-                          (with-current-buffer (window-buffer w)
-                            (buffer-face-set 'default))
-                          (with-selected-window w
-                            (set-face-attribute 'fringe nil :background bg)))
-                      (with-current-buffer (window-buffer w)
-                        (buffer-face-set `(:background ,(color-darken-name bg 35))))
-                      (with-selected-window w
-                        (set-face-attribute 'fringe nil :background (color-darken-name bg 35))))))))
-(add-hook 'buffer-list-update-hook 'highlight-selected-window)
+;; (defun highlight-selected-window ()
+;;   "Highlight selected window with a different background color."
+;;   (let ((bg (face-attribute 'default :background)))
+;;     (walk-windows (lambda (w)
+;;                     (if (eq w (selected-window))
+;;                         (progn
+;;                           (with-current-buffer (window-buffer w)
+;;                             (buffer-face-set 'default))
+;;                           (with-selected-window w
+;;                             (set-face-attribute 'fringe nil :background bg)))
+;;                       (with-current-buffer (window-buffer w)
+;;                         (buffer-face-set `(:background ,(color-darken-name bg 35))))
+;;                       (with-selected-window w
+;;                         (set-face-attribute 'fringe nil :background (color-darken-name bg 35))))))))
+;; (add-hook 'buffer-list-update-hook 'highlight-selected-window)
 
 
 #+end_src
@@ -1030,110 +1310,6 @@ Setup file watcher for ~/.cache/wal/colors
 #+RESULTS:
 : laluxx/load-org-wal-colors
 
-** Wal-Set
-*** Default
-#+begin_src emacs-lisp
-(defun laluxx/wal-set ()
-  (interactive)
-  (let* ((default-directory "~/xos/wallpapers/static")
-         (theme-directory "~/xos/theme")
-         (pywal-scripts-directory "~/xos/pywal-scripts")
-         (image-files (directory-files-recursively default-directory "\\.\\(png\\|jpg\\|jpeg\\|webp\\)$")))
-    (ivy-read "Choose wallpaper: "
-              image-files
-              :action (lambda (wallpaper)
-                        (when (and (not (string-empty-p wallpaper))
-                                   (file-exists-p wallpaper))
-                          (let ((abs-wallpaper (expand-file-name wallpaper)))
-                            (shell-command-to-string (concat "wal -i " abs-wallpaper))
-                            (with-temp-file (concat theme-directory "/.wallpaper")
-                              (insert abs-wallpaper))
-                            (shell-command-to-string "theme pywal --no-random")
-                            (dolist (script '("xmonad-dark-wal.py" "nvim-wal.py" "nvim-wal-dark.py"))
-                              (shell-command-to-string (concat "python3 " pywal-scripts-directory "/" script)))
-                            (shell-command-to-string "xmonad --restart")
-                            ;; (shell-command "papirus-wal")
-                            ;; (shell-command-to-string "oomox-gtk-gen")
-                            ;; (laluxx/load-org-wal-colors)
-                            (run-at-time "1 sec" nil 'spaceline-compile)))))))  ; Delay spaceline-compile
-#+end_src
-*** Favourite
-Set a wal paper from =~/xos/wallpapers/favourites=
-#+begin_src emacs-lisp
-(defun laluxx/wal-set-favourite ()
-  (interactive)
-  (let* ((default-directory "~/xos/wallpapers/favourites")
-         (theme-directory "~/xos/theme")
-         (pywal-scripts-directory "~/xos/pywal-scripts")
-         (image-files (directory-files-recursively default-directory "\\.\\(png\\|jpg\\|jpeg\\|webp\\)$")))
-    (ivy-read "Favourite wallpapers: "
-              image-files
-              :action (lambda (wallpaper)
-                        (when (and (not (string-empty-p wallpaper))
-                                   (file-exists-p wallpaper))
-                          (let ((abs-wallpaper (expand-file-name wallpaper)))
-                            (shell-command-to-string (concat "wal -i " abs-wallpaper))
-                            (with-temp-file (concat theme-directory "/.wallpaper")
-                              (insert abs-wallpaper))
-                            (shell-command-to-string "theme pywal --no-random")
-                            (dolist (script '("xmonad-dark-wal.py" "nvim-wal.py" "nvim-wal-dark.py"))
-                              (shell-command-to-string (concat "python3 " pywal-scripts-directory "/" script)))
-                            (shell-command-to-string "xmonad --restart")
-                            ;; (shell-command "papirus-wal")
-                            ;; (shell-command-to-string "oomox-gtk-gen")
-                            ;; (laluxx/load-org-wal-colors)
-                            (run-at-time "1 sec" nil 'spaceline-compile)))))))  ; Delay spaceline-compile
-#+end_src
-*** solid
-Choose a wal paper from =~/xos/wallpapers=
-and turn it solid
-#+begin_src emacs-lisp
-(defun laluxx/wal-set-solid ()
-  (interactive)
-  (let* ((default-directory "~/xos/wallpapers/static")
-         (theme-directory "~/xos/theme")
-         (pywal-scripts-directory "~/xos/pywal-scripts")
-         (solid-wallpapers-directory "~/xos/wallpapers/solid")
-         (image-files (directory-files-recursively default-directory "\\.\\(png\\|jpg\\|jpeg\\|webp\\)$")))
-    (ivy-read "Wallpapers to turn solid: "
-              image-files
-              :action (lambda (wallpaper)
-                        (when (and (not (string-empty-p wallpaper))
-                                   (file-exists-p wallpaper))
-                          (let* ((abs-wallpaper (expand-file-name wallpaper))
-                                 (base-wallpaper-name (file-name-base wallpaper))  ;; Get the filename without extension
-                                 (solid-wallpaper (concat solid-wallpapers-directory "/" base-wallpaper-name "-SOLID.png")))
-                            (if (file-exists-p solid-wallpaper)
-                                (shell-command-to-string (concat "wal -i " solid-wallpaper))
-                              (progn
-                                (shell-command-to-string (concat "wal -n -i " abs-wallpaper)) ;; Use wal -n to generate colors without setting wallpaper
-                                (shell-command-to-string (concat "wal-set-solid " base-wallpaper-name))))
-                            (with-temp-file (concat theme-directory "/.wallpaper")
-                              (insert abs-wallpaper))
-                            (shell-command-to-string "theme pywal --no-random")
-                            (dolist (script '("xmonad-dark-wal.py" "nvim-wal.py" "nvim-wal-dark.py"))
-                              (shell-command-to-string (concat "python3 " pywal-scripts-directory "/" script)))
-                            (shell-command-to-string "xmonad --restart")
-                            (run-at-time "1 sec" nil 'spaceline-compile)))))))  ; Delay spaceline-compile
-#+end_src
-
-*** Set-wallpaper
-set system wallpaper
-#+begin_src emacs-lisp
-(defun laluxx/set-wallpaper ()
-  (interactive)
-  (let* ((default-directory "~/xos/wallpapers/static")
-         (image-files (directory-files-recursively default-directory "\\.\\(png\\|jpg\\|jpeg\\|webp\\)$")))
-    (ivy-read "Choose wallpaper: "
-              image-files
-              :action (lambda (wallpaper)
-                        (when (and (not (string-empty-p wallpaper))
-                                   (file-exists-p wallpaper))
-                          (let ((abs-wallpaper (expand-file-name wallpaper)))
-                            (shell-command-to-string (concat "feh --bg-scale " abs-wallpaper))))))))
-
-
-#+end_src
 ** Doom-wal
 doom the wallpaper
 #+begin_src emacs-lisp
@@ -1631,6 +1807,7 @@ The following creates a global minor mode for rainbow-mode and enables it (excep
 Open info inside xmonad  DONE:
 - remember last manual manual [x]
 - Toggle [x]
+- ewal break this []
 #+begin_src emacs-lisp
 (defvar emacs-run-info-frame nil)
 
@@ -1768,8 +1945,26 @@ TODO
 
 
 #+end_src
-* [#A] Config
-*** Edwina
+* Config
+** Ibuffer
+#+begin_src emacs-lisp
+(defun laluxx/ibuffer-only ()
+  "Open ibuffer and delete other windows."
+  (interactive)
+  (ibuffer)
+  (delete-other-windows))
+
+
+(map! :leader
+      :desc "Open ibuffer only"
+      "b i" #'laluxx/ibuffer-only)
+
+
+#+end_src
+** Neotree
+#+begin_src emacs-lisp
+#+end_src
+** Edwina
 #+begin_src emacs-lisp
 (use-package! edwina
   :config
@@ -1895,6 +2090,37 @@ TODO
 #+end_src
 ** Neotree
 #+begin_src emacs-lisp
+(use-package! neotree
+  :commands (neotree-show neotree-hide neotree-dir neotree-find)
+  :init
+  ;; Set the NeoTree theme to icons, provided by all-the-icons
+  (setq neo-theme (if (display-graphic-p) 'icons 'arrow))
+
+  ;; Enable line numbers
+  (setq neo-show-line-number t)
+
+  ;; Use the custom version of the text-scale function
+  (setq neo-buffer--show-file 'neo-buffer--show-file-custom)
+
+  ;; Make NeoTree resizable
+  (setq neo-window-fixed-size nil)
+
+  ;; Set the root directory automatically
+  (setq neo-smart-open t)
+
+  ;; Allow to use 'q' to close the NeoTree buffer
+  (setq neo-keymap-style 'concise)
+
+  ;; Hide special files
+  (setq neo-hidden-files (quote (".DS_Store" ".git" ".svn" ".cache"))))
+
+;; Keybinding for NeoTree
+(map! :leader
+      :desc "Toggle neotree"
+      "t n" #'neotree-toggle)
+
+
+
 (after! neotree
   (map! :map neotree-mode-map
         :n "C-j" #'my-switch-buffer-forward-or-other-window

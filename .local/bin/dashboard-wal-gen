@@ -1,0 +1,251 @@
+#!/usr/bin/env python3
+
+# ƹmacs smart gradient
+# import os
+# from PIL import Image, ImageDraw
+# import numpy as np
+# from scipy.interpolate import interp1d
+
+# # Define paths
+# color_file_path = os.path.expanduser('~/.cache/wal/colors')
+# image_file_path = os.path.expanduser('~/.config/doom/dashboard/Emacs.png')
+# output_dir_path = os.path.expanduser('~/xos/emacs/dashboard')
+
+# # Ensure output directory exists
+# os.makedirs(output_dir_path, exist_ok=True)
+
+# # Read the colors
+# with open(color_file_path, 'r') as f:
+#     colors = [color.strip()[1:] for color in f.readlines() if color.strip()[0] == "#"][1:]  # exclude background color
+
+# # Convert colors to RGB format
+# colors = [tuple(int(color[i:i+2], 16) for i in (0, 2, 4)) for color in colors]
+
+# # Open the image
+# img = Image.open(image_file_path).convert('RGBA')
+
+# # Create the gradient
+# gradient = Image.new('L', (1, img.size[1]))
+# draw = ImageDraw.Draw(gradient)
+# for i in range(img.size[1]):
+#     draw.line([(0, i), (0, i+1)], fill=int(255*i/img.size[1]))
+
+# # Interpolate colors
+# f = interp1d(np.linspace(0, 255, len(colors)), np.array(colors), axis=0)
+
+# # Apply the gradient to the image
+# for y in range(img.size[1]):
+#     for x in range(img.size[0]):
+#         pixel = img.getpixel((x, y))
+#         if pixel[3] > 0:  # only if pixel is not transparent
+#             color = tuple(f(gradient.getpixel((0, y))).astype(int))
+#             img.putpixel((x, y), (*color, pixel[3]))
+
+# # Save the image
+# img.save(os.path.join(output_dir_path, 'xos-logo.png'))
+
+
+
+# DOOM ovale gradient
+# from PIL import Image
+# import json
+# import os
+# import math
+
+# wal_colors_path = os.path.join(os.path.expanduser("~"), ".cache", "wal", "colors.json")
+# base_image_path = os.path.join(os.path.expanduser("~"), ".config", "doom", "dashboard", "black-hole.png")
+# output_image_path = os.path.join(os.path.expanduser("~"), "xos", "emacs", "dashboard", "xos-logo.png")
+
+# with open(wal_colors_path, 'r') as f:
+#     wal_colors = json.load(f)['colors']
+# colors = [wal_colors['color{}'.format(i)] for i in range(16)]
+# colors = [tuple(int(color[i+1:i+3], 16)/255.0 for i in (0, 2, 4)) for color in colors[1:]]  # exclude background color
+
+# img = Image.open(base_image_path).convert('RGBA')
+# width, height = img.size
+# pixels = img.load()
+
+# center_x, center_y = width // 2, height // 2
+# max_dist = math.sqrt(center_x**2 + (center_y * 1.5)**2)  # scale factor of 1.5 for y-coordinate
+
+# for y in range(height):
+#     for x in range(width):
+#         r, g, b, a = pixels[x, y]
+#         if a != 0:  # only change color of non-transparent pixels
+#             dist = math.sqrt((x - center_x)**2 + ((y - center_y) * 1.5)**2)  # scale factor of 1.5 for y-coordinate
+#             color = colors[int(dist / max_dist * len(colors)) % len(colors)]
+#             pixels[x, y] = tuple(int(c * 255) for c in color) + (a,)
+
+# img.save(output_image_path)
+
+
+
+
+
+
+
+
+# DOOM circle gradient
+# from PIL import Image
+# import json
+# import os
+# import math
+
+# wal_colors_path = os.path.join(os.path.expanduser("~"), ".cache", "wal", "colors.json")
+# base_image_path = os.path.join(os.path.expanduser("~"), ".config", "doom", "dashboard", "black-hole.png")
+# output_image_path = os.path.join(os.path.expanduser("~"), "xos", "emacs", "dashboard", "xos-logo.png")
+
+# with open(wal_colors_path, 'r') as f:
+#     wal_colors = json.load(f)['colors']
+# colors = [wal_colors['color{}'.format(i)] for i in range(16)]
+# colors = [tuple(int(color[i+1:i+3], 16)/255.0 for i in (0, 2, 4)) for color in colors[1:]]  # exclude background color
+
+# img = Image.open(base_image_path).convert('RGBA')
+# width, height = img.size
+# pixels = img.load()
+
+# center_x, center_y = width // 2, height // 2
+# max_dist = math.sqrt(center_x**2 + center_y**2)
+
+# for y in range(height):
+#     for x in range(width):
+#         r, g, b, a = pixels[x, y]
+#         if a != 0:  # only change color of non-transparent pixels
+#             dist = math.sqrt((x - center_x)**2 + (y - center_y)**2)
+#             color = colors[int(dist / max_dist * len(colors)) % len(colors)]
+#             pixels[x, y] = tuple(int(c * 255) for c in color) + (a,)
+
+# img.save(output_image_path)
+
+
+
+
+
+
+
+# DOOM plain
+# from PIL import Image
+# import json
+# import os
+
+# wal_colors_path = os.path.join(os.path.expanduser("~"), ".cache", "wal", "colors.json")
+# base_image_path = os.path.join(os.path.expanduser("~"), ".config", "doom", "dashboard", "black-hole.png")
+# output_image_path = os.path.join(os.path.expanduser("~"), "xos", "emacs", "dashboard", "xos-logo.png")
+
+# with open(wal_colors_path, 'r') as f:
+#     wal_colors = json.load(f)['colors']
+# colors = [wal_colors['color{}'.format(i)] for i in range(16)]
+# colors = [tuple(int(color[i+1:i+3], 16)/255.0 for i in (0, 2, 4)) for color in colors[1:]]  # exclude background color
+
+# img = Image.open(base_image_path).convert('RGBA')
+# width, height = img.size
+# pixels = img.load()
+
+# for y in range(height):
+#     for x in range(width):
+#         r, g, b, a = pixels[x, y]
+#         if a != 0:  # only change color of non-transparent pixels
+#             color = colors[x % len(colors)]
+#             pixels[x, y] = tuple(int(c * 255) for c in color) + (a,)
+
+# img.save(output_image_path)
+
+
+
+# GRADIENT
+# import os
+# from PIL import Image, ImageDraw, ImageFont
+
+# # Define paths
+# color_file_path = os.path.expanduser('~/.cache/wal/colors')
+# font_file_path = '/usr/share/fonts/TTF/JetBrainsMono-ExtraBold.ttf'
+# output_dir_path = os.path.expanduser('~/xos/emacs/dashboard')
+
+# # Ensure output directory exists
+# os.makedirs(output_dir_path, exist_ok=True)
+
+# # Read the colors
+# with open(color_file_path, 'r') as f:
+#     colors = [line.strip() for line in f.readlines()]
+
+# # Define image settings
+# image_width = 300
+# image_height = 100
+# font_size = 70
+# letter_spacing = 90
+# padding_left = 30
+
+# # Create a new image with a transparent background
+# img = Image.new('RGBA', (image_width, image_height))
+
+# # Create a separate image for gradient
+# gradient_img = Image.new('RGB', (image_width, image_height))
+# gradient_start_color = tuple(int(colors[7][i:i+2], 16) for i in (1, 3, 5))  # e.g. '#dabadc' to (218, 186, 220)
+# gradient_end_color = tuple(int(colors[9][i:i+2], 16) for i in (1, 3, 5))  # e.g. '#9D98E0' to (157, 152, 224)
+
+# for x in range(image_width):
+#     for y in range(image_height):
+#         r = gradient_start_color[0] * (1 - x/image_width) + gradient_end_color[0] * (x/image_width)
+#         g = gradient_start_color[1] * (1 - x/image_width) + gradient_end_color[1] * (x/image_width)
+#         b = gradient_start_color[2] * (1 - x/image_width) + gradient_end_color[2] * (x/image_width)
+#         gradient_img.putpixel((x, y), (int(r), int(g), int(b)))
+
+# # Load the font
+# font = ImageFont.truetype(font_file_path, font_size)
+
+# # Create text mask
+# text_mask = Image.new('L', (image_width, image_height))
+# mask_draw = ImageDraw.Draw(text_mask)
+
+# for i, letter in enumerate("XOS"):
+#     mask_draw.text((padding_left + 10 + i * letter_spacing, 10), letter, fill=255, font=font)
+
+# # Apply text mask to gradient image and put it onto original image
+# gradient_text = Image.new('RGBA', (image_width, image_height))
+# gradient_text.paste(gradient_img, mask=text_mask)
+# img.paste(gradient_text)
+
+# # Save the image
+# img.save(os.path.join(output_dir_path, 'xos-logo.png'))
+
+
+
+# COLOR BLOCK
+import os
+from PIL import Image, ImageDraw, ImageFont
+
+# Define paths
+color_file_path = os.path.expanduser('~/.cache/wal/colors')
+font_file_path = '/usr/share/fonts/TTF/JetBrainsMono-ExtraBold.ttf'
+output_dir_path = os.path.expanduser('~/xos/emacs/dashboard')
+
+# Ensure output directory exists
+os.makedirs(output_dir_path, exist_ok=True)
+
+# Read the colors
+with open(color_file_path, 'r') as f:
+    colors = [line.strip() for line in f.readlines()]
+
+# Define image settings
+image_width = 300
+image_height = 100
+font_size = 70
+letter_spacing = 90  # Adjust this to make the letters more or less compact
+letter_colors = [colors[4], colors[6], colors[7]]
+
+padding_left = 30  # Increase this to add more space on the left
+
+# Create a new image with a transparent background
+img = Image.new('RGBA', (image_width, image_height))
+
+# Load the font
+font = ImageFont.truetype(font_file_path, font_size)
+
+d = ImageDraw.Draw(img)
+
+# Draw each letter with a different color
+for i, letter in enumerate("XOS"):
+    d.text((padding_left + 10 + i * letter_spacing, 10), letter, fill=letter_colors[i], font=font)
+
+# Save the image
+img.save(os.path.join(output_dir_path, 'xos-logo.png'))

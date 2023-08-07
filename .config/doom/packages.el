@@ -87,6 +87,7 @@
 (package! pynt)
 (package! spacious-padding)
 (package! sxhkdrc-mode)
+(package! eldoc-box)
 
 
 
