@@ -395,11 +395,18 @@ Set dashboard as the initial buffer
 
 #+end_src
 * Keybinds
+** Ranger
+#+begin_src emacs-lisp
+(map! :leader
+      (:prefix ("d" . "directory")
+        :desc "ranger" "k" #'ranger))
+#+end_src
 ** Diff
 #+begin_src emacs-lisp
 (map! :leader
       (:prefix ("d" . "diff")
         :desc "diff buffer with file" "i" #'laluxx/diff-buffer-with-file))
+
 
 #+end_src
 ** Regex
@@ -632,43 +639,43 @@ Keybinds that execute other keybinds.
 * FUNCTIONS
 ** Set-theme
 #+begin_src emacs-lisp
-;; (defun laluxx/preview-theme ()
-;;   "Preview theme as you scroll through options in counsel-load-theme."
-;;   (interactive)
-;;   (let* ((themes (custom-available-themes))
-;;          (theme-names (mapcar 'symbol-name themes))
-;;          (current-theme (car custom-enabled-themes))
-;;          (previewed-theme nil)
-;;          (ivy-update-fn
-;;           (lambda ()
-;;             (when previewed-theme
-;;               (disable-theme previewed-theme))
-;;             (setq previewed-theme (intern (ivy-state-current ivy-last)))
-;;             (load-theme previewed-theme t))))
-;;     (ivy-read "Load theme: " theme-names
-;;               :update-fn ivy-update-fn
-;;               :action
-;;               (lambda (theme)
-;;                 (load-theme (intern theme) t))
-;;               :caller 'laluxx/preview-theme)))
+(defun laluxx/preview-theme ()
+  "Preview theme as you scroll through options in counsel-load-theme."
+  (interactive)
+  (let* ((themes (custom-available-themes))
+         (theme-names (mapcar 'symbol-name themes))
+         (current-theme (car custom-enabled-themes))
+         (previewed-theme nil)
+         (ivy-update-fn
+          (lambda ()
+            (when previewed-theme
+              (disable-theme previewed-theme))
+            (setq previewed-theme (intern (ivy-state-current ivy-last)))
+            (load-theme previewed-theme t))))
+    (ivy-read "Load theme: " theme-names
+              :update-fn ivy-update-fn
+              :action
+              (lambda (theme)
+                (load-theme (intern theme) t))
+              :caller 'laluxx/preview-theme)))
 
-;; (defun laluxx/set-theme-and-update-environment ()
-;;   "Function to set a new Doom theme and then update the environment according to the new theme."
-;;   (interactive)
-;;   ;; Define pywal-scripts-directory
-;;   (let* ((pywal-scripts-directory "~/xos/pywal-scripts"))
-;;     ;; Load the theme using the same mechanism as h t
-;;     (laluxx/preview-theme)
-;;     (laluxx/doom-wal)
-;;     ;; Then run all the other commands you wanted to run
-;;     (dolist (script '("xmonad-dark-wal.py" "nvim-wal.py" "nvim-wal-dark.py"))
-;;       (shell-command-to-string (concat "python3 " pywal-scripts-directory "/" script)))
-;;     (shell-command-to-string "xmonad --restart")
-;;     (shell-command-to-string "dashboard-wal-gen")
-;;     ;; If the current buffer was the dashboard, refresh it
-;;     (when (equal (buffer-name) "*dashboard*")
-;;       (run-at-time "0.5 sec" nil 'open-dashboard))
-;;     (run-at-time "1 sec" nil 'spaceline-compile)))
+(defun laluxx/set-theme-and-update-environment ()
+  "Function to set a new Doom theme and then update the environment according to the new theme."
+  (interactive)
+  ;; Define pywal-scripts-directory
+  (let* ((pywal-scripts-directory "~/xos/pywal-scripts"))
+    ;; Load the theme using the same mechanism as h t
+    (laluxx/preview-theme)
+    (laluxx/doom-wal)
+    ;; Then run all the other commands you wanted to run
+    (dolist (script '("xmonad-dark-wal.py" "nvim-wal.py" "nvim-wal-dark.py"))
+      (shell-command-to-string (concat "python3 " pywal-scripts-directory "/" script)))
+    (shell-command-to-string "xmonad --restart")
+    (shell-command-to-string "dashboard-wal-gen")
+    ;; If the current buffer was the dashboard, refresh it
+    (when (equal (buffer-name) "*dashboard*")
+      (run-at-time "0.5 sec" nil 'open-dashboard))
+    (run-at-time "1 sec" nil 'spaceline-compile)))
 
 
 
@@ -724,45 +731,45 @@ Keybinds that execute other keybinds.
 
 
 
-(defun laluxx/preview-theme ()
-  "Preview theme as you scroll through options in counsel-load-theme."
-  (interactive)
-  (let* ((themes (custom-available-themes))
-         (theme-names (mapcar 'symbol-name themes))
-         (current-theme (car custom-enabled-themes))
-         (previewed-theme nil)
-         (ivy-update-fn
-          (lambda ()
-            (when previewed-theme
-              (disable-theme previewed-theme))
-            (setq previewed-theme (intern (ivy-state-current ivy-last)))
-            (load-theme previewed-theme t)
-            ;; Only refresh the spaceline faces
-            (spaceline-install))))
-    (ivy-read "Load theme: " theme-names
-              :update-fn ivy-update-fn
-              :action
-              (lambda (theme)
-                (load-theme (intern theme) t))
-              :caller 'laluxx/preview-theme)))
+;; (defun laluxx/preview-theme ()
+;;   "Preview theme as you scroll through options in counsel-load-theme."
+;;   (interactive)
+;;   (let* ((themes (custom-available-themes))
+;;          (theme-names (mapcar 'symbol-name themes))
+;;          (current-theme (car custom-enabled-themes))
+;;          (previewed-theme nil)
+;;          (ivy-update-fn
+;;           (lambda ()
+;;             (when previewed-theme
+;;               (disable-theme previewed-theme))
+;;             (setq previewed-theme (intern (ivy-state-current ivy-last)))
+;;             (load-theme previewed-theme t)
+;;             ;; Only refresh the spaceline faces
+;;             (spaceline-install))))
+;;     (ivy-read "Load theme: " theme-names
+;;               :update-fn ivy-update-fn
+;;               :action
+;;               (lambda (theme)
+;;                 (load-theme (intern theme) t))
+;;               :caller 'laluxx/preview-theme)))
 
-(defun laluxx/set-theme-and-update-environment ()
-  "Function to set a new Doom theme and then update the environment according to the new theme."
-  (interactive)
-  ;; Define pywal-scripts-directory
-  (let* ((pywal-scripts-directory "~/xos/pywal-scripts"))
-    ;; Load the theme using the same mechanism as h t
-    (laluxx/preview-theme)
-    (laluxx/doom-wal)
-    ;; Then run all the other commands you wanted to run
-    (dolist (script '("xmonad-dark-wal.py" "nvim-wal.py" "nvim-wal-dark.py"))
-      (shell-command-to-string (concat "python3 " pywal-scripts-directory "/" script)))
-    (shell-command-to-string "xmonad --restart")
-    (shell-command-to-string "dashboard-wal-gen")
-    ;; If the current buffer was the dashboard, refresh it
-    (when (equal (buffer-name) "*dashboard*")
-      (run-at-time "0.5 sec" nil 'open-dashboard))
-    (run-at-time "1 sec" nil 'spaceline-compile)))
+;; (defun laluxx/set-theme-and-update-environment ()
+;;   "Function to set a new Doom theme and then update the environment according to the new theme."
+;;   (interactive)
+;;   ;; Define pywal-scripts-directory
+;;   (let* ((pywal-scripts-directory "~/xos/pywal-scripts"))
+;;     ;; Load the theme using the same mechanism as h t
+;;     (laluxx/preview-theme)
+;;     (laluxx/doom-wal)
+;;     ;; Then run all the other commands you wanted to run
+;;     (dolist (script '("xmonad-dark-wal.py" "nvim-wal.py" "nvim-wal-dark.py"))
+;;       (shell-command-to-string (concat "python3 " pywal-scripts-directory "/" script)))
+;;     (shell-command-to-string "xmonad --restart")
+;;     (shell-command-to-string "dashboard-wal-gen")
+;;     ;; If the current buffer was the dashboard, refresh it
+;;     (when (equal (buffer-name) "*dashboard*")
+;;       (run-at-time "0.5 sec" nil 'open-dashboard))
+;;     (run-at-time "1 sec" nil 'spaceline-compile)))
 
 ;; Map the function to a key sequence
 (map! :leader

@@ -2292,3 +2292,24 @@ typetune() {
         fi
     fi
 }
+
+copy-icons() {
+  # Store the current working directory
+  local current_dir=$(pwd)
+
+  # Navigate to /usr/share/icons and get the list of icons using find
+  local icons=$(find /usr/share/icons -type f | fzf -m)
+
+  # Check if any icons were selected
+  if [[ -z $icons ]]; then
+    echo "No icons selected."
+    return
+  fi
+
+  # Copy the selected icons to the stored directory
+  for icon in ${(f)icons}; do
+    cp "$icon" "$current_dir/"
+  done
+
+  echo "Icons copied to $current_dir."
+}

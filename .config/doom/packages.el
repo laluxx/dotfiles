@@ -88,7 +88,7 @@
 (package! inspector)
 (package! tree-inspector)
 
-(package! info-colors)
+(package! ranger)
 
 
 

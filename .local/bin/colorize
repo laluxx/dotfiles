@@ -1,0 +1,204 @@
+#!/usr/bin/env python3
+
+# This script provides functionality to recolor images based on colors extracted
+# from the user's `wal` theme. The script supports both raster (e.g., PNG, JPEG)
+# and vector (SVG) images. For SVGs, they are temporarily converted to PNGs before
+# processing to ensure compatibility.
+
+# Key Features:
+#     - Uses `wal` colors for image recoloring.
+#     - Supports SVG scaling, allowing users to specify dimensions.
+#     - Can process multiple images provided as command-line arguments.
+#     - Offers functionality to colorize all images in a directory.
+#     - Allows the user to specify a directory path for processing.
+
+# Usage:
+#     `colorize [images] [-x width] [-y height] [-all] [-path directory_path]`
+
+# Arguments:
+#     images:         List of image paths to be processed.
+#     -x:            Desired width for SVG images (default is 1024 pixels).
+#     -y:            Desired height for SVG images (default is 1024 pixels).
+#     -all:          Process all supported images in the specified directory.
+#     -path:         Directory to look for images (defaults to the current directory).
+
+# Dependencies:
+#     - PIL (Python Imaging Library) for image processing.
+#     - cairosvg for SVG to PNG conversion.
+#     - argparse for command-line arguments parsing.
+
+# Author: [laluxx]
+
+
+# V2
+# WORKING
+# implemented -path and -all
+import os
+import cairosvg
+from PIL import Image
+import sys
+import argparse
+
+def read_wal_colors(filepath="~/.cache/wal/colors"):
+    filepath = os.path.expanduser(filepath)
+    with open(filepath, 'r') as file:
+        return [line.strip() for line in file]
+
+def closest_color(rgba, color_list):
+    if isinstance(rgba, int):
+        # grayscale
+        r = g = b = rgba
+        a = 255
+    elif len(rgba) == 4:
+        r, g, b, a = rgba
+    else:
+        r, g, b = rgba
+        a = 255
+
+    color_diffs = []
+
+    for color in color_list:
+        cr, cg, cb = tuple(int(color[i:i+2], 16) for i in (1, 3, 5))
+        color_diff = abs(r - cr) + abs(g - cg) + abs(b - cb)
+        color_diffs.append((color_diff, (cr, cg, cb, a)))
+
+    return min(color_diffs, key=lambda x: x[0])[1]
+
+def colorize_image(input_path, wal_colors, svg_scale):
+    png_output_path = None  # Ensure this is defined
+    # Check if the input file is SVG
+    if input_path.lower().endswith('.svg'):
+        # Convert SVG to PNG
+        png_output_path = os.path.splitext(input_path)[0] + '_temp_colorize.png'
+        cairosvg.svg2png(url=input_path, write_to=png_output_path, output_width=svg_scale[0], output_height=svg_scale[1])
+        input_path = png_output_path
+
+    image = Image.open(input_path)
+
+    # Ensure RGBA mode
+    image = image.convert("RGBA")
+    data = image.getdata()
+
+    new_data = []
+    for item in data:
+        new_data.append(closest_color(item, wal_colors))
+
+    image.putdata(new_data)
+
+    # Determine the output path
+    base, ext = os.path.splitext(input_path)
+    output_path = f"{base}-colorized{ext}"
+
+    image.save(output_path)
+
+    # Cleanup temp SVG converted PNG
+    if png_output_path and os.path.exists(png_output_path):
+        os.remove(png_output_path)
+
+if __name__ == "__main__":
+    parser = argparse.ArgumentParser(description='Colorize images with wal colors.')
+    parser.add_argument('images', metavar='image', type=str, nargs='*', default=[], help='images to colorize')
+    parser.add_argument('-x', metavar='width', type=int, default=1024, help='SVG width scale in pixels')
+    parser.add_argument('-y', metavar='height', type=int, default=1024, help='SVG height scale in pixels')
+    parser.add_argument('-all', action='store_true', help='colorize all images in the directory')
+    parser.add_argument('-path', metavar='path', type=str, default=".", help='path to look for images, defaults to current directory')
+
+    args = parser.parse_args()
+
+    # Expand the path to absolute path
+    path = os.path.expanduser(args.path)
+
+    if args.all:
+        supported_extensions = [".png", ".jpg", ".jpeg", ".svg"]
+        all_files = os.listdir(path)
+        args.images = [os.path.join(path, f) for f in all_files if os.path.splitext(f)[1].lower() in supported_extensions]
+
+    if not args.images:
+        print("Error: No images provided or found.")
+        sys.exit(1)
+
+    wal_colors = read_wal_colors()
+
+    for input_image_path in args.images:
+        colorize_image(input_image_path, wal_colors, (args.x, args.y))
+
+
+
+# V1
+# WORKING
+# implemented -x -y
+# import os
+# import cairosvg
+# from PIL import Image
+# import sys
+# import argparse
+
+# def read_wal_colors(filepath="~/.cache/wal/colors"):
+#     filepath = os.path.expanduser(filepath)
+#     with open(filepath, 'r') as file:
+#         return [line.strip() for line in file]
+
+# def closest_color(rgba, color_list):
+#     if isinstance(rgba, int):
+#         # grayscale
+#         r = g = b = rgba
+#         a = 255
+#     elif len(rgba) == 4:
+#         r, g, b, a = rgba
+#     else:
+#         r, g, b = rgba
+#         a = 255
+
+#     color_diffs = []
+
+#     for color in color_list:
+#         cr, cg, cb = tuple(int(color[i:i+2], 16) for i in (1, 3, 5))
+#         color_diff = abs(r - cr) + abs(g - cg) + abs(b - cb)
+#         color_diffs.append((color_diff, (cr, cg, cb, a)))
+
+#     return min(color_diffs, key=lambda x: x[0])[1]
+
+# def colorize_image(input_path, wal_colors, svg_scale):
+#     png_output_path = None  # Ensure this is defined
+#     # Check if the input file is SVG
+#     if input_path.lower().endswith('.svg'):
+#         # Convert SVG to PNG
+#         png_output_path = os.path.splitext(input_path)[0] + '_temp_colorize.png'
+#         cairosvg.svg2png(url=input_path, write_to=png_output_path, output_width=svg_scale[0], output_height=svg_scale[1])
+#         input_path = png_output_path
+
+#     image = Image.open(input_path)
+
+#     # Ensure RGBA mode
+#     image = image.convert("RGBA")
+#     data = image.getdata()
+
+#     new_data = []
+#     for item in data:
+#         new_data.append(closest_color(item, wal_colors))
+
+#     image.putdata(new_data)
+
+#     # Determine the output path
+#     base, ext = os.path.splitext(input_path)
+#     output_path = f"{base}-colorized{ext}"
+
+#     image.save(output_path)
+
+#     # Cleanup temp SVG converted PNG
+#     if png_output_path and os.path.exists(png_output_path):
+#         os.remove(png_output_path)
+
+# if __name__ == "__main__":
+#     parser = argparse.ArgumentParser(description='Colorize images with wal colors.')
+#     parser.add_argument('images', metavar='image', type=str, nargs='+', help='images to colorize')
+#     parser.add_argument('-x', metavar='width', type=int, default=1024, help='SVG width scale in pixels')
+#     parser.add_argument('-y', metavar='height', type=int, default=1024, help='SVG height scale in pixels')
+
+#     args = parser.parse_args()
+
+#     wal_colors = read_wal_colors()
+
+#     for input_image_path in args.images:
+#         input_image_path = os.path.expanduser(input_image_path)
+#         colorize_image(input_image_path, wal_colors, (args.x, args.y))
