@@ -1,0 +1,84 @@
+#!/usr/bin/env python3
+
+# Ttrying to implement web reload on cache changes
+
+
+
+# import os
+# from flask import Flask, render_template, jsonify
+# from watchdog.observers import Observer
+# from watchdog.events import FileSystemEventHandler
+
+# app = Flask(__name__)
+# PORT = 5003
+
+# @app.route("/")
+# def index():
+#     theme = get_theme_from_file()
+#     return render_template('index.html', theme=theme)
+
+# @app.route("/theme")
+# def theme():
+#     theme = get_theme_from_file()
+#     return jsonify(theme)
+
+# def get_theme_from_file():
+#     with open(os.path.expanduser('~/.cache/wal/colors'), 'r') as f:
+#         colors = f.readlines()
+#     theme = {}
+#     for i, color in enumerate(colors):
+#         theme[f'--color{i}'] = color.strip()
+#     return theme
+
+# class FileWatcher(FileSystemEventHandler):
+#     def __init__(self, file_path, callback):
+#         self.file_path = file_path
+#         self.callback = callback
+
+#     def on_modified(self, event):
+#         if not event.is_directory and event.src_path == self.file_path:
+#             self.callback()
+
+# def restart_script():
+#     global PORT
+#     PORT += 1
+#     os.execv(__file__, [__file__])
+
+# if __name__ == "__main__":
+
+#     # Watcher setup
+#     file_path = os.path.expanduser('~/.cache/wal/colors')
+#     observer = Observer()
+#     observer.schedule(FileWatcher(file_path, restart_script), path=os.path.dirname(file_path), recursive=False)
+#     observer.start()
+
+#     try:
+#         app.run(debug=True, port=PORT)
+#     except KeyboardInterrupt:
+#         observer.stop()
+
+#     observer.join()
+
+
+
+
+
+
+
+# MAIN
+from flask import Flask, jsonify
+from flask_cors import CORS
+import os
+
+app = Flask(__name__)
+CORS(app)
+
+@app.route('/getcolors', methods=['GET'])
+def get_colors():
+    colors_file_path = os.path.expanduser('~/.cache/wal/colors')
+    with open(colors_file_path, 'r') as f:
+        colors = [line.strip() for line in f.readlines()]
+    return jsonify(colors)
+
+if __name__ == '__main__':
+    app.run(port=5000)
