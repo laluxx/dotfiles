@@ -398,22 +398,6 @@ penv() {
     esac
 }
 
-function screenshot() {
-  # Capture screenshot and save it to a temporary file
-  local tmp_file="/tmp/screenshot.png"
-  maim -s "$tmp_file"
-
-  # Check if the screenshot was captured successfully
-  if [ -f "$tmp_file" ]; then
-    # Copy the screenshot to the clipboard
-    xclip -selection clipboard -t image/png -i "$tmp_file"
-
-    echo "Screenshot captured and copied to clipboard."
-  else
-    echo "Error capturing the screenshot."
-  fi
-}
-
 function hown() {
     for file in $@
     do

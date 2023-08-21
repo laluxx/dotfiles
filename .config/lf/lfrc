@@ -8,6 +8,8 @@ set period 1
 set hiddenfiles ".*:*.aux:*.log:*.bbl:*.bcf:*.blg:*.run.xml"
 
 
+# set sixel # NEW
+
 #set previewer ~/.config/lf/preview
 #set previewer ctpv # ORGINAL
 set previewer lf-custom-previewer
