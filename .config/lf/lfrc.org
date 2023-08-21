@@ -20,7 +20,9 @@ set hiddenfiles ".*:*.aux:*.log:*.bbl:*.bcf:*.blg:*.run.xml"
 
 
 #set previewer ~/.config/lf/preview
-set previewer ctpv
+#set previewer ctpv # ORGINAL
+set previewer lf-custom-previewer
+
 set cleaner ctpvclear
 #set cleaner ~/.config/lf/cleaner
 &ctpv -s $id
@@ -133,10 +135,15 @@ cmd quitcd ${{
 	echo "1" > "$LF_TEMPDIR"/cdtolastdir
 	lf -remote "send $id quit"
 }}
+#+end_src
 
+* Mime
+** Font
+#+begin_src shell
 
 
 # mime ^image/*,video/*,audio/*,application/pdf,inode/x-empty {
 #     \  echo %f | grep -iE '\.(jpg|jpeg|png|gif|bmp|webp|svg|tiff|ico|xcf|mp4|webm|ogv|ogg|mp3|flac|wav|m4a|pdf)$' >/dev/null 2>&1 && kitty +kitten icat %f
 # }
+
 #+end_src

@@ -16,9 +16,15 @@ function path() {
   printf "${highlight_close}\n"
 }
 
+export GTK_MODULES="appmenu-gtk-module"
+
+
+
+
 export XBINKEYS_CONFIG="$HOME/.config/xbindkeysrc"
 export PATH="$PATH:$HOME/.config/emacs/bin"
 export PATH="$PATH:$HOME/.cargo/bin"
+export PATH="$PATH:$HOME/.local/share/bin"
 
  if [[ -n $SSH_CONNECTION ]]; then
    export EDITOR='nvim'

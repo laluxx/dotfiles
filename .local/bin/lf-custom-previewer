@@ -1,0 +1,28 @@
+#!/bin/sh
+
+
+
+case "$1" in
+    *.ttf|*.otf|*.woff|*.woff2)
+        OUTPUT_PATH="/tmp/font_previews/font_preview_$(basename "$1").png"
+        font-preview "$1" > /dev/null
+        ctpv "$OUTPUT_PATH" "$2" "$3" "$4" "$5"
+        ;;
+    *)
+        ctpv "$1" "$2" "$3" "$4" "$5"
+        ;;
+esac
+
+
+
+# WORK
+# case "$1" in
+#     *.ttf|*.otf|*.woff|*.woff2)
+#         OUTPUT_PATH="/tmp/font_previews/font_preview_$(basename "$1").png"
+#         font-preview "$1" > /dev/null
+#         ctpv "$OUTPUT_PATH"
+#         ;;
+#     *)
+#         ctpv "$1"
+#         ;;
+# esac

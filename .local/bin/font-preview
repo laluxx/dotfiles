@@ -1,0 +1,105 @@
+#!/bin/bash
+
+
+FONT_PATH="$1"
+PREVIEW_TEXT="Sample Text"
+OUTPUT_DIR="/tmp/font_previews"
+mkdir -p "$OUTPUT_DIR"
+OUTPUT_IMAGE="$OUTPUT_DIR/font_preview_$(basename "$FONT_PATH").png"
+
+# Get colors from the wal cache
+COLORS=($(cat ~/.cache/wal/colors))
+
+# Create individual images with the font in different sizes
+TMP_IMAGES=()
+INDEX=1  # start from the second color
+for SIZE in $(seq 50 -5 10); do
+    TMP_IMAGE="$OUTPUT_DIR/$(basename "$FONT_PATH")_$SIZE.png"
+    TMP_IMAGES+=("$TMP_IMAGE")
+
+    # Fetch a color from COLORS array for the text
+    FONT_COLOR="${COLORS[$INDEX]}"
+
+    # Increment the color index
+    ((INDEX++))
+
+    # Check if the color is set, else use a default
+    if [ -z "$FONT_COLOR" ]; then
+        FONT_COLOR="white"
+    fi
+
+    # Generate the font preview image with transparent background
+    convert -size 300x"$SIZE" -background none -gravity Center -fill "$FONT_COLOR" -font "$FONT_PATH" -pointsize "$SIZE" label:"$PREVIEW_TEXT" "$TMP_IMAGE" || {
+        echo "Error generating image for size $SIZE with color $FONT_COLOR"
+        exit 1
+    }
+done
+
+# Combine individual images into one
+convert -background none "${TMP_IMAGES[@]}" -append "$OUTPUT_IMAGE" || {
+    echo "Error combining images."
+    exit 1
+}
+
+# Check if the output image exists and has a size greater than zero
+if [[ ! -s "$OUTPUT_IMAGE" ]]; then
+    echo "Failed to generate the preview image."
+    exit 1
+fi
+
+# Clean up temporary images
+rm "${TMP_IMAGES[@]}"
+
+echo $OUTPUT_IMAGE
+
+# ORIGINAL
+# FONT_PATH="$1"
+# PREVIEW_TEXT="Sample Text"
+# OUTPUT_DIR="/tmp/font_previews"
+# mkdir -p "$OUTPUT_DIR"
+# OUTPUT_IMAGE="$OUTPUT_DIR/font_preview_$(basename "$FONT_PATH").png"
+
+# # Get colors from the wal cache
+# COLORS=($(cat ~/.cache/wal/colors))
+
+# # Create individual images with the font in different sizes
+# TMP_IMAGES=()
+# INDEX=1  # start from the second color
+# for SIZE in $(seq 50 -5 10); do
+#     TMP_IMAGE="$OUTPUT_DIR/$(basename "$FONT_PATH")_$SIZE.png"
+#     TMP_IMAGES+=("$TMP_IMAGE")
+
+#     # Fetch a color from COLORS array for the text
+#     FONT_COLOR="${COLORS[$INDEX]}"
+
+#     # Increment the color index
+#     ((INDEX++))
+
+#     # Check if the color is set, else use a default
+#     if [ -z "$FONT_COLOR" ]; then
+#         FONT_COLOR="white"
+#     fi
+
+#     # Generate the font preview image with transparent background
+#     convert -size 300x"$SIZE" -background none -gravity Center -fill "$FONT_COLOR" -font "$FONT_PATH" -pointsize "$SIZE" label:"$PREVIEW_TEXT" "$TMP_IMAGE" || {
+#         echo "Error generating image for size $SIZE with color $FONT_COLOR"
+#         exit 1
+#     }
+# done
+
+# # Combine individual images into one
+# convert -background none "${TMP_IMAGES[@]}" -append "$OUTPUT_IMAGE" || {
+#     echo "Error combining images."
+#     exit 1
+# }
+
+# # Check if the output image exists and has a size greater than zero
+# if [[ ! -s "$OUTPUT_IMAGE" ]]; then
+#     echo "Failed to generate the preview image."
+#     exit 1
+# fi
+
+# # Clean up temporary images
+# rm "${TMP_IMAGES[@]}"
+
+# echo $OUTPUT_IMAGE

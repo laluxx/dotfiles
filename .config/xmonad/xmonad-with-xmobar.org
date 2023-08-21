@@ -222,7 +222,7 @@ myStartupHook = do
 #+BEGIN_SRC haskell
   spawnOnce "xrandr --output \"$(xrandr | awk '/ connected/ {print $1; exit}')\" --mode 1920x1080 --rate 144"
   spawnOnce "xset r rate 160 60"
-  spawnOnce "python3 /home/l/xos/gtk/anyline/web/main.py"
+  spawnOnce "python3 /home/l/xos/anyline/web/main.py"
   -- spawnOnce "python3 /home/l/xos/xmv/main.py"
 
   spawnOnce "lxsession"
@@ -673,8 +673,7 @@ myManageHook = composeAll
   -- , title =? "emacs-run-launcher" --> doCenterFloat
   , title =? "emacs-run-launcher" --> doRectFloat (W.RationalRect ((-15)/1920) (905/1080) (2066/1920) (185/1080)) -- BOTTOM
   , title =? "emacs-run-M-x" --> doRectFloat (W.RationalRect ((-15)/1920) (905/1080) (2066/1920) (185/1080)) -- BOTTOM
-  -- , title =? "emacs-run-wal-set" --> doRectFloat (W.RationalRect ((-15)/1920) (905/1080) (2066/1920) (185/1080)) -- BOTTOM
-  , title =? "emacs-run-wal-set" --> doIgnoreBorders
+  , title =? "emacs-run-wal-set" --> doRectFloat (W.RationalRect ((-15)/1920) (905/1080) (2066/1920) (185/1080)) -- BOTTOM
   , className =? "Firefox" --> doIgnoreBorders
   , title =? "emacs-run-set-wallpaper" --> doRectFloat (W.RationalRect ((-15)/1920) (905/1080) (2066/1920) (185/1080)) -- BOTTOM
   , title =? "emacs-run-wal-set-solid" --> doRectFloat (W.RationalRect ((-15)/1920) (905/1080) (2066/1920) (185/1080)) -- BOTTOM
@@ -786,7 +785,7 @@ myKeys c =
   , ("M-i", addName "Run info" $ sequence_ [spawn (mySoundPlayer ++ dmenuSound), spawn "emacsclient -a '' -F '((visibility . nil))' -e '(emacs-run-info)'"])
   -- , ("M-p", addName "Run dmenu" $ sequence_ [spawn (mySoundPlayer ++ dmenuSound), spawn "emacsclient -a '' -F '((visibility . nil))' -e '(emacs-run-dmenu)'"])
   , ("M-p", addName "Run dmenu" $ sequence_ [spawn (mySoundPlayer ++ dmenuSound), spawn "dmrun"])
-
+  , ("M-o", addName "rofi-hud"            $ spawn "rofi-hud")
 
 
 
