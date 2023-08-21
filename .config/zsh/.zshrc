@@ -1808,7 +1808,8 @@ pal () {
         for palette in "${selected_palettes[@]}"; do
             # Change the output_image format here
             local output_image="${palette}_$(basename "$image")"
-            lutgen -p "$palette" apply "$image" -o "$output_image"
+            # lutgen apply "$image" -p "$palette" -o "$output_image"
+            lutgen apply -p  "$palette" "$image" -o "$output_image"
             echo "Modified image saved as $output_image"
             echo "Rendering modified image: $output_image"
             render "$output_image"

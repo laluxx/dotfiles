@@ -637,6 +637,77 @@ Keybinds that execute other keybinds.
 #+end_src
 
 * FUNCTIONS
+** Minibuffer-counter
+#+begin_src emacs-lisp
+(defvar top-counter 0
+  "Counter for touches at the beginning of the buffer.")
+(defvar bottom-counter 0
+  "Counter for touches at the end of the buffer.")
+(defvar last-command-was-gg-or-G nil
+  "Flag to check if the previous command was `gg` or `G` in evil mode.")
+
+(defun interpolate-color (value max-value start-color end-color)
+  "Interpolate between START-COLOR and END-COLOR based on VALUE out of MAX-VALUE."
+  (let ((fraction (/ (float value) max-value)))
+    (cl-loop for start from 0 to 2
+             collect (round (+ (* (nth start start-color) (- 1 fraction))
+                               (* (nth start end-color) fraction))))))
+
+(defun counter-color (value)
+  "Calculate the color based on the counter VALUE."
+  (let* ((green '(0 255 0))
+         (red '(255 0 0))
+         (color (interpolate-color value 100 green red)))
+    (apply 'format "#%02x%02x%02x" color)))
+
+(defun display-counter (counter position)
+  "Display the COUNTER in the minibuffer with interpolated color for a specific POSITION ('top or 'bottom)."
+  (let ((color (counter-color counter)))
+    (message (propertize (format "%s Counter: %d" (capitalize (symbol-name position)) counter)
+                         'face `(:foreground ,color)))))
+
+(defun check-end-or-start-of-buffer ()
+  "Check if point is at the end or start of the buffer and update the corresponding counter."
+  (unless (or (minibufferp) (string= (buffer-name) "*dashboard*"))
+    (cond
+     ;; At the bottom of the buffer
+     ((eobp)
+      (if (eq last-command-was-gg-or-G 'G)
+          (progn
+            (message "%s End of buffer" (all-the-icons-faicon "arrow-down"))
+            (setq bottom-counter 0))
+        (setq bottom-counter (min 100 (1+ bottom-counter)))
+        (display-counter bottom-counter 'bottom)))
+     ;; At the top of the buffer
+     ((or (bobp) (eq last-command-was-gg-or-G 'gg))
+      (if (eq last-command-was-gg-or-G 'gg)
+          (message "%s Start of buffer" (all-the-icons-faicon "arrow-up"))
+        (setq top-counter (min 100 (1+ top-counter)))
+        (display-counter top-counter 'top)))
+     ;; Not at the top or bottom; reset counters and minibuffer.
+     (t
+      (setq top-counter 0 bottom-counter 0)
+      (message ""))))
+
+  ;; Reset the last-command flag
+  (setq last-command-was-gg-or-G nil)
+
+
+  ;; Reset the last-command flag
+  (setq last-command-was-gg-or-G nil))
+
+(defun detect-gg-or-G-command ()
+  "Check and record if the command about to execute is `gg` or `G`."
+  (cond
+   ((eq this-command 'evil-goto-first-line)
+    (setq last-command-was-gg-or-G 'gg))
+   ((eq this-command 'evil-goto-line)
+    (setq last-command-was-gg-or-G 'G))))
+
+(add-hook 'post-command-hook 'check-end-or-start-of-buffer)
+(add-hook 'pre-command-hook 'detect-gg-or-G-command)
+
+#+end_src
 ** Set-theme
 #+begin_src emacs-lisp
 (defun laluxx/preview-theme ()
@@ -779,15 +850,6 @@ Keybinds that execute other keybinds.
 (map! :leader
       :desc "Set wallpaper and update environment"
       "h T" #'laluxx/wal-set)
-
-
-
-
-
-
-
-
-
 #+end_src
 
 ** Toggle-highlight
@@ -924,7 +986,7 @@ set system wallpaper
 #+end_src
 ** update-dotfiles
 whenever you save a file inside "~/Desktop/pulls/dotfiles"
-or one of its subdirectories && if that file is a org file
+or one of its subdirectories rsync it to HOME
 #+begin_src emacs-lisp
 (defun laluxx/update-dotfiles ()
   "Update dotfiles."
@@ -1275,17 +1337,6 @@ Kill every buffer that is not the dashboard
                                               (buffer-list))))))
       (dashboard-refresh-buffer))
     (kill-buffer (current-buffer))))
-#+end_src
-** emacs-speak-to-python
-#+begin_src emacs-lisp
-(defun write-buffer-list-to-file ()
-  "Write the current list of buffer names to a file."
-  (with-temp-file "/tmp/emacs-buffer-list"
-    (insert (mapconcat 'identity (mapcar 'buffer-name (buffer-list)) "\n"))
-    (insert "\n----\n")
-    (insert (buffer-name (current-buffer)))))
-
-(add-hook 'buffer-list-update-hook 'write-buffer-list-to-file)
 #+end_src
 ** Wal-watcher
 Setup file watcher for ~/.cache/wal/colors
@@ -1991,13 +2042,13 @@ TODO
 #+end_src
 ** Evil
 #+begin_src emacs-lisp
-(after! evil
-  (map! :after evil
-        :map evil-insert-state-map
-        "C-h" #'evil-backward-char
-        "C-j" #'evil-next-line
-        "C-k" #'evil-previous-line
-        "C-l" #'evil-forward-char))
+;; (after! evil
+;;   (map! :after evil
+;;         :map evil-insert-state-map
+;;         "C-h" #'evil-backward-char
+;;         "C-j" #'evil-next-line
+;;         "C-k" #'evil-previous-line
+;;         "C-l" #'evil-forward-char))
 #+end_src
 ** org-auto-tangle
 =org-auto-tangle= allows you to add the option =#+auto_tangle: t= in your Org file so that it automatically tangles when you save the document.
@@ -2211,7 +2262,4 @@ this will set the theme
         (switch-to-buffer-other-window buf)))))
 
 (global-set-key [double-mouse-1] #'doom/open-file-at-point-in-new-buffer)
-
-
-
 #+end_src

@@ -647,7 +647,6 @@ doIgnoreBorders = ask >>= \w -> liftX (modifyBorder 0 w) >> idHook
 modifyBorder :: Dimension -> Window -> X ()
 modifyBorder bw w = withDisplay $ \d -> io $ setWindowBorderWidth d w bw
 
-
 myManageHook :: XMonad.Query (Data.Monoid.Endo WindowSet)
 myManageHook = composeAll
   -- 'doFloat' forces a window to float.  Useful for dialog boxes and such.
@@ -676,6 +675,7 @@ myManageHook = composeAll
   , title =? "emacs-run-M-x" --> doRectFloat (W.RationalRect ((-15)/1920) (905/1080) (2066/1920) (185/1080)) -- BOTTOM
   -- , title =? "emacs-run-wal-set" --> doRectFloat (W.RationalRect ((-15)/1920) (905/1080) (2066/1920) (185/1080)) -- BOTTOM
   , title =? "emacs-run-wal-set" --> doIgnoreBorders
+  , className =? "Firefox" --> doIgnoreBorders
   , title =? "emacs-run-set-wallpaper" --> doRectFloat (W.RationalRect ((-15)/1920) (905/1080) (2066/1920) (185/1080)) -- BOTTOM
   , title =? "emacs-run-wal-set-solid" --> doRectFloat (W.RationalRect ((-15)/1920) (905/1080) (2066/1920) (185/1080)) -- BOTTOM
   , title =? "emacs-run-wal-set-favourite" --> doRectFloat (W.RationalRect ((-15)/1920) (905/1080) (2066/1920) (185/1080)) -- BOTTOM
@@ -684,10 +684,8 @@ myManageHook = composeAll
   , title =? "emacs-run-info" --> doRectFloat (W.RationalRect ((-8)/1920) (741/1080) (1930/1920) (365/1080)) -- BOTTOM-BIG
   , title =? "emacs-run-dired" --> doRectFloat (W.RationalRect ((-8)/1920) (741/1080) (1930/1920) (365/1080)) -- BOTTOM-BIG
   , title =? "emacs-run-dmenu" --> doRectFloat (W.RationalRect ((-8)/1920) (741/1080) (1930/1920) (365/1080)) -- BOTTOM-BIG
-
   , title =? "emacs-run-which-key" --> doRectFloat (W.RationalRect ((-15)/1920) (905/1080) (2066/1920) (185/1080)) -- BOTTOM
   , title =? "emacs-run-clone-client-frame-bottom" --> doRectFloat (W.RationalRect ((-15)/1920) (905/1080) (2066/1920) (185/1080)) -- BOTTOM
-  -- , title =? "emacs-run-wal-set" --> doRectFloat (W.RationalRect ((-15)/1920) (25/1080) (2066/1920) (185/1080)) -- TOP TODO no border for top
   , title =? "Mozilla Firefox"     --> doShift ( myWorkspaces !! 1 )
   , className =? "Brave-browser"   --> doShift ( myWorkspaces !! 1 )
   , className =? "mpv"             --> doShift ( myWorkspaces !! 7 )
