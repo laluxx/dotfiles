@@ -2704,7 +2704,8 @@ typetune() {
     fi
 }
 #+end_src
-* Copy-icons
+* Funtions
+** Copy-icons
 #+begin_src shell
 copy-icons() {
   # Store the current working directory
@@ -2726,6 +2727,4 @@ copy-icons() {
 
   echo "Icons copied to $current_dir."
 }
-
-
 #+end_src

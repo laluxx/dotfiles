@@ -674,8 +674,10 @@ myManageHook = composeAll
   , title =? "emacs-run-launcher" --> doRectFloat (W.RationalRect ((-15)/1920) (905/1080) (2066/1920) (185/1080)) -- BOTTOM
   , title =? "emacs-run-M-x" --> doRectFloat (W.RationalRect ((-15)/1920) (905/1080) (2066/1920) (185/1080)) -- BOTTOM
   , title =? "emacs-run-wal-set" --> doRectFloat (W.RationalRect ((-15)/1920) (905/1080) (2066/1920) (185/1080)) -- BOTTOM
+  , title =? "emacs-run-wal-set-animated" --> doRectFloat (W.RationalRect ((-15)/1920) (905/1080) (2066/1920) (185/1080)) -- BOTTOM
+  , title =? "emacs-run-set-animated" --> doRectFloat (W.RationalRect ((-15)/1920) (905/1080) (2066/1920) (185/1080)) -- BOTTOM
   , className =? "Firefox" --> doIgnoreBorders
-  , title =? "emacs-run-set-wallpaper" --> doRectFloat (W.RationalRect ((-15)/1920) (905/1080) (2066/1920) (185/1080)) -- BOTTOM
+  , title =? "emacs-run-set-animated-wallpaper" --> doRectFloat (W.RationalRect ((-15)/1920) (905/1080) (2066/1920) (185/1080)) -- BOTTOM
   , title =? "emacs-run-wal-set-solid" --> doRectFloat (W.RationalRect ((-15)/1920) (905/1080) (2066/1920) (185/1080)) -- BOTTOM
   , title =? "emacs-run-wal-set-favourite" --> doRectFloat (W.RationalRect ((-15)/1920) (905/1080) (2066/1920) (185/1080)) -- BOTTOM
   -- , title =? "emacs-run-dired" --> doRectFloat (W.RationalRect ((-15)/1920) (905/1080) (2066/1920) (185/1080)) -- BOTTOM
@@ -954,7 +956,9 @@ myKeys c =
   [
     ("M-w s", addName "Save Wallpaper" $ spawn ("walfav"))
     , ("M-w w", addName "Run wal-set" $ spawn "emacsclient -a '' -F '((visibility . nil))' -e '(emacs-run-wal-set)'")
-    , ("M-w a", addName "Run set-wallpaper" $ spawn "emacsclient -a '' -F '((visibility . nil))' -e '(emacs-run-set-wallpaper)'")
+    , ("M-w b", addName "Run set-wallpaper" $ spawn "emacsclient -a '' -F '((visibility . nil))' -e '(emacs-run-set-wallpaper)'")
+    , ("M-w q", addName "Run wal-set-animated" $ spawn "emacsclient -a '' -F '((visibility . nil))' -e '(emacs-run-wal-set-animated)'")
+    , ("M-w a", addName "Run set-animated-wallpaper" $ spawn "emacsclient -a '' -F '((visibility . nil))' -e '(emacs-run-set-animated-wallpaper)'")
     , ("M-w f", addName "Run wal-set-favorite" $ spawn "emacsclient -a '' -F '((visibility . nil))' -e '(emacs-run-wal-set-favourite)'")
     , ("M-w d", addName "Run wal-set-solid" $ spawn "emacsclient -a '' -F '((visibility . nil))' -e '(emacs-run-wal-set-solid)'")
   ]

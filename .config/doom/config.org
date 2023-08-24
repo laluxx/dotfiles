@@ -906,6 +906,86 @@ TODO:
                               (run-at-time "0.5 sec" nil 'open-dashboard))
                             (run-at-time "1 sec" nil 'spaceline-compile)))))))
 #+end_src
+*** Animated
+#+begin_src emacs-lisp
+
+
+(defun laluxx/wal-set-animated ()
+  "Set an animated wallpaper and configure theme based on it."
+  (interactive)
+  (let* ((default-directory "~/xos/wallpapers/animated")
+         (theme-directory "~/xos/theme")
+         (pywal-scripts-directory "~/xos/pywal-scripts")
+         (video-files (directory-files-recursively default-directory "\\.\\(mp4\\|mkv\\|webm\\|avi\\)$"))
+         (current-buffer-name (buffer-name)))
+    (ivy-read "Choose animated wallpaper: "
+              video-files
+              :action (lambda (video)
+                        (when (and (not (string-empty-p video))
+                                   (file-exists-p video))
+                          (let* ((abs-video (expand-file-name video))
+                                 (first-frame-image (concat abs-video "-frame1.png")))
+                            ;; Extract the first frame of the video
+                            (shell-command (concat "ffmpeg -i " abs-video " -vframes 1 " first-frame-image))
+                            ;; Use the extracted frame with `wal` to generate and set the theme (but not set as wallpaper)
+                            (shell-command (concat "wal -n -i " first-frame-image))
+                            ;; Rest of the commands similar to your wal-set function
+                            (with-temp-file (concat theme-directory "/.wallpaper")
+                              (insert first-frame-image))
+                            (shell-command "theme pywal --no-random")
+                            (dolist (script '("xmonad-dark-wal.py" "nvim-wal.py" "nvim-wal-dark.py"))
+                              (shell-command (concat "python3 " pywal-scripts-directory "/" script)))
+                            (shell-command "xmonad --restart")
+                            (shell-command "dashboard-wal-gen")
+                            (when (equal current-buffer-name "*dashboard*")
+                              (run-at-time "0.5 sec" nil 'open-dashboard))
+                            (run-at-time "1 sec" nil 'spaceline-compile)
+                            ;; Finally, set the video as the animated wallpaper
+                            (start-process "set-animated-wallpaper" nil "xwinwrap" "-o" "1.0" "-nf" "-ovr" "--"
+                                           "mpv" "-wid" "WID" "--loop-file=inf" "--video-unscaled"
+                                           "--no-terminal" "--no-audio" "--no-input-default-bindings"
+                                           "--no-border" "--no-window-dragging" "--no-osc" "--no-osd-bar" abs-video)))))))
+
+
+
+;; ORIGINAL Xmobar below
+;; (defun laluxx/wal-set-animated ()
+;;   (interactive)
+;;   (let* ((default-directory "~/xos/wallpapers/animated")
+;;          (theme-directory "~/xos/theme")
+;;          (pywal-scripts-directory "~/xos/pywal-scripts")
+;;          (video-files (directory-files-recursively default-directory "\\.\\(mp4\\|mkv\\|webm\\|avi\\)$"))
+;;          (current-buffer-name (buffer-name)))
+;;     (ivy-read "Choose animated wallpaper: "
+;;               video-files
+;;               :action (lambda (video)
+;;                         (when (and (not (string-empty-p video))
+;;                                    (file-exists-p video))
+;;                           (let* ((abs-video (expand-file-name video))
+;;                                  (first-frame-image (concat abs-video "-frame1.png")))
+;;                             ;; Extract the first frame of the video
+;;                             (shell-command-to-string (concat "ffmpeg -i " abs-video " -vframes 1 " first-frame-image))
+;;                             ;; Use the extracted frame with `wal` to generate and set the theme (but not set as wallpaper)
+;;                             (shell-command-to-string (concat "wal -n -i " first-frame-image))
+;;                             ;; Rest of the commands similar to your wal-set function
+;;                             (with-temp-file (concat theme-directory "/.wallpaper")
+;;                               (insert first-frame-image))
+;;                             (shell-command-to-string "theme pywal --no-random")
+;;                             (dolist (script '("xmonad-dark-wal.py" "nvim-wal.py" "nvim-wal-dark.py"))
+;;                               (shell-command-to-string (concat "python3 " pywal-scripts-directory "/" script)))
+;;                             (shell-command-to-string "xmonad --restart")
+;;                             (shell-command-to-string "dashboard-wal-gen")
+;;                             (when (equal current-buffer-name "*dashboard*")
+;;                               (run-at-time "0.5 sec" nil 'open-dashboard))
+;;                             (run-at-time "1 sec" nil 'spaceline-compile)
+;;                             ;; Finally, set the video as the animated wallpaper
+;;                             (start-process "set-animated-wallpaper" nil "xwinwrap" "-o" "1.0" "-nf" "-ovr" "--"
+;;                                            "mpv" "-wid" "WID" "--loop-file=inf" "--video-unscaled"
+;;                                            "--no-terminal" "--no-audio" "--no-input-default-bindings"
+;;                                            "--no-border" "--no-window-dragging" "--no-osc" "--no-osd-bar" abs-video)))))))
+
+
+#+end_src
 *** Favourite
 Set a wal paper from =~/xos/wallpapers/favourites=
 #+begin_src emacs-lisp
@@ -981,8 +1061,31 @@ set system wallpaper
                                    (file-exists-p wallpaper))
                           (let ((abs-wallpaper (expand-file-name wallpaper)))
                             (shell-command-to-string (concat "feh --bg-scale " abs-wallpaper))))))))
+#+end_src
+*** set-animated-wallpaper
+simply set the video as the wallpaper without wal actions
+#+begin_src emacs-lisp
+;; work original
+(defvar laluxx/last-animated-wallpaper nil "Path to the last set animated wallpaper.")
 
-
+(defun laluxx/set-animated-wallpaper ()
+  (interactive)
+  (let* ((default-directory "~/xos/wallpapers/animated")
+         (video-files (directory-files-recursively default-directory "\\.\\(mp4\\|mkv\\|webm\\|avi\\)$")))
+    (ivy-read "Choose animated wallpaper: "
+              video-files
+              :action (lambda (video)
+                        (when (and (not (string-empty-p video))
+                                   (file-exists-p video))
+                          (let ((abs-video (expand-file-name video)))
+                            ;; Kill mpv if the new wallpaper is different from the last one
+                            (when (not (equal abs-video laluxx/last-animated-wallpaper))
+                              (shell-command "pkill mpv"))
+                            (setq laluxx/last-animated-wallpaper abs-video)
+                            (start-process "set-animated-wallpaper" nil "xwinwrap" "-o" "1.0" "-nf" "-ovr" "--"
+                                           "mpv" "-wid" "WID" "--loop-file=inf" "--video-unscaled"
+                                           "--no-terminal" "--no-audio" "--no-input-default-bindings"
+                                           "--no-border" "--no-window-dragging" "--no-osc" "--no-osd-bar" abs-video)))))))
 #+end_src
 ** update-dotfiles
 whenever you save a file inside "~/Desktop/pulls/dotfiles"
@@ -1784,6 +1887,27 @@ The following creates a global minor mode for rainbow-mode and enables it (excep
                     (laluxx/wal-set)
                     (delete-frame))))
 #+end_src
+*** Animated
+#+begin_src emacs-lisp
+(defun emacs-run-wal-set-animated ()
+  "Create and select a frame called emacs-run-launcher which consists only of a minibuffer and has specific dimensions. Runs app-launcher-run-app on that frame, which is an emacs command that prompts you to select an app and open it in a dmenu like behaviour. Delete the frame after that command has exited"
+  (interactive)
+  (with-selected-frame
+    (make-frame '((name . "emacs-run-wal-set-animated")
+                  (minibuffer . only)
+                  (fullscreen . 0) ; no fullscreen
+                  (undecorated . t) ; remove title bar
+                  ;;(auto-raise . t) ; focus on this frame
+                  ;;(tool-bar-lines . 0)
+                  ;;(menu-bar-lines . 0)
+                  (internal-border-width . 10)
+                  (width . 80)
+                  (height . 11)))
+                  (unwind-protect
+                    (laluxx/wal-set-animated)
+                    (delete-frame))))
+
+#+end_src
 *** Solid
 #+begin_src emacs-lisp
 (defun emacs-run-wal-set-solid ()
@@ -1842,6 +1966,26 @@ The following creates a global minor mode for rainbow-mode and enables it (excep
                   (height . 11)))
                   (unwind-protect
                     (laluxx/set-wallpaper)
+                    (delete-frame))))
+#+end_src
+*** Set-animated-wallpaper
+#+begin_src emacs-lisp
+(defun emacs-run-set-animated-wallpaper ()
+  "Create and select a frame called emacs-run-launcher which consists only of a minibuffer and has specific dimensions. Runs app-launcher-run-app on that frame, which is an emacs command that prompts you to select an app and open it in a dmenu like behaviour. Delete the frame after that command has exited"
+  (interactive)
+  (with-selected-frame
+    (make-frame '((name . "emacs-run-set-animated-wallpaper")
+                  (minibuffer . only)
+                  (fullscreen . 0) ; no fullscreen
+                  (undecorated . t) ; remove title bar
+                  ;;(auto-raise . t) ; focus on this frame
+                  ;;(tool-bar-lines . 0)
+                  ;;(menu-bar-lines . 0)
+                  (internal-border-width . 10)
+                  (width . 80)
+                  (height . 11)))
+                  (unwind-protect
+                    (laluxx/set-animated-wallpaper)
                     (delete-frame))))
 #+end_src
 ** M-X
