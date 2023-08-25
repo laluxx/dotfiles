@@ -580,7 +580,7 @@ myKeys c =
   , ("M-i", addName "Run info" $ sequence_ [spawn (mySoundPlayer ++ dmenuSound), spawn "emacsclient -a '' -F '((visibility . nil))' -e '(emacs-run-info)'"])
   -- , ("M-p", addName "Run dmenu" $ sequence_ [spawn (mySoundPlayer ++ dmenuSound), spawn "emacsclient -a '' -F '((visibility . nil))' -e '(emacs-run-dmenu)'"])
   , ("M-p", addName "Run dmenu" $ sequence_ [spawn (mySoundPlayer ++ dmenuSound), spawn "dmrun"])
-  , ("M-o", addName "rofi-hud"            $ spawn "rofi-hud")
+  , ("M-z", addName "boomer"            $ spawn "boomer")
 
 
 
