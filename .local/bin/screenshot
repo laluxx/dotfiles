@@ -1,8 +1,8 @@
 #!/bin/bash
 
-# Capture screenshot and save it to a temporary file
+# Capture screenshot without the cursor and save it to a temporary file
 tmp_file="/tmp/screenshot.png"
-maim -s "$tmp_file"
+maim -s -u "$tmp_file"
 
 # Check if the screenshot was captured successfully
 if [ -f "$tmp_file" ]; then

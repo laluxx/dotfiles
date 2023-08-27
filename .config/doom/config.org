@@ -234,7 +234,7 @@ fix the scroll
   "Setup for dashboard."
   (my/dashboard-bindings)
   ;; Make the cursor invisible in dashboard
-  (setq-local cursor-type nil)
+  ;; (setq-local cursor-type nil)
   ;; Disable mouse scrolling
   (setq-local mouse-wheel-scroll-amount '(nil))
   (setq-local mouse-wheel-progressive-speed nil)
@@ -244,11 +244,6 @@ fix the scroll
 (add-hook 'dashboard-mode-hook 'my/dashboard-setup)
 
 
-
-#+end_src
-** Modeline
-Modeline only for the dashboard
-#+begin_src emacs-lisp
 
 #+end_src
 ** Highlight
@@ -385,10 +380,10 @@ Set dashboard as the initial buffer
   (interactive)
   (dashboard-refresh-buffer))
 
-(defun generate-image-and-open-dashboard ()
-  "Generate image and open dashboard."
-  (shell-command "python3 ~/xos/pywal-scripts/dashboard-wal-gen.py")
-  (open-dashboard))
+;; (defun generate-image-and-open-dashboard ()
+;;   "Generate image and open dashboard."
+;;   (shell-command "python3 ~/xos/pywal-scripts/dashboard-wal-gen.py")
+;;   (open-dashboard))
 
 (add-hook 'after-init-hook (lambda () (run-at-time "0.5 sec" nil 'generate-image-and-open-dashboard)))
 

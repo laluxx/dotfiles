@@ -223,6 +223,7 @@ myStartupHook = do
   spawnOnce "xrandr --output \"$(xrandr | awk '/ connected/ {print $1; exit}')\" --mode 1920x1080 --rate 144"
   spawnOnce "xset r rate 160 60"
   spawnOnce "python3 /home/l/xos/anyline/web/main.py"
+  spawnOnce "python3 /home/l/xos/anyline/commits/main.py"
   -- spawnOnce "python3 /home/l/xos/xmv/main.py"
 
   spawnOnce "lxsession"
@@ -889,8 +890,8 @@ myKeys c =
 
   -- Increase/decrease windows in the master pane or the stack
   ^++^ subKeys "Increase/decrease windows in master pane or the stack"
-  [ ("M-S-<Up>", addName "Increase clients in master pane"   $ sendMessage (IncMasterN 1))
-  , ("M-S-<Down>", addName "Decrease clients in master pane" $ sendMessage (IncMasterN (-1)))
+  [ ("M-s", addName "Increase clients in master pane"   $ sendMessage (IncMasterN 1))
+  , ("M-d", addName "Decrease clients in master pane" $ sendMessage (IncMasterN (-1)))
   , ("M-=", addName "Increase max # of windows for layout"   $ increaseLimit)
   , ("M--", addName "Decrease max # of windows for layout"   $ decreaseLimit)]
 
@@ -902,7 +903,7 @@ myKeys c =
   , ("M-C-k", addName "pullGroup U"           $ sendMessage $ pullGroup U)
   , ("M-C-j", addName "pullGroup D"           $ sendMessage $ pullGroup D)
   , ("M-C-m", addName "MergeAll"              $ withFocused (sendMessage . MergeAll))
-  -- , ("M-C-u", addName "UnMerge"               $ withFocused (sendMessage . UnMerge))
+  , ("M-C-u", addName "UnMerge"               $ withFocused (sendMessage . UnMerge))
   , ("M-C-/", addName "UnMergeAll"            $  withFocused (sendMessage . UnMergeAll))
   , ("M-C-.", addName "Switch focus next tab" $  onGroup W.focusUp')
   , ("M-C-,", addName "Switch focus prev tab" $  onGroup W.focusDown')]
@@ -911,10 +912,10 @@ myKeys c =
   -- Toggle show/hide these programs. They run on a hidden workspace.
   -- When you toggle them to show, it brings them to current workspace.
   -- Toggle them to hide and it sends them back to hidden workspace (NSP).
-  ^++^ subKeys "Scratchpads"
-  [ ("M-s t", addName "Toggle scratchpad terminal"   $ namedScratchpadAction myScratchPads "terminal")
-  , ("M-s m", addName "Toggle scratchpad mocp"       $ namedScratchpadAction myScratchPads "mocp")
-  , ("M-<Escape>", addName "Toggle scratchpad calculator" $ namedScratchpadAction myScratchPads "calculator")]
+  -- ^++^ subKeys "Scratchpads"
+  -- [ ("M-s t", addName "Toggle scratchpad terminal"   $ namedScratchpadAction myScratchPads "terminal")
+  -- , ("M-s m", addName "Toggle scratchpad mocp"       $ namedScratchpadAction myScratchPads "mocp")
+  -- , ("M-<Escape>", addName "Toggle scratchpad calculator" $ namedScratchpadAction myScratchPads "calculator")]
 
   -- Controls for mocp music player (SUPER-u followed by a key)
   ^++^ subKeys "Mocp music player"
