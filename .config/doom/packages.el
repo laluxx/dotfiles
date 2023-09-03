@@ -51,6 +51,7 @@
 
 
 
+(package! modus-themes)
 (package! ewal)
 (package! ewal-evil-cursors)
 (package! ewal-doom-themes)
@@ -98,6 +99,8 @@
 (package! all-the-icons-ibuffer)
 (package! rotate)
 (package! edwina)
+
+;; (package! gpt-macro)
 
 
 (package! app-launcher :recipe (:host github :repo "SebastienWae/app-launcher"))
