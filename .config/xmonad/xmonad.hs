@@ -42,7 +42,7 @@ import qualified Data.Map as M
 import XMonad.Hooks.DynamicLog (dynamicLogWithPP, wrap, xmobarPP, xmobarColor, shorten, PP(..))
 import XMonad.Hooks.EwmhDesktops  -- for some fullscreen events, also for xcomposite in obs.
 import XMonad.Hooks.ManageDocks (avoidStruts, docks, manageDocks, ToggleStruts(..))
-import XMonad.Hooks.ManageHelpers (isFullscreen, doFullFloat, doCenterFloat)
+import XMonad.Hooks.ManageHelpers (isFullscreen, doFullFloat, doCenterFloat, isInProperty)
 import XMonad.Hooks.ServerMode
 import XMonad.Hooks.SetWMName
 import XMonad.Hooks.StatusBar
@@ -97,6 +97,9 @@ myModMask = mod4Mask        -- Sets modkey to super/windows key
 
 myTerminal :: String
 myTerminal = "kitty"    -- Sets default terminal
+
+st :: String
+st = "st"    -- Set st terminal
 
 myBrowser :: String
 myBrowser = "firefox"  -- Sets qutebrowser as browser
@@ -650,6 +653,7 @@ myKeys c =
   [ ("M-<Return>", addName "Launch terminal"   $ spawn (myTerminal))
   -- , ("M-b", addName "Launch web browser"       $ spawn (myBrowser))
   , ("M-b", addName "Launch btop"           $ spawn (myTerminal ++ " -e btop"))
+  , ("M-C-<Return>", addName "Launch st"           $ spawn (st))
   , ("M-M1-h", addName "Launch htop"           $ spawn (myTerminal ++ " -e htop"))]
 
   ^++^ subKeys "Monitors"

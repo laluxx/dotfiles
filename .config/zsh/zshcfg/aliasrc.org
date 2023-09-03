@@ -96,7 +96,7 @@ alias web-site-pull="wget --recursive --no-clobber --page-requisites --html-exte
 #+end_src
 ** npm
 #+begin_src shell
-alias npm="sudo npm"
+# alias npm="sudo npm"
 #+end_src
 ** luarocks
 #+begin_src shell
@@ -108,7 +108,6 @@ alias mesosbu="sudo meson setup --wipe build && sudo meson setup --buildtype=rel
 #+end_src
 ** next
 #+begin_src shell
-alias npm="npx create-next-app"
 #+end_src
 * xos
 ** Check

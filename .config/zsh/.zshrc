@@ -1113,13 +1113,21 @@ function start() {
   fi
 }
 
-function set-wm() {
+set-wm () {
     local program_name="$1"
     local xinitrc_file="/etc/X11/xinit/xinitrc"
-    if sudo sed -i "\$s|^exec.*|exec $program_name|" "$xinitrc_file"; then
-        echo "Last 'exec' line updated in $xinitrc_file"
+
+    # First, remove any existing while loop for dwm
+    sudo sed -i "/while true; do/,/done/d" "$xinitrc_file"
+
+    if [[ $program_name == "dwm" ]]; then
+        # If the provided WM is dwm, replace the exec line with the loop logic for dwm
+        sudo sed -i "\$s|^exec.*|while true; do\n    $program_name 2> ~/.dwm.log\n    [ \$? -eq 0 ] && exit\ndone\nexec $program_name|" "$xinitrc_file"
+        echo "Loop logic added and last 'exec' line updated for dwm in $xinitrc_file"
     else
-        echo "No 'exec' line found in $xinitrc_file"
+        # For other window managers, just replace the exec line
+        sudo sed -i "\$s|^exec.*|exec $program_name|" "$xinitrc_file"
+        echo "Last 'exec' line updated in $xinitrc_file"
     fi
 }
 

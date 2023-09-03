@@ -3,6 +3,14 @@
 import os
 import subprocess
 
+# Get WM name
+def get_wm_name():
+    try:
+        wm_name = subprocess.check_output(["wmctrl", "-m"]).decode("utf-8").splitlines()[0].split(":")[1].strip()
+        return wm_name
+    except Exception as e:
+        return ""
+
 # Define the path to the colors file
 colors_file = os.path.join(os.environ['HOME'], '.cache/wal/colors')
 
@@ -10,16 +18,98 @@ colors_file = os.path.join(os.environ['HOME'], '.cache/wal/colors')
 with open(colors_file, 'r') as f:
     colors = f.read().splitlines()
 
+# Determine bar height based on WM
+wm_name = get_wm_name()
+if wm_name == "dwm":
+    bar_height = "22"
+elif wm_name == "LG3D":
+    bar_height = "24"
+else:
+    bar_height = "20"  # default
+
 # Prepare the dmenu command with desired configuration
 dmenu_cmd = [
     'dmenu_run',
     '-fn', 'jetbrainsmono nfm extrabold-10',  # Set the font
+    '-h', bar_height,  # Set the bar height
     '-nb', colors[0],  # Set the normal background color
     '-nf', colors[1],  # Set the normal foreground color
     '-sb', colors[6],  # Set the selected background color
     '-sf', colors[0],  # Set the selected foreground color
-    # '-b'  # Make dmenu appear at the bottom
+    '-nhb', colors[0],  # Fuzzy highlight background color for normal scheme
+    '-nhf', colors[7],  # Fuzzy highlight foreground color for normal scheme
+    '-shb', colors[6],  # Fuzzy highlight background color for selected scheme
+    '-shf', colors[7],  # Fuzzy highlight foreground color for selected scheme
 ]
 
 # Run the dmenu command
 subprocess.run(dmenu_cmd)
+
+
+
+
+
+
+
+
+
+
+
+
+# FUZZY HIGHLIGHT
+# import os
+# import subprocess
+#
+# # Define the path to the colors file
+# colors_file = os.path.join(os.environ['HOME'], '.cache/wal/colors')
+#
+# # Parse the colors file
+# with open(colors_file, 'r') as f:
+#     colors = f.read().splitlines()
+#
+# # Prepare the dmenu command with desired configuration
+# dmenu_cmd = [
+#     'dmenu_run',
+#     '-fn', 'jetbrainsmono nfm extrabold-10',  # Set the font
+#     '-nb', colors[0],  # Set the normal background color
+#     '-nf', colors[1],  # Set the normal foreground color
+#     '-sb', colors[6],  # Set the selected background color
+#     '-sf', colors[0],  # Set the selected foreground color
+#     '-nhb', colors[0],  # Fuzzy highlight background color for normal scheme
+#     '-nhf', colors[7],  # Fuzzy highlight foreground color for normal scheme
+#     '-shb', colors[6],  # Fuzzy highlight background color for selected scheme
+#     '-shf', colors[7],  # Fuzzy highlight foreground color for selected scheme
+# ]
+#
+# # Run the dmenu command
+# subprocess.run(dmenu_cmd)
+
+
+
+
+
+
+
+# import os
+# import subprocess
+#
+# # Define the path to the colors file
+# colors_file = os.path.join(os.environ['HOME'], '.cache/wal/colors')
+#
+# # Parse the colors file
+# with open(colors_file, 'r') as f:
+#     colors = f.read().splitlines()
+#
+# # Prepare the dmenu command with desired configuration
+# dmenu_cmd = [
+#     'dmenu_run',
+#     '-fn', 'jetbrainsmono nfm extrabold-10',  # Set the font
+#     '-nb', colors[0],  # Set the normal background color
+#     '-nf', colors[1],  # Set the normal foreground color
+#     '-sb', colors[6],  # Set the selected background color
+#     '-sf', colors[0],  # Set the selected foreground color
+#     # '-b'  # Make dmenu appear at the bottom
+# ]
+#
+# # Run the dmenu command
+# subprocess.run(dmenu_cmd)

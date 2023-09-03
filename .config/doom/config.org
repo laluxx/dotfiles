@@ -409,16 +409,14 @@ Set dashboard as the initial buffer
 (map! :leader
       (:prefix ("r" . "regexp")
         :desc "Regex builder" "b" #'re-builder))
+
+(map! :leader
+      (:prefix ("r" . "regexp")
+        :desc "counsel-rg" "g" #'counsel-rg))
+
 #+end_src
 ** Org
 #+begin_src emacs-lisp
-(after! org
-  (map! :map org-mode-map
-        :nvi "<C-return>" #'laluxx/create-window-based-on-layout
-        :nvi "<C-M-return>" #'vterm
-        :nvi "C-j" #'my-switch-buffer-forward-or-other-window
-        :nvi "C-k" #'my-switch-buffer-backward-or-other-window))
-
 #+end_src
 ** Toggle
 #+begin_src emacs-lisp
@@ -725,25 +723,51 @@ Keybinds that execute other keybinds.
                 (load-theme (intern theme) t))
               :caller 'laluxx/preview-theme)))
 
+;; (defun laluxx/set-theme-and-update-environment ()
+;;   "Function to set a new Doom theme and then update the environment according to the new theme."
+;;   (interactive)
+;;   ;; Define pywal-scripts-directory
+;;   (let* ((pywal-scripts-directory "~/xos/pywal-scripts"))
+;;     ;; Load the theme using the same mechanism as h t
+;;     (laluxx/preview-theme)
+;;     (laluxx/doom-wal)
+;;     ;; Then run all the other commands you wanted to run
+;;     (dolist (script '("xmonad-dark-wal.py" "nvim-wal.py" "nvim-wal-dark.py"))
+;;       (shell-command-to-string (concat "python3 " pywal-scripts-directory "/" script)))
+;;     (shell-command-to-string "xmonad --restart")
+;;     (shell-command-to-string "dashboard-wal-gen")
+;;     ;; If the current buffer was the dashboard, refresh it
+;;     (when (equal (buffer-name) "*dashboard*")
+;;       (run-at-time "0.5 sec" nil 'open-dashboard))
+;;     (run-at-time "1 sec" nil 'spaceline-compile)))
+
+
+
+
+
 (defun laluxx/set-theme-and-update-environment ()
   "Function to set a new Doom theme and then update the environment according to the new theme."
   (interactive)
-  ;; Define pywal-scripts-directory
-  (let* ((pywal-scripts-directory "~/xos/pywal-scripts"))
+  ;; Define directories
+  (let* ((pywal-scripts-directory "~/xos/pywal-scripts")
+         (current-buffer-name (buffer-name))
+         ;; Get the WM name
+         (wm-name (string-trim (shell-command-to-string "wmctrl -m | awk 'NR==1 {print $2}'"))))
     ;; Load the theme using the same mechanism as h t
     (laluxx/preview-theme)
     (laluxx/doom-wal)
     ;; Then run all the other commands you wanted to run
     (dolist (script '("xmonad-dark-wal.py" "nvim-wal.py" "nvim-wal-dark.py"))
       (shell-command-to-string (concat "python3 " pywal-scripts-directory "/" script)))
-    (shell-command-to-string "xmonad --restart")
+    ;; Check the WM name and execute the appropriate command
+    (cond
+     ((string-equal wm-name "LG3D") (shell-command-to-string "xmonad --restart"))
+     ((string-equal wm-name "dwm") (shell-command-to-string "xdotool key super+F5")))
     (shell-command-to-string "dashboard-wal-gen")
     ;; If the current buffer was the dashboard, refresh it
-    (when (equal (buffer-name) "*dashboard*")
+    (when (equal current-buffer-name "*dashboard*")
       (run-at-time "0.5 sec" nil 'open-dashboard))
     (run-at-time "1 sec" nil 'spaceline-compile)))
-
-
 
 
 
@@ -875,13 +899,71 @@ TODO:
 - it doesnt refresh the dashboard if is
   opened in a split and not focused []
 #+begin_src emacs-lisp
+;; (defun laluxx/wal-set ()
+;;   (interactive)
+;;   (let* ((default-directory "~/xos/wallpapers/static")
+;;          (theme-directory "~/xos/theme")
+;;          (pywal-scripts-directory "~/xos/pywal-scripts")
+;;          (image-files (directory-files-recursively default-directory "\\.\\(png\\|jpg\\|jpeg\\|webp\\)$"))
+;;          (current-buffer-name (buffer-name)))  ; Save the current buffer name
+;;     (ivy-read "Choose wallpaper: "
+;;               image-files
+;;               :action (lambda (wallpaper)
+;;                         (when (and (not (string-empty-p wallpaper))
+;;                                    (file-exists-p wallpaper))
+;;                           (let ((abs-wallpaper (expand-file-name wallpaper)))
+;;                             (shell-command-to-string (concat "wal -i " abs-wallpaper))
+;;                             (with-temp-file (concat theme-directory "/.wallpaper")
+;;                               (insert abs-wallpaper))
+;;                             (shell-command-to-string "theme pywal --no-random")
+;;                             (dolist (script '("xmonad-dark-wal.py" "nvim-wal.py" "nvim-wal-dark.py"))
+;;                               (shell-command-to-string (concat "python3 " pywal-scripts-directory "/" script)))
+;;                             (shell-command-to-string "xmonad --restart")
+;;                             (shell-command-to-string "dashboard-wal-gen")
+;;                             ;; If the current buffer was the dashboard, refresh it
+;;                             (when (equal current-buffer-name "*dashboard*")
+;;                               (run-at-time "0.5 sec" nil 'open-dashboard))
+;;                             (run-at-time "1 sec" nil 'spaceline-compile)))))))
+
+
+;; (defun laluxx/wal-set ()
+;;   (interactive)
+;;   (let* ((default-directory "~/xos/wallpapers/static")
+;;          (theme-directory "~/xos/theme")
+;;          (pywal-scripts-directory "~/xos/pywal-scripts")
+;;          (image-files (directory-files-recursively default-directory "\\.\\(png\\|jpg\\|jpeg\\|webp\\)$"))
+;;          (current-buffer-name (buffer-name))
+;;          (wm-name (string-trim (shell-command-to-string "wmctrl -m | awk 'NR==1 {print $2}'"))))
+;;     (ivy-read "Choose wallpaper: "
+;;               image-files
+;;               :action (lambda (wallpaper)
+;;                         (when (and (not (string-empty-p wallpaper))
+;;                                    (file-exists-p wallpaper))
+;;                           (let ((abs-wallpaper (expand-file-name wallpaper)))
+;;                             (shell-command-to-string (concat "wal -i " abs-wallpaper))
+;;                             (with-temp-file (concat theme-directory "/.wallpaper")
+;;                               (insert abs-wallpaper))
+;;                             (shell-command-to-string "theme pywal --no-random")
+;;                             (dolist (script '("xmonad-dark-wal.py" "nvim-wal.py" "nvim-wal-dark.py"))
+;;                               (shell-command-to-string (concat "python3 " pywal-scripts-directory "/" script)))
+;;                             (cond
+;;                              ((string-equal wm-name "LG3D") (shell-command-to-string "xmonad --restart"))
+;;                              ((string-equal wm-name "dwm") (shell-command-to-string "xdotool key super+F5")))
+;;                             (shell-command-to-string "dashboard-wal-gen")
+;;                             ;; If the current buffer was the dashboard, refresh it
+;;                             (when (equal current-buffer-name "*dashboard*")
+;;                               (run-at-time "0.5 sec" nil 'open-dashboard))
+;;                             (run-at-time "1 sec" nil 'spaceline-compile)))))))
+
+
 (defun laluxx/wal-set ()
   (interactive)
   (let* ((default-directory "~/xos/wallpapers/static")
          (theme-directory "~/xos/theme")
          (pywal-scripts-directory "~/xos/pywal-scripts")
          (image-files (directory-files-recursively default-directory "\\.\\(png\\|jpg\\|jpeg\\|webp\\)$"))
-         (current-buffer-name (buffer-name)))  ; Save the current buffer name
+         (current-buffer-name (buffer-name))
+         (wm-name (string-trim (shell-command-to-string "wmctrl -m | awk 'NR==1 {print $2}'"))))
     (ivy-read "Choose wallpaper: "
               image-files
               :action (lambda (wallpaper)
@@ -894,12 +976,19 @@ TODO:
                             (shell-command-to-string "theme pywal --no-random")
                             (dolist (script '("xmonad-dark-wal.py" "nvim-wal.py" "nvim-wal-dark.py"))
                               (shell-command-to-string (concat "python3 " pywal-scripts-directory "/" script)))
-                            (shell-command-to-string "xmonad --restart")
+                            (cond
+                             ((string-equal wm-name "LG3D") (shell-command-to-string "xmonad --restart"))
+                             ((string-equal wm-name "dwm") (shell-command-to-string "xdotool key super+F5")))
                             (shell-command-to-string "dashboard-wal-gen")
+                            ;; Start picom
+                            (start-process "picom" nil "picom")
                             ;; If the current buffer was the dashboard, refresh it
                             (when (equal current-buffer-name "*dashboard*")
                               (run-at-time "0.5 sec" nil 'open-dashboard))
                             (run-at-time "1 sec" nil 'spaceline-compile)))))))
+
+
+
 #+end_src
 *** Animated
 #+begin_src emacs-lisp
@@ -1184,60 +1273,6 @@ changes, local to the current buffer."
 
 #+end_src
 
-*** Enlarge OR neotree OR re-builder
-If there is only one window, `ctrl h` and `ctrl l` will cycle buffers. If there are multiple windows, `ctrl h` and `ctrl l` will resize the windows.
-#+begin_src emacs-lisp
-(defun enlarge-window-horizontally-left ()
-  "Enlarges the window horizontally by 10 units."
-  (interactive)
-  (enlarge-window-horizontally 10))
-
-(defun shrink-window-horizontally-left ()
-  "Shrinks the window horizontally by 10 units."
-  (interactive)
-  (shrink-window-horizontally 10))
-
-(defun enlarge-window-horizontally-right ()
-  "Enlarges the window horizontally by 10 units."
-  (interactive)
-  (shrink-window-horizontally 10))
-
-(defun shrink-window-horizontally-right ()
-  "Shrinks the window horizontally by 10 units."
-  (interactive)
-  (enlarge-window-horizontally 10))
-
-(defun resize-window-horizontally (increase)
-  "Resize the current window horizontally.
-If INCREASE is non-nil, enlarge the window, otherwise shrink it."
-  (interactive "P")
-  (if (window-in-direction 'right)
-      (if increase
-          (shrink-window-horizontally-right)
-        (enlarge-window-horizontally-right))
-    (if increase
-        (enlarge-window-horizontally-left)
-      (shrink-window-horizontally-left))))
-
-(defun neotree-or-enlarge-window-left ()
-  "Open Neotree if there's only one window. Otherwise, enlarge the window to the left."
-  (interactive)
-  (if (one-window-p)
-      (neotree-show)
-    (resize-window-horizontally t)))
-
-(defun re-builder-or-enlarge-window-right ()
-  "Open Re-Builder if there's only one window. Otherwise, enlarge the window to the right."
-  (interactive)
-  (if (one-window-p)
-      (re-builder)
-    (resize-window-horizontally nil)))
-
-(global-set-key (kbd "C-h") 'neotree-or-enlarge-window-left)
-(global-set-key (kbd "C-l") 're-builder-or-enlarge-window-right)
-
-
-#+end_src
 *** Highlight
 a function that highlight the selected window
 #+begin_src emacs-lisp
@@ -1292,6 +1327,96 @@ a function that highlight the selected window
 #+end_src
 *** Keybinds
 #+begin_src emacs-lisp
+
+;; 2
+;; (map! :map general-override-mode-map
+;;       :n "M-j" #'my-switch-buffer-forward-or-other-window
+;;       :n "M-k" #'my-switch-buffer-backward-or-other-window)
+
+
+;; (after! edwina
+;;   ;; Modify Edwina keybindings
+;;   (define-key edwina-mode-map (kbd "M-h") 'toggle-neotree-or-adjust-master)
+;;   (define-key edwina-mode-map (kbd "M-l") 'toggle-vterm-or-adjust-master)
+;;   (define-key edwina-mode-map (kbd "M-j") 'rotate-window)
+;;   (define-key edwina-mode-map (kbd "M-k") (lambda () (interactive) (dotimes (_ (- (length (window-list)) 1)) (rotate-window))))
+
+;;   ;; Custom functions
+;;   (defun toggle-neotree-or-adjust-master ()
+;;     "Toggle Neotree if there's only one window. Otherwise, decrease the master window's factor."
+;;     (interactive)
+;;     (if (one-window-p t)
+;;         (neotree-toggle)
+;;       (edwina-dec-mfact)))
+
+;;   (defun toggle-vterm-or-adjust-master ()
+;;     "Toggle VTerm if there's only one window. Otherwise, increase the master window's factor."
+;;     (interactive)
+;;     (if (one-window-p t)
+;;         (+vterm/toggle)
+;;       (edwina-inc-mfact))))
+
+;; (defun my-switch-buffer-forward-or-other-window ()
+;;   (interactive)
+;;   (if (one-window-p)
+;;       (next-buffer)
+;;     (other-window 1)))
+
+;; (defun my-switch-buffer-backward-or-other-window ()
+;;   (interactive)
+;;   (if (one-window-p)
+;;       (previous-buffer)
+;;     (other-window -1)))
+
+;; (after! evil
+;;   (map! :n "M-j" #'my-switch-buffer-forward-or-other-window
+;;         :n "M-k" #'my-switch-buffer-backward-or-other-window))
+
+;; ;; Ensure M-j and M-k work in org-mode
+;; (after! org
+;;   (define-key org-mode-map (kbd "M-j") #'my-switch-buffer-forward-or-other-window)
+;;   (define-key org-mode-map (kbd "M-k") #'my-switch-buffer-backward-or-other-window))
+
+;; (map! :leader
+;;       (:prefix ("w" . "window")
+;;        "M" #'laluxx/window-single-toggle))
+;; (map! "M-SPC" #'laluxx/window-single-toggle)
+;; (map! "M-<backspace>" #'delete-window)
+;; (map! :map evil-normal-state-map "M-w" #'delete-window)
+;; (map! :leader "SPC" #'rotate-layout)
+;; (global-set-key (kbd "M-<return>") #'vterm)
+;; (global-set-key (kbd "M-q") #'delete-window)
+
+
+
+
+
+
+
+
+;; BEST
+(after! edwina
+  ;; Modify Edwina keybindings
+  (define-key edwina-mode-map (kbd "M-h") 'toggle-neotree-or-adjust-master)
+  (define-key edwina-mode-map (kbd "M-l") 'toggle-vterm-or-adjust-master)
+  (define-key edwina-mode-map (kbd "M-j") 'rotate-window)
+  (define-key edwina-mode-map (kbd "M-k") (lambda () (interactive) (dotimes (_ (- (length (window-list)) 1)) (rotate-window))))
+
+  ;; Custom functions
+  (defun toggle-neotree-or-adjust-master ()
+    "Toggle Neotree if there's only one window. Otherwise, decrease the master window's factor."
+    (interactive)
+    (if (one-window-p t)
+        (neotree-toggle)
+      (edwina-dec-mfact)))
+
+  (defun toggle-vterm-or-adjust-master ()
+    "Toggle VTerm if there's only one window. Otherwise, increase the master window's factor."
+    (interactive)
+    (if (one-window-p t)
+        (+vterm/toggle)
+      (edwina-inc-mfact))))
+
 (defun my-switch-buffer-forward-or-other-window ()
   (interactive)
   (if (one-window-p)
@@ -1305,38 +1430,18 @@ a function that highlight the selected window
     (other-window -1)))
 
 (after! evil
-  (map! :n "C-j" #'my-switch-buffer-forward-or-other-window
-        :n "C-k" #'my-switch-buffer-backward-or-other-window))
-
-
-
-
+  (map! :n "M-j" #'my-switch-buffer-forward-or-other-window
+        :n "M-k" #'my-switch-buffer-backward-or-other-window))
 
 (map! :leader
       (:prefix ("w" . "window")
        "M" #'laluxx/window-single-toggle))
-(map! "C-SPC" #'laluxx/window-single-toggle)
-
-(map! "<C-backspace>" #'delete-window)
-(map! :map evil-normal-state-map
-      "C-w" #'delete-window)
-
-(map! :leader
-      "SPC" #'rotate-layout)
-
-(global-set-key (kbd "C-M-j") 'rotate-window)
-(global-set-key (kbd "C-M-k") (lambda () (interactive) (dotimes (_ (- (length (window-list)) 1)) (rotate-window))))
-
-(global-set-key (kbd "C-M-<return>") #'vterm) ;; dont work in orgmode or inside vtmerm
-
-
-
-(map! "C-f" #'isearch-forward
-      "C-s" #'edwina-inc-nmaster
-      "C-d" #'edwina-dec-nmaster)
-
-
-
+(map! "M-SPC" #'laluxx/window-single-toggle)
+(map! "M-<backspace>" #'delete-window)
+(map! :map evil-normal-state-map "M-w" #'delete-window)
+(map! :leader "SPC" #'rotate-layout)
+(global-set-key (kbd "M-<return>") #'vterm)
+(global-set-key (kbd "M-q") #'delete-window)
 #+end_src
 *** Modeline
 TODO
@@ -1528,7 +1633,7 @@ will look into =~/xos/wallpaper/doom= for wallpapers called like doom-one.png or
       (message "No matching wallpaper found for theme '%s'" theme-name))))
 #+end_src
 
-** Org
+*** Org
 #+begin_src emacs-lisp
 (defun org-insert-header-tags ()
   "Insert personalized header tags at the beginning of the current Org file."
@@ -2169,6 +2274,8 @@ TODO
 #+end_src
 ** Neotree
 #+begin_src emacs-lisp
+(with-eval-after-load 'neotree
+  (define-key neotree-mode-map (kbd "M-h") 'neotree-toggle))
 #+end_src
 ** Edwina
 #+begin_src emacs-lisp

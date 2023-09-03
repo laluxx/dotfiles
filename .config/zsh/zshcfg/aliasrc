@@ -60,13 +60,13 @@ alias desktop-apps="c ~/.local/share/applications"
 
 alias web-site-pull="wget --recursive --no-clobber --page-requisites --html-extension --convert-links --restrict-file-names=windows --no-parent"
 
-alias npm="sudo npm"
+# alias npm="sudo npm"
 
 alias luarocks="sudo luarocks"
 
 alias mesosbu="sudo meson setup --wipe build && sudo meson setup --buildtype=release . build && sudo ninja -C build/ && sudo ninja -C build install"
 
-alias npm="npx create-next-app"
+
 
 alias xos-check-service-Libvirtd="sudo systemctl status libvirtd.service"
 
