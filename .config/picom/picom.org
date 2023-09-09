@@ -47,6 +47,7 @@ animation-exclude = [
    "class_g = 'xmobar'",
    "class_g = 'dwmsystray'",
    "class_g = 'Xmenu'",
+   "class_g = 'Overlay'",
    "class_g = 'Blur-my-wallpaper'",
    "class_g = 'Boomer'",
    "class_g = 'xmonad'",

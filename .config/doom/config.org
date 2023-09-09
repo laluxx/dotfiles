@@ -82,25 +82,25 @@
 ** No modeline
 *** dired
 #+begin_src emacs-lisp
-(defun hide-modeline-in-dired-mode ()
-  "Hide the modeline in `dired-mode'."
-  (setq mode-line-format nil))
+;; (defun hide-modeline-in-dired-mode ()
+;;   "Hide the modeline in `dired-mode'."
+;;   (setq mode-line-format nil))
 
-(add-hook 'dired-mode-hook 'hide-modeline-in-dired-mode)
+;; (add-hook 'dired-mode-hook 'hide-modeline-in-dired-mode)
 #+end_src
 *** Vterm
 #+begin_src emacs-lisp
-(defun hide-modeline-in-dired-mode ()
-  "Hide the modeline in `dired-mode'."
-  (setq mode-line-format nil))
+;; (defun hide-modeline-in-dired-mode ()
+;;   "Hide the modeline in `dired-mode'."
+;;   (setq mode-line-format nil))
 
-(add-hook 'dired-mode-hook 'hide-modeline-in-dired-mode)
+;; (add-hook 'dired-mode-hook 'hide-modeline-in-dired-mode)
 
-(defun hide-modeline-in-vterm-mode ()
-  "Hide the modeline in `vterm-mode'."
-  (setq mode-line-format nil))
+;; (defun hide-modeline-in-vterm-mode ()
+;;   "Hide the modeline in `vterm-mode'."
+;;   (setq mode-line-format nil))
 
-(add-hook 'vterm-mode-hook 'hide-modeline-in-vterm-mode)
+;; (add-hook 'vterm-mode-hook 'hide-modeline-in-vterm-mode)
 #+end_src
 ** toolbar
 #+begin_src emacs-lisp
@@ -386,6 +386,45 @@ Set dashboard as the initial buffer
 
 #+end_src
 * Keybinds
+** Open
+*** Ielm
+#+begin_src emacs-lisp
+(map! :leader
+      (:prefix ("o" . "open")
+        :desc "ielm repl" "i" #'ielm))
+
+#+end_src
+** Kill
+#+begin_src emacs-lisp
+(map! :leader
+      (:prefix ("k" . "kill")
+        :desc "process" "p" #'kill-process))
+#+end_src
+** Edwina
+#+begin_src emacs-lisp
+
+
+(after! evil
+  (define-key evil-normal-state-map (kbd "M-<return>") #'vterm/toggle))
+
+(after! edwina
+  (define-key edwina-mode-map (kbd "M-<return>") #'vterm/toggle))
+#+end_src
+** Global-set-key
+#+begin_src emacs-lisp
+;; (global-set-key (kbd "M-<return>") #'vterm/toggle)
+#+end_src
+** File-jump
+#+begin_src emacs-lisp
+(map! :leader
+      "f j" (lambda ()
+              (interactive)
+              (let ((selected-file (read-file-name "Open file: ")))
+                (split-window-right) ; Split the window to the right
+                (other-window 1) ; Move to the newly created window
+                (find-file selected-file))))
+
+#+end_src
 ** Ranger
 #+begin_src emacs-lisp
 (map! :leader
@@ -617,6 +656,73 @@ Keybinds that execute other keybinds.
 #+end_src
 
 * FUNCTIONS
+** Dynamic-modeline
+#+begin_src emacs-lisp
+;; V1
+;; if i alway open new buffer it works virtually perfect
+;; we have to be sure to disable the modeline for that window
+;; so the other buffers could still have it if their position say so
+
+(defun window-touches-bottom-p (win)
+  "Check if WIN is touching the bottom of the frame."
+  (let* ((edges (window-edges win nil t t))
+         (bottom-edge (nth 3 edges))
+         (frame-height (frame-pixel-height))
+         ;; Define a tolerance of 10 pixels
+         (tolerance 10))
+    ;; Check if the window's bottom edge is within the tolerance of the frame's height
+    (<= (abs (- bottom-edge frame-height)) tolerance)))
+
+(defun adjust-modelines-based-on-geometry ()
+  "Adjust modelines based on window geometry."
+  (dolist (win (window-list))
+    (with-selected-window win
+      (if (window-touches-bottom-p win)
+          (setq-local mode-line-format (default-value 'mode-line-format))
+        (setq-local mode-line-format nil)))))
+
+(add-hook 'window-configuration-change-hook 'adjust-modelines-based-on-geometry)
+
+
+
+
+
+
+#+end_src
+** Insert-nerd-font-icon
+TODO
+- it doesn't work []
+#+begin_src emacs-lisp
+;; (require 'url)
+;; (require 'dom)
+
+;; (defun fetch-nerd-font-icons ()
+;;   "Fetch Nerd Font icons from their cheat sheet and return them as an alist."
+;;   (let ((url "https://www.nerdfonts.com/cheat-sheet")
+;;         icons)
+;;     (with-temp-buffer
+;;       (url-insert-file-contents url)
+;;       (let ((dom (libxml-parse-html-region (point-min) (point-max))))
+;;         (dolist (icon (dom-by-class dom "column"))
+;;           (let ((icon-name (dom-text (car (dom-by-class icon "mdi-label"))))
+;;                 (codepoint (dom-text (car (dom-by-class icon "mdi-codepoints")))))
+;;             (push (cons icon-name codepoint) icons)))))
+;;     icons))
+
+;; (defun insert-nerd-font-icon ()
+;;   "Prompt with ivy to select a Nerd Font icon and insert it."
+;;   (interactive)
+;;   (let ((icons (fetch-nerd-font-icons)))
+;;     (ivy-read "Select Nerd Font icon: "
+;;               icons
+;;               :action (lambda (pair)
+;;                         (insert (cdr pair))))))
+
+
+
+;; (map! :leader
+;;       :desc "Insert Nerd Font Icon" "in" #'insert-nerd-font-icon)
+#+end_src
 ** Minibuffer-counter
 #+begin_src emacs-lisp
 (defvar top-counter 0
@@ -1420,8 +1526,9 @@ TODO
     (funcall new-window-function)))
 
 
-(evil-global-set-key 'normal (kbd "<C-return>") #'laluxx/create-window-based-on-layout)
+;; (evil-global-set-key 'normal (kbd "<C-return>") #'laluxx/create-window-based-on-layout)
 (evil-global-set-key 'normal (kbd "<M-return>") #'laluxx/create-window-based-on-layout)
+
 #+end_src
 *** Monocole
 #+begin_src emacs-lisp
@@ -1537,7 +1644,7 @@ doom the wallpaper
   (shell-command "python3 /home/l/xos/pywal-scripts/nvim-wal.py")
 
   ;; Refresh the powerline
-  (spaceline-compile))
+  (powerline-reset))
 
 
 (map! :leader
@@ -2255,12 +2362,21 @@ TODO
 * Config
 ** Org
 #+begin_src emacs-lisp
+(defun laluxx/insert-auto-tangle-tag ()
+  "Insert auto-tangle tag in a literate config."
+  (interactive)
+  (evil-org-open-below 1)
+  (insert "#+auto_tangle: t ")
+  (evil-org-open-below 1)
+  (insert "#+PROPERTY: header-args :tangle ")
+  (evil-force-normal-state))
 
+(map! :leader
+      :desc "Insert auto_tangle tag" "i a" #'laluxx/insert-auto-tangle-tag)
 #+end_src
 ** Info-colors
 #+begin_src emacs-lisp
 (add-hook 'Info-selection-hook 'info-colors-fontify-node)
-
 #+end_src
 ** Ibuffer
 #+begin_src emacs-lisp
@@ -2468,6 +2584,14 @@ this will set the theme
   :config
   (load-theme 'ewal-doom-one t)
   (enable-theme 'ewal-doom-one))
+#+end_src
+
+** Emojis
+Emojify is an Emacs extension to display emojis. It can display github style emojis like :smile: or plain ascii ones like :).
+
+#+begin_src emacs-lisp
+(use-package emojify
+  :hook (after-init . global-emojify-mode))
 #+end_src
 * Enable
 #+begin_src emacs-lisp

@@ -1,0 +1,230 @@
+#!/usr/bin/env python3
+
+import sys
+import os
+import argparse
+import subprocess
+import gi
+import time
+
+gi.require_version('Gtk', '3.0')
+gi.require_version('Gdk', '3.0')
+from gi.repository import Gtk, Gdk, GdkPixbuf
+
+# Configuration section
+CORNER_RADIUS = 12  # Change this value for different corner radii
+
+
+class ErrorPopup(Gtk.Window):
+    def __init__(self, x=None, y=None, center=False, overlay=False):
+        Gtk.Window.__init__(self, title="Error!")
+
+        if overlay:
+            subprocess.Popen(["overlay"])
+            time.sleep(0.2)  # Reduced delay
+
+        # Set up window properties
+        self.set_decorated(False)
+        self.connect("realize", self.on_realize)
+
+        # Apply CSS styling
+        css_provider = Gtk.CssProvider()
+        css_str = f"""
+        window {{
+            border-radius: {CORNER_RADIUS}px;
+        }}
+        """
+        css_provider.load_from_data(css_str.encode())
+        context = Gtk.StyleContext()
+        screen = Gdk.Screen.get_default()
+        context.add_provider_for_screen(screen, css_provider, Gtk.STYLE_PROVIDER_PRIORITY_USER)
+
+        # Image
+        image_path = os.path.expanduser("~/.config/popup/error.png")
+        image = Gtk.Image.new_from_file(image_path)
+
+        event_box = Gtk.EventBox()
+        event_box.add(image)
+        event_box.connect("button-press-event", self.on_image_clicked)
+
+        self.add(event_box)
+        self.set_position(Gtk.WindowPosition.CENTER if center else Gtk.WindowPosition.NONE)
+        if x and y:
+            self.move(x, y)
+
+        self.set_keep_above(True)
+
+    def on_realize(self, widget):
+        """ Set the override redirect flag """
+        window = self.get_window()
+        window.set_override_redirect(True)
+
+    def on_image_clicked(self, widget, event):
+        # Kill overlay first
+        subprocess.call(["pkill", "-f", "overlay"])
+        # Then move the window downwards
+        screen_height = Gdk.Screen.height()
+        x, _ = self.get_position()
+        self.move(x, screen_height)
+        Gtk.main_quit()
+
+def main():
+    parser = argparse.ArgumentParser()
+    parser.add_argument('-x', type=int, help='x position of the popup')
+    parser.add_argument('-y', type=int, help='y position of the popup')
+    parser.add_argument('-center', action='store_true', help='Center the popup on screen')
+    parser.add_argument('-overlay', action='store_true', help='Enable the overlay')
+    args = parser.parse_args()
+
+    win = ErrorPopup(args.x, args.y, args.center, args.overlay)
+    win.connect("destroy", Gtk.main_quit)
+    win.show_all()
+    Gtk.main()
+
+if __name__ == "__main__":
+    sys.exit(main())
+
+
+
+
+
+
+
+
+
+# BEST
+# import sys
+# import os
+# import argparse
+# import subprocess
+# import gi
+# import time
+#
+# gi.require_version('Gtk', '3.0')
+# gi.require_version('Gdk', '3.0')
+# from gi.repository import Gtk, Gdk, GdkPixbuf
+#
+# class ErrorPopup(Gtk.Window):
+#     def __init__(self, x=None, y=None, center=False, overlay=False):
+#         Gtk.Window.__init__(self, title="Error!")
+#
+#         if overlay:
+#             subprocess.Popen(["overlay"])
+#             time.sleep(0.2)  # Reduced delay
+#
+#         # Set up window properties
+#         self.set_decorated(False)
+#         self.connect("realize", self.on_realize)
+#
+#         # Image
+#         image_path = os.path.expanduser("~/.config/popup/error.png")
+#         image = Gtk.Image.new_from_file(image_path)
+#
+#         event_box = Gtk.EventBox()
+#         event_box.add(image)
+#         event_box.connect("button-press-event", self.on_image_clicked)
+#         
+#         self.add(event_box)
+#         self.set_position(Gtk.WindowPosition.CENTER if center else Gtk.WindowPosition.NONE)
+#         if x and y:
+#             self.move(x, y)
+#
+#         self.set_keep_above(True)
+#
+#     def on_realize(self, widget):
+#         """ Set the override redirect flag """
+#         window = self.get_window()
+#         window.set_override_redirect(True)
+#
+#     def on_image_clicked(self, widget, event):
+#         # Kill overlay first
+#         subprocess.call(["pkill", "-f", "overlay"])
+#         # Then move the window downwards
+#         screen_height = Gdk.Screen.height()
+#         x, _ = self.get_position()
+#         self.move(x, screen_height)
+#         Gtk.main_quit()
+#
+# def main():
+#     parser = argparse.ArgumentParser()
+#     parser.add_argument('-x', type=int, help='x position of the popup')
+#     parser.add_argument('-y', type=int, help='y position of the popup')
+#     parser.add_argument('-center', action='store_true', help='Center the popup on screen')
+#     parser.add_argument('-overlay', action='store_true', help='Enable the overlay')
+#     args = parser.parse_args()
+#
+#     win = ErrorPopup(args.x, args.y, args.center, args.overlay)
+#     win.connect("destroy", Gtk.main_quit)
+#     win.show_all()
+#     Gtk.main()
+#
+# if __name__ == "__main__":
+#     sys.exit(main())
+
+
+
+
+
+# COOL
+# it closes while sending down so it looks different
+# import sys
+# import os
+# import argparse
+# import subprocess
+# import gi
+#
+# gi.require_version('Gtk', '3.0')
+# gi.require_version('Gdk', '3.0')
+# from gi.repository import Gtk, Gdk, GdkPixbuf
+#
+# class ErrorPopup(Gtk.Window):
+#     def __init__(self, x=None, y=None, center=False, overlay=False):
+#         Gtk.Window.__init__(self, title="Error!")
+#
+#         if overlay:
+#             subprocess.Popen(["overlay"])
+#
+#         # Set up window properties
+#         self.set_decorated(False)
+#         self.connect("realize", self.on_realize)
+#
+#         # Image
+#         image_path = os.path.expanduser("~/.config/popup/error.png")
+#         image = Gtk.Image.new_from_file(image_path)
+#
+#         event_box = Gtk.EventBox()
+#         event_box.add(image)
+#         event_box.connect("button-press-event", self.on_image_clicked)
+#         
+#         self.add(event_box)
+#         self.set_position(Gtk.WindowPosition.CENTER if center else Gtk.WindowPosition.NONE)
+#         if x and y:
+#             self.move(x, y)
+#
+#     def on_realize(self, widget):
+#         """ Set the override redirect flag """
+#         window = self.get_window()
+#         window.set_override_redirect(True)
+#
+#     def on_image_clicked(self, widget, event):
+#         subprocess.call(["pkill", "-f", "overlay"])
+#         screen_height = Gdk.Screen.height()
+#         x, _ = self.get_position()
+#         self.move(x, screen_height)
+#         Gtk.main_quit()
+#
+# def main():
+#     parser = argparse.ArgumentParser()
+#     parser.add_argument('-x', type=int, help='x position of the popup')
+#     parser.add_argument('-y', type=int, help='y position of the popup')
+#     parser.add_argument('-center', action='store_true', help='Center the popup on screen')
+#     parser.add_argument('-overlay', action='store_true', help='Enable the overlay')
+#     args = parser.parse_args()
+#
+#     win = ErrorPopup(args.x, args.y, args.center, args.overlay)
+#     win.connect("destroy", Gtk.main_quit)
+#     win.show_all()
+#     Gtk.main()
+#
+# if __name__ == "__main__":
+#     sys.exit(main())

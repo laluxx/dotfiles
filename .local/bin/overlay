@@ -1,0 +1,113 @@
+#!/usr/bin/env python3
+
+import sys
+import os
+import gi
+
+gi.require_version('Gtk', '3.0')
+gi.require_version('Gdk', '3.0')
+from gi.repository import Gtk, Gdk
+
+class OverlayWindow(Gtk.Window):
+    def __init__(self):
+        Gtk.Window.__init__(self, title="Overlay")
+
+        # Make window transparent
+        screen = self.get_screen()
+        visual = screen.get_rgba_visual()
+        if visual and screen.is_composited():
+            self.set_visual(visual)
+
+        self.set_app_paintable(True)
+        
+        # Set up window properties
+        self.set_decorated(False)
+        self.set_position(Gtk.WindowPosition.NONE)
+        self.set_default_size(Gdk.Screen.width(), Gdk.Screen.height() - 22)
+        self.move(0, 22)
+
+        # Read color from wal colors
+        with open(os.path.expanduser('~/.cache/wal/colors'), 'r') as f:
+            color = f.readline().strip()
+
+        # Using CSS styling for background color and transparency
+        css_provider = Gtk.CssProvider()
+        css_data = """
+        window {
+            background-color: %s;
+            opacity: 0.7;
+        }
+        """ % color
+        css_provider.load_from_data(bytes(css_data.encode()))
+        
+        style_context = Gtk.StyleContext()
+        style_context.add_provider_for_screen(screen, css_provider, Gtk.STYLE_PROVIDER_PRIORITY_APPLICATION)
+        self.get_style_context().add_provider(css_provider, Gtk.STYLE_PROVIDER_PRIORITY_APPLICATION)
+
+        # Add override redirect
+        self.connect("realize", self.on_realize)
+
+    def on_realize(self, widget):
+        """ Set the override redirect flag """
+        window = self.get_window()
+        window.set_override_redirect(True)
+
+    def run(self):
+        self.show_all()
+        Gtk.main()
+
+if __name__ == "__main__":
+    win = OverlayWindow()
+    win.run()
+
+# SOLID COLOR
+# import sys
+# import os
+# import gi
+# gi.require_version('Gtk', '3.0')
+# gi.require_version('Gdk', '3.0')
+# from gi.repository import Gtk, Gdk
+#
+# class OverlayWindow(Gtk.Window):
+#     def __init__(self):
+#         Gtk.Window.__init__(self, title="Overlay")
+#
+#         # Set up window properties
+#         self.set_decorated(False)
+#         self.set_position(Gtk.WindowPosition.NONE)
+#         self.set_default_size(Gdk.Screen.width(), Gdk.Screen.height() - 22)
+#         self.move(0, 22)
+#
+#         # Read color from wal colors
+#         with open(os.path.expanduser('~/.cache/wal/colors'), 'r') as f:
+#             color = f.readline().strip()
+#
+#         # Using CSS styling for background color and transparency
+#         css_provider = Gtk.CssProvider()
+#         css_data = """
+#         window {
+#             background-color: %s;
+#             opacity: 0.7;
+#         }
+#         """ % color
+#         css_provider.load_from_data(bytes(css_data.encode()))
+#         screen = Gdk.Screen.get_default()
+#         style_context = Gtk.StyleContext()
+#         style_context.add_provider_for_screen(screen, css_provider, Gtk.STYLE_PROVIDER_PRIORITY_APPLICATION)
+#         self.get_style_context().add_provider(css_provider, Gtk.STYLE_PROVIDER_PRIORITY_APPLICATION)
+#
+#         # Add override redirect
+#         self.connect("realize", self.on_realize)
+#
+#     def on_realize(self, widget):
+#         """ Set the override redirect flag """
+#         window = self.get_window()
+#         window.set_override_redirect(True)
+#
+#     def run(self):
+#         self.show_all()
+#         Gtk.main()
+#
+# if __name__ == "__main__":
+#     win = OverlayWindow()
+#     win.run()

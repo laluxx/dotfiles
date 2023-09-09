@@ -90,7 +90,9 @@
 (package! tree-inspector)
 
 (package! ranger)
+(package! ef-themes)
 
+(package! emojify)
 
 
 (package! centaur-tabs)

@@ -2292,6 +2292,21 @@ typetune() {
     fi
 }
 
+walhscrape() { # Wallhaven wallpapers scraper
+    if [ $# -eq 0 ]; then
+        echo -e "Usage: download_wallhaven_images <search_query>\nCool promts-> ArchLinux , Hacker"
+        return 1
+    fi
+    search_query="$1"
+    download_dir="$HOME/Pictures/Wallpapers/Wallhaven"
+    mkdir -p "$download_dir"
+    page=1; while [ $page -lt 10 ];
+    do
+        curl -s "https://wallhaven.cc/api/v1/search?q=$search_query&ratios=landscape&page=$page" | jq '.data[].path' | xargs -I{} wget -P "$download_dir" {}
+        page=$(( page+1 ));
+    done
+}
+
 copy-icons() {
   # Store the current working directory
   local current_dir=$(pwd)
