@@ -1,0 +1,38 @@
+#!/bin/python3
+
+import subprocess
+import sys
+import pytesseract
+import pyperclip
+from PIL import Image
+from io import BytesIO
+
+def capture_screen():
+    try:
+        # Use maim to capture the selected screen area
+        maim_output = subprocess.check_output(["maim", "-s", "-f", "png", "--hidecursor"], stderr=subprocess.STDOUT)
+    except subprocess.CalledProcessError as e:
+        print(f"An error occurred while capturing the screen: {str(e)}", file=sys.stderr)
+        return None
+    return maim_output
+
+def ocr_and_copy_to_clipboard(image_data):
+    try:
+        # Read the image data captured by maim
+        img = Image.open(BytesIO(image_data))
+        
+        # Perform OCR on the captured image
+        text = pytesseract.image_to_string(img)
+        
+        # Copy the extracted text to clipboard
+        pyperclip.copy(text)
+    except Exception as e:
+        print(f"An error occurred: {e}", file=sys.stderr)
+
+def main():
+    image_data = capture_screen()
+    if image_data is not None:
+        ocr_and_copy_to_clipboard(image_data)
+
+if __name__ == "__main__":
+    main()

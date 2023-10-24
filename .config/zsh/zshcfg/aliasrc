@@ -38,7 +38,7 @@ alias -g L='| less'
 alias awesome-refresh='awesome-client "awesome.restart()"'
 alias awesome-refresh-auto='diffrun awesome-refresh "$HOME/.config/awesome"'
 
-alias ded='cd ~/Desktop/test/ded/ded && ./ded'
+# alias ded='cd ~/Desktop/test/ded/ded && ./ded'
 
 alias ffont='fc-list : family | cut -d',' -f1 | fzf'
 

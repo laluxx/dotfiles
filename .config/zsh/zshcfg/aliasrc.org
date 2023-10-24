@@ -58,7 +58,7 @@ alias awesome-refresh-auto='diffrun awesome-refresh "$HOME/.config/awesome"'
 #+end_src
 * Programs
 #+begin_src shell
-alias ded='cd ~/Desktop/test/ded/ded && ./ded'
+# alias ded='cd ~/Desktop/test/ded/ded && ./ded'
 #+end_src
 * Common
 #+begin_src shell

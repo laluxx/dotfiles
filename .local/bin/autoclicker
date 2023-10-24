@@ -1,0 +1,13 @@
+#!/bin/bash
+
+# Rate of clicks per second
+RATE=5
+
+# Calculate sleep time in seconds between clicks
+SLEEP_TIME=$(echo "scale=4; 1/$RATE" | bc)
+
+# Loop forever and simulate mouse click
+while true; do
+    xdotool click 1
+    sleep $SLEEP_TIME
+done

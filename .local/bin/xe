@@ -1,0 +1,20 @@
+#!/bin/bash
+
+# Check if at least 1 argument is provided
+if [ "$#" -lt 1 ]; then
+    echo "Usage: $0 <window_manager>"
+    exit 1
+fi
+
+WM="$1"
+
+# Start Xephyr
+Xephyr :3 -ac -screen 1920x1080 &
+XEPHYR_PID=$!
+sleep 0.5
+
+# Launch the window manager
+DISPLAY=:3 $WM
+
+# Cleanup
+kill ${XEPHYR_PID}

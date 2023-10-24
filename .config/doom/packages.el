@@ -101,8 +101,51 @@
 (package! all-the-icons-ibuffer)
 (package! rotate)
 (package! edwina)
+(package! rustic)
+(package! shader-mode)
+(package! gdscript-mode)
+(package! crux) ;; utilities
+(package! literate-calc-mode)
+(package! color-identifiers-mode)
+(package! aggressive-indent-mode)
+(package! smart-hungry-delete)
+(package! focus)
+(package! hlint-refactor)
+(package! flymake-hlint)
+(package! hindent)
+(package! lsp-haskell)
+;; (package! denote)
+(package! ement)
+
+(package! good-scroll)
+(package! org-present)
+
+
+
+(package! ivy-yasnippet)
+
 
 ;; (package! gpt-macro)
+
+;; (package! filetree
+;;   :recipe (:local-repo "filetree" :no-byte-compile t))
+
+
+
+
+
+;; (when (package! eaf :recipe (:host github
+;;                              :repo "manateelazycat/emacs-application-framework"
+;;                              :files ("*.el" "*.py" "app" "core")
+;;                              :build (:not compile)))
+
+;;   (package! ctable :recipe (:host github :repo "kiwanami/emacs-ctable"))
+;;   (package! deferred :recipe (:host github :repo "kiwanami/emacs-deferred"))
+;;   (package! epc :recipe (:host github :repo "kiwanami/emacs-epc")))
+
+
+
+
 
 
 (package! app-launcher :recipe (:host github :repo "SebastienWae/app-launcher"))

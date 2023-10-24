@@ -2292,6 +2292,34 @@ typetune() {
     fi
 }
 
+copy-font() {
+  # Define potential font directories
+  local font_directories=(
+    "~/.fonts"
+    "~/.local/share/fonts"
+    "/usr/share/fonts"
+    "/usr/local/share/fonts"
+  )
+
+  # Find all fonts in those directories and remove duplicates, then use fzf to select
+  local fonts_selected=$(for dir in $font_directories; do
+    [[ -d $dir ]] && find $dir -type f \( -name "*.ttf" -o -name "*.otf" \)
+  done | sort -u | fzf -m)
+
+  # If fonts were selected, copy them to the current directory
+  if [[ -n $fonts_selected ]]; then
+    for font in ${(f)fonts_selected}; do
+      cp "$font" ./
+    done
+    echo "Fonts copied to current directory!"
+  else
+    echo "No fonts selected."
+  fi
+}
+
+# Load the function into your current session
+autoload -Uz copy-font
+
 walhscrape() { # Wallhaven wallpapers scraper
     if [ $# -eq 0 ]; then
         echo -e "Usage: download_wallhaven_images <search_query>\nCool promts-> ArchLinux , Hacker"

@@ -1,89 +1,83 @@
 * Tutorial
 #+begin_src emacs-lisp
-;;; $DOOMDIR/config.el -*- lexical-binding: t; -*-
+  ;;; $DOOMDIR/config.el -*- lexical-binding: t; -*-
 
-;; Place your private configuration here! Remember, you do not need to run 'doom
-;; sync' after modifying this file!
-
-
-;; Some functionality uses this to identify you, e.g. GPG configuration, email
-;; clients, file templates and snippets. It is optional.
-;; (setq user-full-name "John Doe"
-;;       user-mail-address "john@doe.com")
-
-;; Doom exposes five (optional) variables for controlling fonts in Doom:
-;;
-;; - `doom-font' -- the primary font to use
-;; - `doom-variable-pitch-font' -- a non-monospace font (where applicable)
-;; - `doom-big-font' -- used for `doom-big-font-mode'; use this for
-;;   presentations or streaming.
-;; - `doom-unicode-font' -- for unicode glyphs
-;; - `doom-serif-font' -- for the `fixed-pitch-serif' face
-;;
-;; See 'C-h v doom-font' for documentation and more examples of what they
-;; accept. For example:
-;;
-;;(setq doom-font (font-spec :family "Fira Code" :size 12 :weight 'semi-light)
-;;      doom-variable-pitch-font (font-spec :family "Fira Sans" :size 13))
-;;
-;; If you or Emacs can't find your font, use 'M-x describe-font' to look them
-;; up, `M-x eval-region' to execute elisp code, and 'M-x doom/reload-font' to
-;; refresh your font settings. If Emacs still can't find your font, it likely
-;; wasn't installed correctly. Font issues are rarely Doom issues!
-
-;; There are two ways to load a theme. Both assume the theme is installed and
-;; available. You can either set `doom-theme' or manually load a theme with the
-;; `load-theme' function. This is the default:
-;;(setq doom-theme 'doom-one)
-
-;; This determines the style of line numbers in effect. If set to `nil', line
-;; numbers are disabled. For relative line numbers, set this to `relative'.
-(setq display-line-numbers-type t)
-
-;; If you use `org' and don't want your org files in the default location below,
-;; change `org-directory'. It must be set before org loads!
-(setq org-directory "~/org/")
+  ;; Place your private configuration here! Remember, you do not need to run 'doom
+  ;; sync' after modifying this file!
 
 
-;; Whenever you reconfigure a package, make sure to wrap your config in an
-;; `after!' block, otherwise Doom's defaults may override your settings. E.g.
-;;
-;;   (after! PACKAGE
-;;     (setq x y))
-;;
-;; The exceptions to this rule:
-;;
-;;   - Setting file/directory variables (like `org-directory')
-;;   - Setting variables which explicitly tell you to set them before their
-;;     package is loaded (see 'C-h v VARIABLE' to look up their documentation).
-;;   - Setting doom variables (which start with 'doom-' or '+').
-;;
-;; Here are some additional functions/macros that will help you configure Doom.
-;;
-;; - `load!' for loading external *.el files relative to this one
-;; - `use-package!' for configuring packages
-;; - `after!' for running code after a package has loaded
-;; - `add-load-path!' for adding directories to the `load-path', relative to
-;;   this file. Emacs searches the `load-path' when you load packages with
-;;   `require' or `use-package'.
-;; - `map!' for binding new keys
-;;
-;; To get information about any of these functions/macros, move the cursor over
-;; the highlighted symbol at press 'K' (non-evil users must press 'C-c c k').
-;; This will open documentation for it, including demos of how they are used.
-;; Alternatively, use `C-h o' to look up a symbol (functions, variables, faces,
-;; etc).
-;;
-;; You can also try 'gd' (or 'C-c c d') to jump to their definition and see how
-;; they are implemented. #+end_src
+  ;; Some functionality uses this to identify you, e.g. GPG configuration, email
+  ;; clients, file templates and snippets. It is optional.
+  ;; (setq user-full-name "John Doe"
+  ;;       user-mail-address "john@doe.com")
+  ;; Doom exposes five (optional) variables for controlling fonts in Doom:
+  ;;
+  ;; - `doom-font' -- the primary font to use
+  ;; - `doom-variable-pitch-font' -- a non-monospace font (where applicable)
+  ;; - `doom-big-font' -- used for `doom-big-font-mode'; use this for
+  ;;   presentations or streaming.
+  ;; - `doom-unicode-font' -- for unicode glyphs
+  ;; - `doom-serif-font' -- for the `fixed-pitch-serif' face
+  ;;
+  ;; See 'C-h v doom-font' for documentation and more examples of what they
+  ;; accept. For example:
+  ;;
+  ;;(setq doom-font (font-spec :family "Fira Code" :size 12 :weight 'semi-light)
+  ;;      doom-variable-pitch-font (font-spec :family "Fira Sans" :size 13))
+  ;;
+  ;; If you or Emacs can't find your font, use 'M-x describe-font' to look them
+  ;; up, `M-x eval-region' to execute elisp code, and 'M-x doom/reload-font' to
+  ;; refresh your font settings. If Emacs still can't find your font, it likely
+  ;; wasn't installed correctly. Font issues are rarely Doom issues!
+
+  ;; There are two ways to load a theme. Both assume the theme is installed and
+  ;; available. You can either set `doom-theme' or manually load a theme with the
+  ;; `load-theme' function. This is the default:
+  ;;(setq doom-theme 'doom-one)
+
+  ;; This determines the style of line numbers in effect. If set to `nil', line
+  ;; numbers are disabled. For relative line numbers, set this to `relative'.
+  (setq display-line-numbers-type t)
+
+  ;; If you use `org' and don't want your org files in the default location below,
+  ;; change `org-directory'. It must be set before org loads!
+  (setq org-directory "~/org/")
+
+
+  ;; Whenever you reconfigure a package, make sure to wrap your config in an
+  ;; `after!' block, otherwise Doom's defaults may override your settings. E.g.
+  ;;
+  ;;   (after! PACKAGE
+  ;;     (setq x y))
+  ;;
+  ;; The exceptions to this rule:
+  ;;
+  ;;   - Setting file/directory variables (like `org-directory')
+  ;;   - Setting variables which explicitly tell you to set them before their
+  ;;     package is loaded (see 'C-h v VARIABLE' to look up their documentation).
+  ;;   - Setting doom variables (which start with 'doom-' or '+').
+  ;;
+  ;; Here are some additional functions/macros that will help you configure Doom.
+  ;;
+  ;; - `load!' for loading external *.el files relative to this one
+  ;; - `use-package!' for configuring packages
+  ;; - `after!' for running code after a package has loaded
+  ;; - `add-load-path!' for adding directories to the `load-path', relative to
+  ;;   this file. Emacs searches the `load-path' when you load packages with
+  ;;   `require' or `use-package'.
+  ;; - `map!' for binding new keys
+  ;;
+  ;; To get information about any of these functions/macros, move the cursor over
+  ;; the highlighted symbol at press 'K' (non-evil users must press 'C-c c k').
+  ;; This will open documentation for it, including demos of how they are used.
+  ;; Alternatively, use `C-h o' to look up a symbol (functions, variables, faces,
+  ;; etc).
+  ;;
+  ;; You can also try 'gd' (or 'C-c c d') to jump to their definition and see how
+  ;; they are implemented. #+end_src
 #+end_src
 
 * look and feel
-** Cursor
-*** Blink-cursor-mode
-#+begin_src emacs-lisp
-(blink-cursor-mode 1)
-#+end_src
 ** No modeline
 *** dired
 #+begin_src emacs-lisp
@@ -230,123 +224,6 @@ set everything
 
 (add-hook 'python-mode-hook 'my-set-python-mode-font)
 #+end_src
-
-* SPACELINE
-** Conf
-#+begin_src emacs-lisp
-(use-package spaceline-config
-  :ensure spaceline
-  :config
-  (setq spaceline-buffer-encoding-abbrev-p nil
-        spaceline-line-column-p nil
-        spaceline-line-p nil
-        spaceline-highlight-face-func 'spaceline-highlight-face-evil-state
-        powerline-default-separator 'wave)
-
-  (spaceline-define-segment evil-state
-    "The current evil state.  Requires `evil-mode' to be enabled."
-    (when (bound-and-true-p evil-local-mode)
-      (s-trim (evil-state-property evil-state :tag t))))
-
-  (spaceline-define-segment buffer-modified
-    "Replace the `buffer-modified' segment with an exclamation point for
-    modified buffers and an asterisk for read-only buffers."
-    (cond (buffer-read-only "*")
-          ((buffer-modified-p) "!")))
-
-  (setq spaceline-left
-        '((evil-state :face highlight-face)
-          (buffer-modified :face error-face)
-          anzu
-          auto-compile
-          ((buffer-id buffer-size) :separator " | ")
-          major-mode
-          ((flycheck-error flycheck-warning flycheck-info)
-           :when active)
-          (version-control :when active)
-          (org-pomodoro :when active)
-          (org-clock :when active)))
-
-  (setq spaceline-right
-        '((global :when active)
-          buffer-position
-          hud))
-
-  (spaceline-spacemacs-theme))
-#+end_src
-** toggle-modeline
-#+begin_src emacs-lisp
-(defvar my-modeline-state 'spaceline)
-
-(defun laluxx/toggle-modeline-local ()
-  "Toggle between spaceline and no modeline for the current buffer."
-  (interactive)
-  (if (eq my-modeline-state 'spaceline)
-      (progn
-        (setq my-modeline-state 'none)
-        (hide-mode-line-mode 1))
-    (progn
-      (hide-mode-line-mode -1)
-      (setq my-modeline-state 'spaceline)
-      (spaceline-spacemacs-theme))))
-
-(defun laluxx/toggle-modeline-global ()
-  "Toggle between spaceline and no modeline globally."
-  (interactive)
-  (if (eq my-modeline-state 'spaceline)
-      (progn
-        (setq my-modeline-state 'none)
-        (global-hide-mode-line-mode 1))
-    (progn
-      (global-hide-mode-line-mode -1)
-      (setq my-modeline-state 'spaceline)
-      (spaceline-spacemacs-theme))))
-
-(map! :leader
-      (:prefix ("t" . "toggle")
-       "m" #'laluxx/toggle-modeline-local
-       "M" #'laluxx/toggle-modeline-global))
-
-
-#+end_src
-
-** switch
-#+begin_src emacs-lisp
-;; TODO
-;; this worked one time after i doom synced
-;; after an emacs restart it doesn't work anymore
-(defvar my-original-mode-line-format nil
-  "Backup of the original mode-line-format.")
-
-(defvar my-spaceline-mode-line-format nil
-  "Backup of the spaceline mode-line-format.")
-
-;; Backup the original doom modeline (do this after doom has initialized)
-(add-hook 'doom-post-init-modules-hook
-          (lambda ()
-            (setq my-original-mode-line-format mode-line-format)))
-
-;; Backup spaceline format (do this after spaceline has initialized)
-(with-eval-after-load 'spaceline
-  (spaceline-spacemacs-theme)
-  (setq my-spaceline-mode-line-format mode-line-format))
-
-
-(defun switch-to-doom-modeline ()
-  (interactive)
-  (when my-original-mode-line-format
-    (setq mode-line-format my-original-mode-line-format))
-  (doom-modeline-mode 1)
-  (force-mode-line-update t))
-
-(defun switch-to-spaceline ()
-  (interactive)
-  (doom-modeline-mode -1)
-  (when my-spaceline-mode-line-format
-    (setq mode-line-format my-spaceline-mode-line-format))
-  (force-mode-line-update t))
-#+end_src
-
 * Dashboard
 ** scroll
 fix the scroll
@@ -429,7 +306,7 @@ Then apply highlighting to the current widget."
 (setq dashboard-banner-logo-title "Welcome to Emacs Dashboard")
 
 ;; Set the footer
-;;(setq dashboard-footer-icon (all-the-icons-octicon "dash" :height 1.1 :v-adjust -0.05 :face 'font-lock-keyword-face))
+(setq dashboard-footer-icon (all-the-icons-octicon "dash" :height 1.1 :v-adjust -0.05 :face 'font-lock-keyword-face))
 (setq dashboard-footer-messages '("Dashboard is a minimal and nice looking startup screen."))
 
 ;; Set the content
@@ -508,38 +385,7 @@ Set dashboard as the initial buffer
 
 #+end_src
 * Keybinds
-** FILE / FIND
-*** File-jump
-#+begin_src emacs-lisp
-(map! :leader
-      "f j" (lambda ()
-              (interactive)
-              (let ((selected-file (read-file-name "Open file: ")))
-                (split-window-right) ; Split the window to the right
-                (other-window 1) ; Move to the newly created window
-                (find-file selected-file))))
-#+end_src
-*** Find
-#+begin_src emacs-lisp
-(map! :leader
-      "fi" #'swiper-isearch) ; or whatever the precise name of the function you want to bind to is.
-#+end_src
-** INSERT
-#+begin_src emacs-lisp
-(after! all-the-icons
-  (map! :leader
-        (:prefix ("i" . "insert")
-         :desc "Insert icon" "i" #'all-the-icons-insert)))
-
-  (map! :leader
-        (:prefix ("i" . "insert")
-         :desc "insert file icon" "f" #'all-the-icons-insert-fileicon))
-
-  (map! :leader
-        (:prefix ("i" . "insert")
-         :desc "insert table" "t" #'table-insert))
-#+end_src
-** OPEN
+** Open
 *** Ielm
 #+begin_src emacs-lisp
 (map! :leader
@@ -566,6 +412,17 @@ Set dashboard as the initial buffer
 ** Global-set-key
 #+begin_src emacs-lisp
 ;; (global-set-key (kbd "M-<return>") #'vterm/toggle)
+#+end_src
+** File-jump
+#+begin_src emacs-lisp
+(map! :leader
+      "f j" (lambda ()
+              (interactive)
+              (let ((selected-file (read-file-name "Open file: ")))
+                (split-window-right) ; Split the window to the right
+                (other-window 1) ; Move to the newly created window
+                (find-file selected-file))))
+
 #+end_src
 ** Ranger
 #+begin_src emacs-lisp
@@ -798,56 +655,6 @@ Keybinds that execute other keybinds.
 #+end_src
 
 * FUNCTIONS
-** Find-header
-#+begin_src emacs-lisp
-(defun find-header ()
-  (interactive)
-  (let* ((cmd "rg --files /usr/include --follow --hidden -g \"*.h\"")
-         (headers (split-string (shell-command-to-string cmd) "\n" t)))
-    (ivy-read "Choose header: " headers
-              :action (lambda (x) (find-file-other-window x)))))
-
-;; Bind to <leader>f h
-(map! :leader
-      "fh" #'find-header)
-#+end_src
-** Autocomplete
-*** c mode
-#+begin_src emacs-lisp
-(after! cc-mode
-  (defun my-insert-angle-brackets ()
-    "Insert <> for #include, or just < elsewhere."
-    (interactive)
-    (if (save-excursion
-          (re-search-backward "#include " (line-beginning-position) t))
-        (progn
-          (insert "<>")
-          (backward-char))
-      (insert "<")))
-
-  (define-key c-mode-map "<" 'my-insert-angle-brackets)
-  (define-key c++-mode-map "<" 'my-insert-angle-brackets))
-
-
-
-#+end_src
-** Delete-selection-and-count
-#+begin_src emacs-lisp
-;; (defun delete-and-count ()
-;;   "Delete a character and display the count of characters and words deleted in the minibuffer."
-;;   (interactive)
-;;   (unless (eobp) ;; Don't try to delete if at the end of buffer
-;;     (let* ((beg (point))
-;;            (end (1+ beg))
-;;            (content (buffer-substring beg end))
-;;            (char-count (length content))
-;;            (word-count (length (split-string content "\\W+" t))))
-;;       (delete-region beg end)
-;;       (message "Deleted %d chars, %d words" char-count word-count))))
-
-;; (after! evil
-;;   (map! :n "x" #'delete-and-count))
-#+end_src
 ** Dynamic-modeline
 #+begin_src emacs-lisp
 ;; V1
@@ -855,25 +662,31 @@ Keybinds that execute other keybinds.
 ;; we have to be sure to disable the modeline for that window
 ;; so the other buffers could still have it if their position say so
 
-;; (defun window-touches-bottom-p (win)
-;;   "Check if WIN is touching the bottom of the frame."
-;;   (let* ((edges (window-edges win nil t t))
-;;          (bottom-edge (nth 3 edges))
-;;          (frame-height (frame-pixel-height))
-;;          ;; Define a tolerance of 10 pixels
-;;          (tolerance 10))
-;;     ;; Check if the window's bottom edge is within the tolerance of the frame's height
-;;     (<= (abs (- bottom-edge frame-height)) tolerance)))
+(defun window-touches-bottom-p (win)
+  "Check if WIN is touching the bottom of the frame."
+  (let* ((edges (window-edges win nil t t))
+         (bottom-edge (nth 3 edges))
+         (frame-height (frame-pixel-height))
+         ;; Define a tolerance of 10 pixels
+         (tolerance 10))
+    ;; Check if the window's bottom edge is within the tolerance of the frame's height
+    (<= (abs (- bottom-edge frame-height)) tolerance)))
 
-;; (defun adjust-modelines-based-on-geometry ()
-;;   "Adjust modelines based on window geometry."
-;;   (dolist (win (window-list))
-;;     (with-selected-window win
-;;       (if (window-touches-bottom-p win)
-;;           (setq-local mode-line-format (default-value 'mode-line-format))
-;;         (setq-local mode-line-format nil)))))
+(defun adjust-modelines-based-on-geometry ()
+  "Adjust modelines based on window geometry."
+  (dolist (win (window-list))
+    (with-selected-window win
+      (if (window-touches-bottom-p win)
+          (setq-local mode-line-format (default-value 'mode-line-format))
+        (setq-local mode-line-format nil)))))
 
-;; (add-hook 'window-configuration-change-hook 'adjust-modelines-based-on-geometry)
+(add-hook 'window-configuration-change-hook 'adjust-modelines-based-on-geometry)
+
+
+
+
+
+
 #+end_src
 ** Insert-nerd-font-icon
 TODO
@@ -918,10 +731,6 @@ TODO
 (defvar last-command-was-gg-or-G nil
   "Flag to check if the previous command was `gg` or `G` in evil mode.")
 
-(defun normalize-color (color)
-  "Normalize COLOR values to 0-255 RGB."
-  (mapcar (lambda (x) (/ x 256)) color))
-
 (defun interpolate-color (value max-value start-color end-color)
   "Interpolate between START-COLOR and END-COLOR based on VALUE out of MAX-VALUE."
   (let ((fraction (/ (float value) max-value)))
@@ -931,9 +740,9 @@ TODO
 
 (defun counter-color (value)
   "Calculate the color based on the counter VALUE."
-  (let* ((success-color (normalize-color (color-values (face-foreground 'success))))
-         (error-color (normalize-color (color-values (face-foreground 'error))))
-         (color (interpolate-color value 100 success-color error-color)))
+  (let* ((green '(0 255 0))
+         (red '(255 0 0))
+         (color (interpolate-color value 100 green red)))
     (apply 'format "#%02x%02x%02x" color)))
 
 (defun display-counter (counter position)
@@ -964,6 +773,11 @@ TODO
      (t
       (setq top-counter 0 bottom-counter 0)
       (message ""))))
+
+  ;; Reset the last-command flag
+  (setq last-command-was-gg-or-G nil)
+
+
   ;; Reset the last-command flag
   (setq last-command-was-gg-or-G nil))
 
@@ -977,9 +791,54 @@ TODO
 
 (add-hook 'post-command-hook 'check-end-or-start-of-buffer)
 (add-hook 'pre-command-hook 'detect-gg-or-G-command)
+
 #+end_src
 ** Set-theme
 #+begin_src emacs-lisp
+;; (defun laluxx/preview-theme ()
+;;   "Preview theme as you scroll through options in counsel-load-theme."
+;;   (interactive)
+;;   (let* ((themes (custom-available-themes))
+;;          (theme-names (mapcar 'symbol-name themes))
+;;          (current-theme (car custom-enabled-themes))
+;;          (previewed-theme nil)
+;;          (ivy-update-fn
+;;           (lambda ()
+;;             (when previewed-theme
+;;               (disable-theme previewed-theme))
+;;             (setq previewed-theme (intern (ivy-state-current ivy-last)))
+;;             (load-theme previewed-theme t))))
+;;     (ivy-read "Load theme: " theme-names
+;;               :update-fn ivy-update-fn
+;;               :action
+;;               (lambda (theme)
+;;                 (load-theme (intern theme) t))
+;;               :caller 'laluxx/preview-theme)))
+
+
+;; (defun laluxx/preview-theme ()
+;;   "Preview theme as you scroll through options in counsel-load-theme."
+;;   (interactive)
+;;   (let* ((themes (custom-available-themes))
+;;          (theme-names (mapcar 'symbol-name themes))
+;;          (current-theme (car custom-enabled-themes))
+;;          (previewed-theme nil)
+;;          (ivy-update-fn
+;;           (lambda ()
+;;             (when previewed-theme
+;;               (disable-theme previewed-theme))
+;;             (setq previewed-theme (intern (ivy-state-current ivy-last)))
+;;             (load-theme previewed-theme t)
+;;             ;; Add powerline-reset here
+;;             (powerline-reset))))
+;;     (ivy-read "Load theme: " theme-names
+;;               :update-fn ivy-update-fn
+;;               :action
+;;               (lambda (theme)
+;;                 (load-theme (intern theme) t))
+;;               :caller 'laluxx/preview-theme)))
+
+
 (defun laluxx/preview-theme ()
   "Preview theme as you scroll through options in counsel-load-theme."
   (interactive)
@@ -1066,6 +925,62 @@ TODO:
 - it doesnt refresh the dashboard if is
   opened in a split and not focused []
 #+begin_src emacs-lisp
+;; (defun laluxx/wal-set ()
+;;   (interactive)
+;;   (let* ((default-directory "~/xos/wallpapers/static")
+;;          (theme-directory "~/xos/theme")
+;;          (pywal-scripts-directory "~/xos/pywal-scripts")
+;;          (image-files (directory-files-recursively default-directory "\\.\\(png\\|jpg\\|jpeg\\|webp\\)$"))
+;;          (current-buffer-name (buffer-name)))  ; Save the current buffer name
+;;     (ivy-read "Choose wallpaper: "
+;;               image-files
+;;               :action (lambda (wallpaper)
+;;                         (when (and (not (string-empty-p wallpaper))
+;;                                    (file-exists-p wallpaper))
+;;                           (let ((abs-wallpaper (expand-file-name wallpaper)))
+;;                             (shell-command-to-string (concat "wal -i " abs-wallpaper))
+;;                             (with-temp-file (concat theme-directory "/.wallpaper")
+;;                               (insert abs-wallpaper))
+;;                             (shell-command-to-string "theme pywal --no-random")
+;;                             (dolist (script '("xmonad-dark-wal.py" "nvim-wal.py" "nvim-wal-dark.py"))
+;;                               (shell-command-to-string (concat "python3 " pywal-scripts-directory "/" script)))
+;;                             (shell-command-to-string "xmonad --restart")
+;;                             (shell-command-to-string "dashboard-wal-gen")
+;;                             ;; If the current buffer was the dashboard, refresh it
+;;                             (when (equal current-buffer-name "*dashboard*")
+;;                               (run-at-time "0.5 sec" nil 'open-dashboard))
+;;                             (run-at-time "1 sec" nil 'spaceline-compile)))))))
+
+
+;; (defun laluxx/wal-set ()
+;;   (interactive)
+;;   (let* ((default-directory "~/xos/wallpapers/static")
+;;          (theme-directory "~/xos/theme")
+;;          (pywal-scripts-directory "~/xos/pywal-scripts")
+;;          (image-files (directory-files-recursively default-directory "\\.\\(png\\|jpg\\|jpeg\\|webp\\)$"))
+;;          (current-buffer-name (buffer-name))
+;;          (wm-name (string-trim (shell-command-to-string "wmctrl -m | awk 'NR==1 {print $2}'"))))
+;;     (ivy-read "Choose wallpaper: "
+;;               image-files
+;;               :action (lambda (wallpaper)
+;;                         (when (and (not (string-empty-p wallpaper))
+;;                                    (file-exists-p wallpaper))
+;;                           (let ((abs-wallpaper (expand-file-name wallpaper)))
+;;                             (shell-command-to-string (concat "wal -i " abs-wallpaper))
+;;                             (with-temp-file (concat theme-directory "/.wallpaper")
+;;                               (insert abs-wallpaper))
+;;                             (shell-command-to-string "theme pywal --no-random")
+;;                             (dolist (script '("xmonad-dark-wal.py" "nvim-wal.py" "nvim-wal-dark.py"))
+;;                               (shell-command-to-string (concat "python3 " pywal-scripts-directory "/" script)))
+;;                             (cond
+;;                              ((string-equal wm-name "LG3D") (shell-command-to-string "xmonad --restart"))
+;;                              ((string-equal wm-name "dwm") (shell-command-to-string "xdotool key super+F5")))
+;;                             (shell-command-to-string "dashboard-wal-gen")
+;;                             ;; If the current buffer was the dashboard, refresh it
+;;                             (when (equal current-buffer-name "*dashboard*")
+;;                               (run-at-time "0.5 sec" nil 'open-dashboard))
+;;                             (run-at-time "1 sec" nil 'spaceline-compile)))))))
+
 
 (defun laluxx/wal-set ()
   (interactive)
@@ -1097,6 +1012,9 @@ TODO:
                             (when (equal current-buffer-name "*dashboard*")
                               (run-at-time "0.5 sec" nil 'open-dashboard))
                             (run-at-time "1 sec" nil 'spaceline-compile)))))))
+
+
+
 #+end_src
 *** Animated
 #+begin_src emacs-lisp
@@ -1948,10 +1866,6 @@ By default, Doom Emacs does not use 'SPC v', so the format I use for these bindi
        :desc "Ivy switch view" "v s" #'ivy-switch-view))
 #+END_SRC
 * EVIL MODE
-** NORMAL
-#+begin_src emacs-lisp
-(define-key evil-normal-state-map (kbd "C-8") 'swiper-isearch-thing-at-point)
-#+end_src
 ** INSERT
 noob mode
 #+begin_src emacs-lisp
@@ -2052,6 +1966,85 @@ If peep-dired is enabled, you will get image previews as you go up/down with 'j'
   (kbd "k") 'peep-dired-prev-file)
 (add-hook 'peep-dired-hook 'evil-normalize-keymaps)
 #+END_SRC
+* SPACELINE
+** Conf
+#+begin_src emacs-lisp
+(use-package spaceline-config
+  :ensure spaceline
+  :config
+  (setq spaceline-buffer-encoding-abbrev-p nil
+        spaceline-line-column-p nil
+        spaceline-line-p nil
+        spaceline-highlight-face-func 'spaceline-highlight-face-evil-state
+        powerline-default-separator 'wave)
+
+  (spaceline-define-segment evil-state
+    "The current evil state.  Requires `evil-mode' to be enabled."
+    (when (bound-and-true-p evil-local-mode)
+      (s-trim (evil-state-property evil-state :tag t))))
+
+  (spaceline-define-segment buffer-modified
+    "Replace the `buffer-modified' segment with an exclamation point for
+    modified buffers and an asterisk for read-only buffers."
+    (cond (buffer-read-only "*")
+          ((buffer-modified-p) "!")))
+
+  (setq spaceline-left
+        '((evil-state :face highlight-face)
+          (buffer-modified :face error-face)
+          anzu
+          auto-compile
+          ((buffer-id buffer-size) :separator " | ")
+          major-mode
+          ((flycheck-error flycheck-warning flycheck-info)
+           :when active)
+          (version-control :when active)
+          (org-pomodoro :when active)
+          (org-clock :when active)))
+
+  (setq spaceline-right
+        '((global :when active)
+          buffer-position
+          hud))
+
+  (spaceline-spacemacs-theme))
+#+end_src
+** toggle-modeline
+#+begin_src emacs-lisp
+(defvar my-modeline-state 'spaceline)
+
+(defun laluxx/toggle-modeline-local ()
+  "Toggle between spaceline and no modeline for the current buffer."
+  (interactive)
+  (if (eq my-modeline-state 'spaceline)
+      (progn
+        (setq my-modeline-state 'none)
+        (hide-mode-line-mode 1))
+    (progn
+      (hide-mode-line-mode -1)
+      (setq my-modeline-state 'spaceline)
+      (spaceline-spacemacs-theme))))
+
+(defun laluxx/toggle-modeline-global ()
+  "Toggle between spaceline and no modeline globally."
+  (interactive)
+  (if (eq my-modeline-state 'spaceline)
+      (progn
+        (setq my-modeline-state 'none)
+        (global-hide-mode-line-mode 1))
+    (progn
+      (global-hide-mode-line-mode -1)
+      (setq my-modeline-state 'spaceline)
+      (spaceline-spacemacs-theme))))
+
+(map! :leader
+      (:prefix ("t" . "toggle")
+       "m" #'laluxx/toggle-modeline-local
+       "M" #'laluxx/toggle-modeline-global))
+
+
+#+end_src
+
 * RAINBOW MODE
 turned on all the time, regardless of the mode.
 The following creates a global minor mode for rainbow-mode and enables it (exception: org-agenda-mode since rainbow-mode destroys all highlighting in org-agenda).
@@ -2229,7 +2222,6 @@ Open info inside xmonad  DONE:
 - Toggle [x]
 - ewal break this []
 #+begin_src emacs-lisp
-;; TODO
 (defvar emacs-run-info-frame nil)
 
 (defun emacs-run-info ()
@@ -2307,25 +2299,6 @@ TODO
     (define-key dired-mode-map (kbd "<escape>") 'delete-frame)
     (select-frame-set-input-focus original-frame)))
 #+end_src
-** Dired minubuffer
-#+begin_src emacs-lisp
-;; i have no idea how to do this TODO
-;; (defun emacs-run-dired-minibuffer ()
-;;   "Create a new frame with a minibuffer and open dired in the frame's buffer."
-;;   (interactive)
-;;   (let* ((dired-directory (read-directory-name "Dired (directory): " "~"))
-;;          (new-frame (make-frame '((name . "emacs-run-dired")
-;;                                   (width . 80)
-;;                                   (height . 24)
-;;                                   (minibuffer . t)
-;;                                   (undecorated . t)
-;;                                   (internal-border-width . 10)
-;;                                   (fullscreen . 0)))))
-;;     (select-frame-set-input-focus new-frame)
-;;     (with-selected-window (frame-selected-window new-frame)
-;;       (dired dired-directory)  ;; opens dired in the specified directory
-;;       (define-key (current-local-map) (kbd "<escape>") 'delete-frame))))
-#+end_src
 ** Clone-client-frame
 #+begin_src emacs-lisp
 (defun hide-mode-line-in-frame (frame)
@@ -2386,12 +2359,6 @@ TODO
 
 #+end_src
 * Config
-** good scroll
-#+begin_src emacs-lisp
-(after! good-scroll
-  (map! :g [next]  #'good-scroll-up-full-screen
-        :g [prior] #'good-scroll-down-full-screen))
-#+end_src
 ** Org
 #+begin_src emacs-lisp
 (defun laluxx/insert-auto-tangle-tag ()
@@ -2406,110 +2373,6 @@ TODO
 (map! :leader
       :desc "Insert auto_tangle tag" "i a" #'laluxx/insert-auto-tangle-tag)
 #+end_src
-*** Roam
-#+begin_src emacs-lisp
-(setq org-directory "~/org/")  ; Set the main directory for org files
-(setq org-default-notes-file (concat org-directory "inbox.org"))  ; Default file for new notes
-(setq org-agenda-files '("~/org/"))  ; Directory for agenda files
-#+end_src
-** Aggressive indent
-Activate for lisp-like languages
-#+begin_src emacs-lisp
-
-;; Activate aggressive-indent-mode only for lisp-like modes
-(after! aggressive-indent
-  (mapc (lambda (mode)
-          (add-hook mode #'aggressive-indent-mode))
-        '(emacs-lisp-mode-hook
-          lisp-mode-hook
-          clojure-mode-hook
-          scheme-mode-hook)))
-
-#+end_src
-** Color identifier
-#+begin_src emacs-lisp
-
-
-;; Enable color-identifiers-mode globally
-(after! color-identifiers-mode
-
-  ;; Adjust recoloring delay
-  (setq color-identifiers:recoloring-delay 1)
-
-  ;; Customize appearance
-  (defun myfunc-color-identifiers-mode-hook ()
-    (let ((faces '(font-lock-comment-face font-lock-comment-delimiter-face font-lock-constant-face font-lock-type-face font-lock-function-name-face font-lock-variable-name-face font-lock-keyword-face font-lock-string-face font-lock-builtin-face font-lock-preprocessor-face font-lock-warning-face font-lock-doc-face font-lock-negation-char-face font-lock-regexp-grouping-construct font-lock-regexp-grouping-backslash)))
-      (dolist (face faces)
-        (set-face-attribute face nil :inherit 'default)))
-    (set-face-attribute 'font-lock-keyword-face nil :weight 'bold)
-    (set-face-attribute 'font-lock-comment-face nil :slant 'italic)
-    (set-face-attribute 'font-lock-builtin-face nil :weight 'bold)
-    (set-face-attribute 'font-lock-preprocessor-face nil :weight 'bold)
-    (set-face-attribute 'font-lock-function-name-face nil :slant 'italic)
-    (set-face-attribute 'font-lock-string-face nil :slant 'italic)
-    (set-face-attribute 'font-lock-constant-face nil :weight 'bold))
-
-  (add-hook 'color-identifiers-mode-hook 'myfunc-color-identifiers-mode-hook)
-
-  ;; Regenerate colors after theme change
-  (defun my-ewal-theme-hook ()
-    (when (eq doom-theme 'ewal-doom-one)
-      (color-identifiers:regenerate-colors)))
-  (add-hook 'doom-load-theme-hook 'my-ewal-theme-hook)
-
-  ;; Toggle mode to ensure changes are applied
-  (color-identifiers-mode -1)
-  (color-identifiers-mode +1))
-
-
-#+end_src
-** Dimmer
-#+begin_src emacs-lisp
-(after! dimmer
-  ;; Set the adjustment mode and fraction
-  (setq dimmer-adjustment-mode :foreground) ;; Choices: :foreground, :background, :both
-  (setq dimmer-fraction 0.30) ;; Increase if you'd like other buffers to be more dim.
-
-  ;; Exclude certain buffers from dimming
-  (setq dimmer-buffer-exclusion-regexps '("^\\*Minibuf.*\\*"))
-
-  ;; Exclude buffers using predicate functions
-  ;; Example: don't dim buffers that are read-only
-  (add-to-list 'dimmer-buffer-exclusion-predicates
-               (lambda (buf) (with-current-buffer buf buffer-read-only)))
-
-  ;; Dim when Emacs loses focus
-  (setq dimmer-watch-frame-focus-events t)
-
-  ;; Ensure certain popups and modes do not get dimmed
-  (dimmer-configure-which-key)
-  (dimmer-configure-helm)
-  ;; Add other modes you use, for example:
-  ;; (dimmer-configure-org)
-  ;; (dimmer-configure-magit)
-
-  (dimmer-mode t))
-
-
-
-
-
-
-
-
-
-
-
-#+end_src
-** Eaf
-#+begin_src emacs-lisp
-(use-package! eaf
-  :commands (eaf-open-browser eaf-open find-file)
-  :config
-  (use-package! ctable)
-  (use-package! deferred)
-  (use-package! epc))
-#+end_src
 ** Info-colors
 #+begin_src emacs-lisp
 (add-hook 'Info-selection-hook 'info-colors-fontify-node)
@@ -2520,7 +2383,6 @@ Activate for lisp-like languages
   "Open ibuffer and delete other windows."
   (interactive)
   (ibuffer)
-  (all-the-icons-ibuffer-mode)
   (delete-other-windows))
 
 
@@ -2546,13 +2408,13 @@ Activate for lisp-like languages
 #+end_src
 ** Evil
 #+begin_src emacs-lisp
-(after! evil
-  (map! :after evil
-        :map evil-insert-state-map
-        "C-h" #'evil-backward-char
-        "C-j" #'evil-next-line
-        "C-k" #'evil-previous-line
-        "C-l" #'evil-forward-char))
+;; (after! evil
+;;   (map! :after evil
+;;         :map evil-insert-state-map
+;;         "C-h" #'evil-backward-char
+;;         "C-j" #'evil-next-line
+;;         "C-k" #'evil-previous-line
+;;         "C-l" #'evil-forward-char))
 #+end_src
 ** org-auto-tangle
 =org-auto-tangle= allows you to add the option =#+auto_tangle: t= in your Org file so that it automatically tangles when you save the document.
@@ -2575,40 +2437,89 @@ Activate for lisp-like languages
 #+end_src
 ** Centaur-tabs
 #+begin_src emacs-lisp
-;; (after! centaur-tabs
-;;   (setq centaur-tabs-style "rounded"
-;;         centaur-tabs-height 32
-;;         centaur-tabs-set-icons t
-;;         centaur-tabs-set-bar 'under
-;;         x-underline-at-descent-line t
-;;         centaur-tabs-set-modified-marker t
-;;         centaur-tabs-show-navigation-buttons t
-;;         centaur-tabs-show-new-tab-button t
-;;         centaur-tabs-left-edge-margin nil
-;;         centaur-tabs-cycle-scope 'tabs)
-;;   (centaur-tabs-mode t)
-;;   (centaur-tabs-headline-match)
-;;   (setq centaur-tabs-adjust-buffer-order t))
+(after! centaur-tabs
+  (setq centaur-tabs-style "rounded"
+        centaur-tabs-height 32
+        centaur-tabs-set-icons t
+        centaur-tabs-set-bar 'under
+        x-underline-at-descent-line t
+        centaur-tabs-set-modified-marker t
+        centaur-tabs-show-navigation-buttons t
+        centaur-tabs-show-new-tab-button t
+        centaur-tabs-left-edge-margin nil
+        centaur-tabs-cycle-scope 'tabs)
+  (centaur-tabs-mode t)
+  (centaur-tabs-headline-match)
+  (setq centaur-tabs-adjust-buffer-order t))
 
 
 
-;; (defun my/centaur-tabs-mode-condition ()
-;;   (if (or (> (count-windows) 1)
-;;           (derived-mode-p 'dashboard-mode 'vterm-mode 'dired-mode))
-;;       (centaur-tabs-local-mode)  ;; disable if more than one window or in one of the listed modes
-;;     (centaur-tabs-local-mode -1)))  ;; enable otherwise
+(defun my/centaur-tabs-mode-condition ()
+  (if (or (> (count-windows) 1)
+          (derived-mode-p 'dashboard-mode 'vterm-mode 'dired-mode))
+      (centaur-tabs-local-mode)  ;; disable if more than one window or in one of the listed modes
+    (centaur-tabs-local-mode -1)))  ;; enable otherwise
 
 
-;; ;; Run the function after every buffer list update
-;; (add-hook 'buffer-list-update-hook 'my/centaur-tabs-mode-condition)
+;; Run the function after every buffer list update
+(add-hook 'buffer-list-update-hook 'my/centaur-tabs-mode-condition)
 
 
 #+end_src
 ** Vterm
 #+begin_src emacs-lisp
+;; (add-hook 'vterm-mode-hook
+;;           (lambda ()
+;;             (define-key vterm-mode-map (kbd "C-j") 'other-window)
+;;             (define-key vterm-mode-map (kbd "C-k")
+;;               (lambda ()
+;;                 (interactive)
+;;                 (other-window -1)))
+;;             (define-key vterm-mode-map (kbd "C-h") 'neotree-or-enlarge-window-left)
+;;             (define-key vterm-mode-map (kbd "C-l") 're-builder-or-enlarge-window-right)
+;;             (define-key vterm-mode-map (kbd "C-M-j") 'rotate-window)
+;;             (define-key vterm-mode-map (kbd "C-M-k")
+;;               (lambda ()
+;;                 (interactive)
+;;                 (dotimes (_ (- (length (window-list)) 1))
+;;                   (rotate-window))))
+;;             (evil-define-key 'normal vterm-mode-map (kbd "q") 'delete-window)))
+
 (add-hook 'vterm-mode-hook
           (lambda ()
+            (evil-define-key 'insert vterm-mode-map (kbd "C-j") 'other-window)
+            (evil-define-key 'insert vterm-mode-map (kbd "C-k")
+              (lambda ()
+                (interactive)
+                (other-window -1)))
+            (evil-define-key 'insert vterm-mode-map (kbd "C-h") 'neotree-or-enlarge-window-left)
+            (evil-define-key 'insert vterm-mode-map (kbd "C-l") 're-builder-or-enlarge-window-right)
+            (evil-define-key 'insert vterm-mode-map (kbd "C-M-j") 'rotate-window)
+            (evil-define-key 'insert vterm-mode-map (kbd "C-M-k")
+              (lambda ()
+                (interactive)
+                (dotimes (_ (- (length (window-list)) 1))
+                  (rotate-window))))
             (evil-define-key 'normal vterm-mode-map (kbd "q") 'delete-window)))
+
+
+
+#+end_src
+** Magit
+#+begin_src emacs-lisp
+;; (with-eval-after-load 'magit
+;;   (define-key magit-mode-map (kbd "C-j") #'other-window)
+;;   (define-key magit-mode-map (kbd "C-k") (lambda () (interactive) (other-window -1)))
+;;   (define-key magit-mode-map (kbd "M-j") #'magit-section-forward)
+;;   (define-key magit-mode-map (kbd "M-k") #'magit-section-backward))
+
+(after! magit
+  (define-key magit-mode-map (kbd "C-j") #'other-window)
+  (define-key magit-mode-map (kbd "C-k") (lambda () (interactive) (other-window -1)))
+  (define-key magit-mode-map (kbd "M-j") #'magit-section-forward)
+  (define-key magit-mode-map (kbd "M-k") #'magit-section-backward))
+
+
 #+end_src
 ** Neotree
 #+begin_src emacs-lisp

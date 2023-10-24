@@ -168,7 +168,7 @@
 (setq dashboard-banner-logo-title "Welcome to Emacs Dashboard")
 
 ;; Set the footer
-(setq dashboard-footer-icon (all-the-icons-octicon "dash" :height 1.1 :v-adjust -0.05 :face 'font-lock-keyword-face))
+;;(setq dashboard-footer-icon (all-the-icons-octicon "dash" :height 1.1 :v-adjust -0.05 :face 'font-lock-keyword-face))
 (setq dashboard-footer-messages '("Dashboard is a minimal and nice looking startup screen."))
 
 ;; Set the content
