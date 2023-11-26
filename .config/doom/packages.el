@@ -123,6 +123,10 @@
 
 
 (package! ivy-yasnippet)
+;; (package! autothemer)
+
+(package! exwm)
+(package! ef-themes)
 
 
 ;; (package! gpt-macro)

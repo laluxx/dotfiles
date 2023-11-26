@@ -27,7 +27,7 @@ export PATH="$PATH:$HOME/.cargo/bin"
 export PATH="$PATH:$HOME/.local/share/bin"
 
  if [[ -n $SSH_CONNECTION ]]; then
-   export EDITOR='nvim'
+   export EDITOR='vim'
  else
    export EDITOR='nvim'
  fi
@@ -2289,6 +2289,36 @@ typetune() {
             echo "Stopping Typetune..."
             kill -9 $TYPETUNE_PID
         fi
+    fi
+}
+
+function hownwal() {
+    local target_dir="$HOME/xos/wallpapers/static/"
+
+    if [[ ! -d $target_dir ]]; then
+        echo "Target directory $target_dir does not exist. Creating it now..."
+        mkdir -p "$target_dir"
+    fi
+
+    if [[ "$1" == "-c" ]]; then
+        shift # Remove the '-c' flag from the arguments
+        for img in "$@"; do
+            if [[ -f "$img" ]]; then
+                cp "$img" "$target_dir"
+                echo "Copied $img to $target_dir"
+            else
+                echo "Error: $img is not a valid file."
+            fi
+        done
+    else
+        for img in "$@"; do
+            if [[ -f "$img" ]]; then
+                mv "$img" "$target_dir"
+                echo "Moved $img to $target_dir"
+            else
+                echo "Error: $img is not a valid file."
+            fi
+        done
     fi
 }
 

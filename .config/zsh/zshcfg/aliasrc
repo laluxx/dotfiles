@@ -46,6 +46,7 @@ alias highlight="highlight -O ansi --force"
 alias hcat="cat | highlight"
 
 alias v="nvim"
+alias x="helix"
 
 # alias fzf='fzf --color=16'
 

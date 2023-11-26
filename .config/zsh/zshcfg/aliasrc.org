@@ -72,6 +72,7 @@ alias hcat="cat | highlight"
 * Neovim
 #+begin_src shell
 alias v="nvim"
+alias x="helix"
 #+end_src
 * Fzf
 #+begin_src shell
